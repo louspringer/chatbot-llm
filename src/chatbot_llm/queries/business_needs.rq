@@ -1,0 +1,35 @@
+PREFIX : <./chatbot#>
+PREFIX cortex: <./cortexteams#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT ?need ?label ?context ?constraint ?comment
+WHERE {
+    # Get business needs from both ontologies
+    ?need a :BusinessNeed ;
+          rdfs:label ?label ;
+          rdfs:comment ?comment .
+    
+    # Get context and constraints, handling both named and blank nodes
+    OPTIONAL { 
+        ?need :hasContext ?ctx .
+        {
+            # Named context from cortexteams
+            ?ctx rdfs:label ?context 
+        } UNION {
+            # Context from chatbot
+            BIND(?ctx AS ?context)
+        }
+    }
+    OPTIONAL { 
+        ?need :hasConstraint ?con .
+        {
+            # Named constraints from cortexteams
+            ?con rdfs:label ?constraint
+        } UNION {
+            # Constraints from chatbot
+            BIND(?con AS ?constraint)
+        }
+    }
+}
+ORDER BY ?label 

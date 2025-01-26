@@ -1,0 +1,122 @@
+@prefix : <#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix risks: <./ontology-framework/risks#> .
+@prefix teams: <./cortexteams#> .
+
+# Import base risk ontology
+owl:imports risks: .
+
+# Teams-specific Risk Categories
+:TeamsIntegrationRisk a owl:Class ;
+    rdfs:subClassOf risks:SecurityRisk ;
+    rdfs:label "Teams Integration Risk" ;
+    rdfs:comment "Risks specific to Microsoft Teams integration" .
+
+:MLModelRisk a owl:Class ;
+    rdfs:subClassOf risks:OperationalRisk ;
+    rdfs:label "ML Model Risk" ;
+    rdfs:comment "Risks related to ML model operations and performance" .
+
+:DataAccessRisk a owl:Class ;
+    rdfs:subClassOf risks:SecurityRisk ;
+    rdfs:label "Data Access Risk" ;
+    rdfs:comment "Risks related to data access and permissions" .
+
+# Risk Instances
+:teamsAuthFailure a :TeamsIntegrationRisk ;
+    rdfs:label "Teams Authentication Failure" ;
+    rdfs:comment "Risk of Teams authentication mechanism failure" ;
+    risks:severity "High" ;
+    risks:probability "Medium" ;
+    risks:mitigation "Implement robust error handling and fallback authentication" .
+
+:modelDrift a :MLModelRisk ;
+    rdfs:label "Model Drift" ;
+    rdfs:comment "Risk of ML model performance degradation over time" ;
+    risks:severity "Medium" ;
+    risks:probability "High" ;
+    risks:mitigation "Regular model retraining and performance monitoring" .
+
+:unauthorizedDataAccess a :DataAccessRisk ;
+    rdfs:label "Unauthorized Data Access" ;
+    rdfs:comment "Risk of unauthorized access to sensitive data" ;
+    risks:severity "High" ;
+    risks:probability "Medium" ;
+    risks:mitigation "Implement zero-trust security model and continuous monitoring" .
+
+# Risk Properties
+:affectsComponent a owl:ObjectProperty ;
+    rdfs:domain risks:Risk ;
+    rdfs:range teams:Component ;
+    rdfs:label "Affects Component" ;
+    rdfs:comment "Links a risk to affected Teams component" .
+
+:requiresControl a owl:ObjectProperty ;
+    rdfs:domain risks:Risk ;
+    rdfs:range :SecurityControl ;
+    rdfs:label "Requires Control" ;
+    rdfs:comment "Links a risk to required security controls" .
+
+# Security Controls
+:SecurityControl a owl:Class ;
+    rdfs:label "Security Control" ;
+    rdfs:comment "Security control measure for risk mitigation" .
+
+:authenticationControl a :SecurityControl ;
+    rdfs:label "Authentication Control" ;
+    rdfs:comment "Controls for authentication and authorization" ;
+    :implements "Azure AD integration" .
+
+:modelMonitoring a :SecurityControl ;
+    rdfs:label "Model Monitoring" ;
+    rdfs:comment "Controls for ML model monitoring" ;
+    :implements "Performance metrics and alerts" .
+
+:dataAccessControl a :SecurityControl ;
+    rdfs:label "Data Access Control" ;
+    rdfs:comment "Controls for data access and protection" ;
+    :implements "RBAC and encryption" .
+
+# Risk Relationships
+:teamsAuthFailure 
+    :affectsComponent teams:AuthenticationComponent ;
+    :requiresControl :authenticationControl .
+
+:modelDrift 
+    :affectsComponent teams:MLComponent ;
+    :requiresControl :modelMonitoring .
+
+:unauthorizedDataAccess 
+    :affectsComponent teams:DataAccessComponent ;
+    :requiresControl :dataAccessControl .
+
+# Validation Rules
+:RiskValidation a owl:Class ;
+    rdfs:label "Risk Validation" ;
+    rdfs:comment "Validation rules for risk assessment" .
+
+:requiresMitigation a owl:DatatypeProperty ;
+    rdfs:domain risks:Risk ;
+    rdfs:range xsd:boolean ;
+    rdfs:label "Requires Mitigation" ;
+    rdfs:comment "Indicates if risk requires active mitigation" .
+
+:lastAssessment a owl:DatatypeProperty ;
+    rdfs:domain risks:Risk ;
+    rdfs:range xsd:dateTime ;
+    rdfs:label "Last Assessment" ;
+    rdfs:comment "Date of last risk assessment" .
+
+# Risk Assessment
+:RiskAssessment a owl:Class ;
+    rdfs:label "Risk Assessment" ;
+    rdfs:comment "Assessment of identified risks" .
+
+:teamsRiskAssessment a :RiskAssessment ;
+    rdfs:label "Teams Integration Risk Assessment" ;
+    :assessmentDate "2024-01-26"^^xsd:date ;
+    :assessedRisks :teamsAuthFailure, :modelDrift, :unauthorizedDataAccess ;
+    :overallRiskLevel "Medium" . 

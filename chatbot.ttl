@@ -1,0 +1,498 @@
+@prefix : <./chatbot#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix conversation: <./conversation#> .
+@prefix meta: <./meta#> .
+@prefix metameta: <./metameta#> .
+@prefix problem: <./problem#> .
+@prefix solution: <./solution#> .
+@prefix risks: <./risks#> .
+@prefix guidance: <./guidance#> .
+
+### Ontology Metadata
+:ChatbotLLMOntology a owl:Ontology ;
+    rdfs:label "Chatbot LLM Ontology" ;
+    rdfs:comment "Ontology to explore the problem and solution spaces for integrating LLMs into chat platforms." ;
+    owl:versionInfo "1.9" ;
+    # Add explicit dependency declarations
+    :requiresOntology [
+        a :OntologyDependency ;
+        :path "ontology-framework/guidance.ttl" ;
+        :prefix "guidance" ;
+        :version "1.1"
+    ] ;
+    :requiresOntology [
+        a :OntologyDependency ;
+        :path "ontology-framework/metameta.ttl" ;
+        :prefix "metameta" ;
+        :version "1.0"
+    ] ;
+    :hasSecurityRequirement :PythonVersionRequirement .
+
+# Define dependency properties
+:OntologyDependency a owl:Class ;
+    rdfs:label "Ontology Dependency" ;
+    rdfs:comment "Declares a dependency on another ontology file" .
+
+:path a owl:DatatypeProperty ;
+    rdfs:domain :OntologyDependency ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Relative path to the required ontology file" .
+
+:prefix a owl:DatatypeProperty ;
+    rdfs:domain :OntologyDependency ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Prefix used to reference this ontology" .
+
+:version a owl:DatatypeProperty ;
+    rdfs:domain :OntologyDependency ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Required version of the ontology" .
+
+### Core Concepts
+:Problem a owl:Class ;
+    rdfs:label "Problem" ;
+    rdfs:comment "The primary problem that the LLM integration is intended to address." .
+
+:Requirement a owl:Class ;
+    rdfs:label "Requirement" ;
+    rdfs:comment "A functional or non-functional requirement for the LLM integration." .
+
+:Plan a owl:Class ;
+    rdfs:label "Plan" ;
+    rdfs:comment "A plan or strategy to address the problem or implement the LLM integration." .
+
+:Idea a owl:Class ;
+    rdfs:label "Idea" ;
+    rdfs:comment "An idea or suggestion related to LLM integration." .
+
+:BusinessNeed a owl:Class ;
+    rdfs:label "Business Need" ;
+    rdfs:comment "A specific business requirement or opportunity related to LLM integration." ;
+    rdfs:subClassOf :Problem .
+
+:Context a owl:Class ;
+    rdfs:label "Context" ;
+    rdfs:comment "Environmental or situational factors influencing the integration" ;
+    :hasInterpretation :ChatbotInterpretation ;
+    :followsAnalogy :ConversationFlowAnalogy .
+
+:Constraint a owl:Class ;
+    rdfs:label "Constraint" ;
+    rdfs:comment "A limiting factor or boundary for the integration." .
+
+:Persona a owl:Class ;
+    rdfs:label "Persona" ;
+    rdfs:comment "A typical user or stakeholder interacting with the chatbot." .
+
+:Workflow a owl:Class ;
+    rdfs:label "Workflow" ;
+    rdfs:comment "A set of tasks or processes executed by a persona." ;
+    :hasInterpretation [
+        a guidance:Interpretation ;
+        guidance:sourceContext "Business Process Management" ;
+        guidance:targetContext "Chatbot Interaction Design" ;
+        guidance:complexity 2
+    ] .
+
+### Relationships
+:addresses a owl:ObjectProperty ;
+    rdfs:label "addresses" ;
+    rdfs:domain :Plan ;
+    rdfs:range :Problem ;
+    rdfs:comment "A plan addresses a specific problem." .
+
+:hasRequirement a owl:ObjectProperty ;
+    rdfs:label "has requirement" ;
+    rdfs:domain :Problem ;
+    rdfs:range :Requirement ;
+    rdfs:comment "A problem has one or more associated requirements." .
+
+:hasContext a owl:ObjectProperty ;
+    rdfs:label "has context" ;
+    rdfs:domain :BusinessNeed ;
+    rdfs:range :Context ;
+    rdfs:comment "Links a business need to its contextual factors." .
+
+:hasConstraint a owl:ObjectProperty ;
+    rdfs:label "has constraint" ;
+    rdfs:domain :BusinessNeed ;
+    rdfs:range :Constraint ;
+    rdfs:comment "Links a business need to its constraints." .
+
+:targetsPersona a owl:ObjectProperty ;
+    rdfs:label "targets persona" ;
+    rdfs:domain :Requirement ;
+    rdfs:range :Persona ;
+    rdfs:comment "A requirement targets a specific persona." .
+
+:hasWorkflow a owl:ObjectProperty ;
+    rdfs:label "has workflow" ;
+    rdfs:domain :Persona ;
+    rdfs:range :Workflow ;
+    rdfs:comment "A persona executes specific workflows." .
+
+:mitigates a owl:ObjectProperty ;
+    rdfs:label "mitigates" ;
+    rdfs:domain :Plan ;
+    rdfs:range risks:Risk ;
+    rdfs:comment "A plan mitigates a specific risk." .
+
+:involves a owl:ObjectProperty ;
+    rdfs:label "involves" ;
+    rdfs:domain :Idea ;
+    rdfs:range :Requirement ;
+    rdfs:comment "An idea involves one or more requirements." .
+
+:hasRisk a owl:ObjectProperty ;
+    rdfs:label "has risk" ;
+    rdfs:domain :Problem ;
+    rdfs:range risks:Risk ;
+    rdfs:comment "A problem has one or more associated risks." .
+
+### SHACL Validation
+:ProblemShape a sh:NodeShape ;
+    sh:targetClass :Problem ;
+    sh:property [
+        sh:path :hasRequirement ;
+        sh:minCount 1 ;
+        sh:message "Every problem must have at least one requirement." ;
+    ] ;
+    sh:property [
+        sh:path :hasRisk ;
+        sh:minCount 1 ;
+        sh:message "Every problem must have at least one associated risk." ;
+    ] .
+
+:BusinessNeedShape a sh:NodeShape ;
+    sh:targetClass :BusinessNeed ;
+    sh:property [
+        sh:path :hasContext ;
+        sh:minCount 1 ;
+        sh:message "Every business need must have a context." ;
+    ] ;
+    sh:property [
+        sh:path :hasConstraint ;
+        sh:minCount 1 ;
+        sh:message "Every business need must have a constraint." ;
+    ] .
+
+### Guidance for High-Functioning LLMs
+:LLMGuidance a owl:Class ;
+    rdfs:label "LLM Guidance" ;
+    rdfs:comment "Guidance and context required by high-functioning LLMs for checkpoint-restart and accurate interpretation." .
+
+:CheckpointRestart a :Workflow ;
+    rdfs:label "Checkpoint-Restart Workflow" ;
+    rdfs:comment "Defines how an LLM should save and reload context accurately in case of interruption." .
+
+:ContextInterpretation a :Workflow ;
+    rdfs:label "Context Interpretation Workflow" ;
+    rdfs:comment "Guidance for interpreting ontology elements and aligning responses with user intentions." .
+
+### Recommended Next Steps
+:NextSteps a owl:Class ;
+    rdfs:label "Next Steps" ;
+    rdfs:comment "Actions required to refine and advance the ontology and its associated project." .
+
+:ExpandSolutionSpace a :NextSteps ;
+    rdfs:label "Expand Solution Space" ;
+    rdfs:comment "Model high-level solution components such as middleware, APIs, and adaptive workflows." .
+
+:DevelopScenarios a :NextSteps ;
+    rdfs:label "Develop Use Case Scenarios" ;
+    rdfs:comment "Create detailed scenarios to test integration workflows and validate personas against requirements." .
+
+:ValidateOntology a :NextSteps ;
+    rdfs:label "Validate Ontology" ;
+    rdfs:comment "Test the ontology for SHACL compliance, logical consistency, and alignment with business needs." .
+
+:MonitorRisks a :NextSteps ;
+    rdfs:label "Monitor Risks" ;
+    rdfs:comment "Establish a mechanism to monitor and update risk models as the solution evolves." .
+
+:IntegrateFeedback a :NextSteps ;
+    rdfs:label "Integrate Feedback" ;
+    rdfs:comment "Refine the ontology and workflows based on user and stakeholder feedback." .
+
+### Individuals
+:LLMIntegration a :Problem ;
+    rdfs:label "LLM Integration" ;
+    rdfs:comment "The problem of integrating large language models into chat platforms." .
+
+:SnowflakeTeamsIntegration a :BusinessNeed ;
+    rdfs:label "Snowflake Cortex and Microsoft Teams Integration" ;
+    rdfs:comment "The specific business problem of integrating Snowflake Cortex with Microsoft Teams." ;
+    :hasContext [ a :Context ; rdfs:label "Enterprise Environment" ; rdfs:comment "The enterprise environment requiring secure and scalable integration." ] ;
+    :hasConstraint [ a :Constraint ; rdfs:label "Data Privacy" ;
+        rdfs:comment "Compliance with enterprise data privacy regulations." ] .
+
+:SlackIntegration a :BusinessNeed ;
+    rdfs:label "Slack Integration" ;
+    rdfs:comment "Exploring the integration of LLMs with Slack." .
+
+:Scalability a :Requirement ;
+    rdfs:label "Scalability" ;
+    rdfs:comment "The solution must scale to support a large number of users." .
+
+:DataIntegration a :Requirement ;
+    rdfs:label "Data Integration" ;
+    rdfs:comment "The solution must integrate seamlessly with backend systems like Snowflake Cortex." .
+
+:ImplementationPlan a :Plan ;
+    rdfs:label "Implementation Plan" ;
+    rdfs:comment "A detailed plan to implement LLM integrations." ;
+    :addresses :LLMIntegration ;
+    :mitigates risks:DataSecurity .
+
+:InteractiveIdea a :Idea ;
+    rdfs:label "Interactive Features Idea" ;
+    rdfs:comment "An idea to add interactive features such as polls and Q&A to the integrations." ;
+    :involves :Scalability .
+
+# Add new interpretation patterns
+:ChatbotInterpretation a guidance:Interpretation ;
+    rdfs:label "Chatbot Domain Interpretation" ;
+    guidance:sourceContext "AI Conversation Systems" ;
+    guidance:targetContext "Enterprise Integration" ;
+    guidance:complexity 3 ;
+    guidance:hasAction :EnhanceContextModeling .
+
+# Add domain analogies
+:ConversationFlowAnalogy a guidance:DomainAnalogy ;
+    guidance:analogySource "Human Conversation Patterns" ;
+    guidance:analogyTarget "LLM Interaction Flows" ;
+    rdfs:comment "Models conversation flows based on human interaction patterns" .
+
+# Add conversation state tracking
+:ConversationState a owl:Class ;
+    rdfs:label "Conversation State" ;
+    rdfs:comment "Tracks the current state and history of a conversation" ;
+    rdfs:subClassOf :Context .
+
+# Add state transition properties
+:hasNextState a owl:ObjectProperty ;
+    rdfs:domain :ConversationState ;
+    rdfs:range :ConversationState ;
+    rdfs:comment "Links to possible next states in the conversation flow" .
+
+:hasPreviousState a owl:ObjectProperty ;
+    rdfs:domain :ConversationState ;
+    rdfs:range :ConversationState ;
+    rdfs:comment "Links to the previous state in the conversation flow" .
+
+# Add SHACL validation for conversation states
+:ConversationStateShape a sh:NodeShape ;
+    sh:targetClass :ConversationState ;
+    sh:property [
+        sh:path :hasNextState ;
+        sh:minCount 1 ;
+        sh:message "Every conversation state must have at least one possible next state."
+    ] ;
+    sh:property [
+        sh:path :hasPreviousState ;
+        sh:maxCount 1 ;
+        sh:message "A conversation state can have at most one previous state."
+    ] .
+
+# Add validation for context interpretation
+:ContextShape a sh:NodeShape ;
+    sh:targetClass :Context ;
+    sh:property [
+        sh:path :hasInterpretation ;
+        sh:minCount 1 ;
+        sh:message "Every context must have at least one interpretation pattern."
+    ] .
+
+:ChatbotTodoList a :NextSteps ;
+    rdfs:label "Chatbot Development TODOs" ;
+    :hasTodo [
+        a :TodoItem ;
+        rdfs:label "Implement Conversation Memory" ;
+        :priority "HIGH" ;
+        :targetDate "2024-Q2" ;
+        rdfs:comment "Add long-term conversation memory mechanisms"
+    ] ;
+    :hasTodo [
+        a :TodoItem ;
+        rdfs:label "Context Switch Handling" ;
+        :priority "MEDIUM" ;
+        :targetDate "2024-Q2" ;
+        rdfs:comment "Implement graceful context switching between topics"
+    ] .
+
+# Add security requirements
+:SecurityRequirements a owl:Class ;
+    rdfs:label "Security Requirements" ;
+    rdfs:comment "Security requirements for the chatbot framework" .
+
+:PythonVersionRequirement a :SecurityRequirements ;
+    rdfs:label "Python Version Requirement" ;
+    rdfs:comment "Minimum Python version required for security" ;
+    :minimumVersion "3.10" ;
+    :rationale "Python versions below 3.10 have known security vulnerabilities and lack modern security features" .
+
+### Component Classes
+:Component a owl:Class ;
+    rdfs:label "Component" ;
+    rdfs:comment "Base class for system components" .
+
+:Formatter a owl:Class ;
+    rdfs:subClassOf :Component ;
+    rdfs:label "Formatter" ;
+    rdfs:comment "Component for formatting query results" .
+
+:MLComponent a owl:Class ;
+    rdfs:subClassOf :Component ;
+    rdfs:label "ML Component" ;
+    rdfs:comment "Component for machine learning operations" .
+
+:Visualizer a owl:Class ;
+    rdfs:subClassOf :Component ;
+    rdfs:label "Visualizer" ;
+    rdfs:comment "Component for data visualization" .
+
+### Formatter Types
+:MarkdownFormatter a owl:Class ;
+    rdfs:subClassOf :Formatter ;
+    rdfs:label "Markdown Formatter" ;
+    rdfs:comment "Formats results as Markdown tables" .
+
+:PlantUMLFormatter a owl:Class ;
+    rdfs:subClassOf :Formatter ;
+    rdfs:label "PlantUML Formatter" ;
+    rdfs:comment "Formats results as PlantUML diagrams" .
+
+:TeamsCardFormatter a owl:Class ;
+    rdfs:subClassOf :Formatter ;
+    rdfs:label "Teams Card Formatter" ;
+    rdfs:comment "Formats results as Teams Adaptive Cards" .
+
+### ML Components
+:ModelManager a owl:Class ;
+    rdfs:subClassOf :MLComponent ;
+    rdfs:label "Model Manager" ;
+    rdfs:comment "Manages ML models and training data" .
+
+:QueryTranslator a owl:Class ;
+    rdfs:subClassOf :MLComponent ;
+    rdfs:label "Query Translator" ;
+    rdfs:comment "Translates natural language to SQL" .
+
+:PerformanceMonitor a owl:Class ;
+    rdfs:subClassOf :MLComponent ;
+    rdfs:label "Performance Monitor" ;
+    rdfs:comment "Monitors ML model performance" .
+
+### Visualizer Types
+:PlantUMLVisualizer a owl:Class ;
+    rdfs:subClassOf :Visualizer ;
+    rdfs:label "PlantUML Visualizer" ;
+    rdfs:comment "Generates PlantUML diagrams" .
+
+:MatplotlibVisualizer a owl:Class ;
+    rdfs:subClassOf :Visualizer ;
+    rdfs:label "Matplotlib Visualizer" ;
+    rdfs:comment "Generates Matplotlib plots" .
+
+### Component Properties
+:formats a owl:ObjectProperty ;
+    rdfs:domain :Formatter ;
+    rdfs:range :QueryResult ;
+    rdfs:comment "Formats a query result" .
+
+:translates a owl:ObjectProperty ;
+    rdfs:domain :QueryTranslator ;
+    rdfs:range :NaturalLanguageQuery ;
+    rdfs:comment "Translates a natural language query" .
+
+:monitors a owl:ObjectProperty ;
+    rdfs:domain :PerformanceMonitor ;
+    rdfs:range :MLComponent ;
+    rdfs:comment "Monitors component performance" .
+
+:generates a owl:ObjectProperty ;
+    rdfs:domain :Visualizer ;
+    rdfs:range :Visualization ;
+    rdfs:comment "Generates a visualization" .
+
+### Data Classes
+:QueryResult a owl:Class ;
+    rdfs:label "Query Result" ;
+    rdfs:comment "Result from a Snowflake query" .
+
+:Visualization a owl:Class ;
+    rdfs:label "Visualization" ;
+    rdfs:comment "Visual representation of data" .
+
+:TrainingExample a owl:Class ;
+    rdfs:label "Training Example" ;
+    rdfs:comment "Example for ML model training" .
+
+:PerformanceMetric a owl:Class ;
+    rdfs:label "Performance Metric" ;
+    rdfs:comment "Metric for measuring component performance" .
+
+### Validation Rules
+:FormatterShape a sh:NodeShape ;
+    sh:targetClass :Formatter ;
+    sh:property [
+        sh:path :formats ;
+        sh:minCount 1 ;
+        sh:message "Formatter must specify what it formats" ;
+    ] .
+
+:MLComponentShape a sh:NodeShape ;
+    sh:targetClass :MLComponent ;
+    sh:property [
+        sh:path :hasMetrics ;
+        sh:minCount 1 ;
+        sh:message "ML Component must have performance metrics" ;
+    ] .
+
+:VisualizerShape a sh:NodeShape ;
+    sh:targetClass :Visualizer ;
+    sh:property [
+        sh:path :generates ;
+        sh:minCount 1 ;
+        sh:message "Visualizer must specify what it generates" ;
+    ] .
+
+### Component Metrics
+:hasMetric a owl:ObjectProperty ;
+    rdfs:domain :Component ;
+    rdfs:range :PerformanceMetric ;
+    rdfs:comment "Links component to its performance metrics" .
+
+:metricValue a owl:DatatypeProperty ;
+    rdfs:domain :PerformanceMetric ;
+    rdfs:range xsd:float ;
+    rdfs:comment "Value of a performance metric" .
+
+:metricTimestamp a owl:DatatypeProperty ;
+    rdfs:domain :PerformanceMetric ;
+    rdfs:range xsd:dateTime ;
+    rdfs:comment "Timestamp of metric measurement" .
+
+### Implementation Details
+:implementedBy a owl:ObjectProperty ;
+    rdfs:domain :Component ;
+    rdfs:range :PythonClass ;
+    rdfs:comment "Links component to its Python implementation" .
+
+:PythonClass a owl:Class ;
+    rdfs:label "Python Class" ;
+    rdfs:comment "Python class implementing a component" .
+
+:className a owl:DatatypeProperty ;
+    rdfs:domain :PythonClass ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Name of the Python class" .
+
+:modulePath a owl:DatatypeProperty ;
+    rdfs:domain :PythonClass ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Path to the Python module" .

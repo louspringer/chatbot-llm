@@ -1,0 +1,34 @@
+PREFIX : <./chatbot#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+
+# Get ontology metadata
+SELECT ?title ?version ?comment
+WHERE {
+    ?ont a owl:Ontology ;
+         rdfs:label ?title ;
+         owl:versionInfo ?version ;
+         rdfs:comment ?comment .
+}
+
+# Get all classes and their descriptions
+SELECT ?class ?label ?comment
+WHERE {
+    ?class a owl:Class ;
+           rdfs:label ?label .
+    OPTIONAL { ?class rdfs:comment ?comment }
+}
+ORDER BY ?label
+
+# Get all properties and their domains/ranges
+SELECT ?prop ?label ?domain ?range ?comment
+WHERE {
+    ?prop a ?type .
+    FILTER(?type IN (owl:ObjectProperty, owl:DatatypeProperty))
+    ?prop rdfs:label ?label .
+    OPTIONAL { ?prop rdfs:domain ?domain }
+    OPTIONAL { ?prop rdfs:range ?range }
+    OPTIONAL { ?prop rdfs:comment ?comment }
+}
+ORDER BY ?label 

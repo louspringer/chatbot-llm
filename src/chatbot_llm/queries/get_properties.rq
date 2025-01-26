@@ -1,0 +1,15 @@
+PREFIX : <./chatbot#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+
+SELECT ?prop ?label ?domain ?range ?comment
+WHERE {
+    ?prop a ?type .
+    FILTER(?type IN (owl:ObjectProperty, owl:DatatypeProperty))
+    ?prop rdfs:label ?label .
+    OPTIONAL { ?prop rdfs:domain ?domain }
+    OPTIONAL { ?prop rdfs:range ?range }
+    OPTIONAL { ?prop rdfs:comment ?comment }
+}
+ORDER BY ?label 

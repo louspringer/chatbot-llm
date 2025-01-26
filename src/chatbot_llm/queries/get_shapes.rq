@@ -1,0 +1,15 @@
+PREFIX : <./chatbot#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX sh: <http://www.w3.org/ns/shacl#>
+
+SELECT ?shape ?targetClass ?property ?constraint ?message
+WHERE {
+    ?shape a sh:NodeShape ;
+           sh:targetClass ?targetClass ;
+           sh:property ?prop .
+    ?prop sh:path ?property .
+    OPTIONAL { ?prop sh:minCount|sh:maxCount ?constraint }
+    OPTIONAL { ?prop sh:message ?message }
+}
+ORDER BY ?shape ?property 

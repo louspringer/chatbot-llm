@@ -1,0 +1,87 @@
+@startuml
+
+skinparam {
+    BackgroundColor transparent
+    ArrowColor #666666
+    NodeFontName "Helvetica"
+    NodeFontSize 12
+    NodeFontColor #333333
+}
+
+' Stakeholders
+package "Stakeholders" {
+    [Snowflake Admin] as snowadmin #lightblue
+    [Teams Admin] as teamsadmin #lightblue
+    [Data Steward] as datasteward #lightgreen
+}
+
+' Functional Requirements
+package "Functional Requirements" {
+    [Natural Language Query] as nlq #lightyellow
+    [Data Exploration] as dataexpl #lightyellow
+    [Team Collaboration] as teamcollab #lightyellow
+}
+
+' Operational Requirements
+package "Operational Requirements" {
+    [Snowflake Operations] as snowops #pink
+    [Teams Operations] as teamsops #pink
+}
+
+' Risk Mitigation Requirements
+package "Risk Mitigation Requirements" {
+    [Security Requirements] as security #red
+    [Performance Requirements] as performance #red
+    [Compliance Requirements] as compliance #red
+}
+
+' Relationships
+snowadmin --> snowops : Manages
+snowadmin --> performance : Ensures
+teamsadmin --> teamsops : Manages
+teamsadmin --> security : Implements
+datasteward --> compliance : Enforces
+datasteward --> nlq : Validates
+
+nlq --> performance : Requires
+dataexpl --> snowops : Utilizes
+teamcollab --> teamsops : Depends on
+
+security --> compliance : Supports
+performance --> snowops : Monitors
+compliance --> datasteward : Reports to
+
+note right of security
+  Security requirements:
+  - OAuth 2.0 Implementation
+  - Token Management
+  - PII Detection
+  - Access Control
+end note
+
+note right of performance
+  Performance requirements:
+  - Query Optimization
+  - Cache Management
+  - Connection Pooling
+  - Resource Scaling
+end note
+
+note right of compliance
+  Compliance requirements:
+  - Audit Logging
+  - Data Masking
+  - Policy Enforcement
+  - Retention Management
+end note
+
+legend right
+    |Color|Type|
+    |<#lightblue>| Technical Stakeholders |
+    |<#lightgreen>| Business Stakeholders |
+    |<#lightyellow>| Functional Requirements |
+    |<#pink>| Operational Requirements |
+    |<#red>| Risk Mitigation Requirements |
+endlegend
+
+@enduml 

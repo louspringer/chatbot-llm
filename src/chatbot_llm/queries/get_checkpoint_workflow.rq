@@ -1,0 +1,16 @@
+PREFIX : <./cortexteams#>
+PREFIX chatbot: <./chatbot#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT ?workflow ?step ?label ?comment
+WHERE {
+    # Get the checkpoint workflow and its steps
+    :CheckpointRestartFlow a chatbot:Workflow ;
+        rdfs:label ?workflow ;
+        chatbot:hasStep ?s .
+    ?s a chatbot:WorkflowStep ;
+       rdfs:label ?step ;
+       rdfs:comment ?comment .
+}
+ORDER BY ?step 

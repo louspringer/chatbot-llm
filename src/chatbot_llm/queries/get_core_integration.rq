@@ -1,0 +1,38 @@
+PREFIX : <./cortexteams#>
+PREFIX chatbot: <./chatbot#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+# Get the core Teams/Snowflake integration details and all related elements
+SELECT DISTINCT ?component ?type ?label ?connects ?workflow ?step ?requirement
+WHERE {
+    {
+        # Get components and their connections/workflows
+        ?component a ?type ;
+                rdfs:label ?label .
+        OPTIONAL { 
+            ?component chatbot:connectsTo ?conn .
+            ?conn rdfs:label ?connects .
+        }
+        OPTIONAL { 
+            ?component chatbot:hasWorkflow ?wf .
+            ?wf rdfs:label ?workflow .
+            ?wf chatbot:hasStep ?s .
+            ?s rdfs:label ?step .
+        }
+        OPTIONAL {
+            ?component chatbot:hasRequirement ?req .
+            ?req rdfs:label ?requirement .
+        }
+        # Focus on integration components
+        FILTER(?type IN (chatbot:Integration, chatbot:SecurityRequirement))
+    }
+    UNION
+    {
+        # Get context and constraints
+        ?component a ?type .
+        FILTER(?type IN (chatbot:Context, chatbot:Constraint))
+        ?component rdfs:label ?label .
+    }
+}
+ORDER BY ?type ?label ?workflow ?step 

@@ -1,0 +1,19 @@
+PREFIX : <./chatbot#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT ?need ?label ?context ?constraint ?comment
+WHERE {
+    ?need a :BusinessNeed ;
+          rdfs:label ?label ;
+          rdfs:comment ?comment .
+    OPTIONAL { 
+        ?need :hasContext ?ctx .
+        ?ctx rdfs:label ?context .
+    }
+    OPTIONAL { 
+        ?need :hasConstraint ?con .
+        ?con rdfs:label ?constraint .
+    }
+    FILTER(CONTAINS(LCASE(?label), "teams") || CONTAINS(LCASE(?label), "snowflake"))
+} 

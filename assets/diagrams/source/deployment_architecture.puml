@@ -1,0 +1,118 @@
+@startuml cortex_teams_deployment
+
+skinparam {
+    BackgroundColor transparent
+    ArrowColor #666666
+    NodeFontName "Helvetica"
+    NodeFontSize 12
+    NodeFontColor #333333
+    PackageStyle rectangle
+    Padding 10
+}
+
+' Cloud boundaries
+cloud "Microsoft Azure" {
+    node "Azure App Service" as appService {
+        component "Teams Bot Service" as botService #lightblue
+        component "State Management Service" as stateService #lightblue
+        database "Redis Cache Cluster" as redis #lightyellow {
+            [Session Store]
+            [State Cache]
+        }
+    }
+    
+    node "Azure Key Vault" as keyVault #pink {
+        [Secrets Management]
+        [Certificate Store]
+    }
+    
+    node "Azure Monitor" as monitor {
+        [Application Insights] as appInsights #lightgreen
+        [Log Analytics] as logAnalytics #lightgreen
+    }
+
+    database "Azure Cosmos DB" as cosmosDb #lightyellow {
+        [Audit Logs]
+        [Conversation History]
+    }
+}
+
+cloud "Snowflake Cloud" {
+    node "Snowflake Services" as snowflake {
+        component "Cortex Service" as cortex #lightblue
+        database "Data Warehouse" as dw #lightyellow
+    }
+    
+    node "Snowflake Security" as snowSec #pink {
+        [Key Management]
+        [Access Control]
+    }
+}
+
+' External Services
+cloud "Microsoft 365" {
+    [Teams Platform] as teams
+    [Azure AD] as aad #pink
+}
+
+' Dependencies and Connections
+teams --> botService : "Bot Framework SDK"
+botService --> aad : "OAuth 2.0"
+botService --> stateService : "State Management"
+stateService --> redis : "Cache Access"
+botService --> cortex : "Secure API Calls"
+cortex --> dw : "Data Access"
+
+' Security and Monitoring
+botService ..> appInsights : "Telemetry"
+cortex ..> logAnalytics : "Logs"
+botService --> keyVault : "Secrets"
+cortex --> snowSec : "Security"
+
+' Notes
+note right of appService
+  **High Availability Setup**
+  - Multi-region deployment
+  - Auto-scaling enabled
+  - Load balancing
+end note
+
+note right of redis
+  **Cache Configuration**
+  - Clustered deployment
+  - Persistence enabled
+  - Encryption at rest
+  - 30-day retention
+end note
+
+note right of cosmosDb
+  **Data Storage**
+  - Multi-region writes
+  - Automatic failover
+  - Point-in-time recovery
+end note
+
+note left of snowflake
+  **Snowflake Setup**
+  - Enterprise account
+  - Virtual warehouses
+  - Resource monitoring
+end note
+
+note bottom of keyVault
+  **Security Controls**
+  - RBAC enabled
+  - HSM-backed
+  - Access logging
+  - Key rotation
+end note
+
+legend right
+    |Color|Component Type|
+    |<#lightblue>| Core Services |
+    |<#lightgreen>| Monitoring & Logging |
+    |<#lightyellow>| Data Storage |
+    |<#pink>| Security Services |
+endlegend
+
+@enduml 

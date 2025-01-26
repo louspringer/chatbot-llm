@@ -1,0 +1,101 @@
+@prefix : <#> .
+@prefix chatbot: <./chatbot#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+# Cost Categories
+:CostCategory a owl:Class ;
+    rdfs:label "Cost Category" ;
+    rdfs:comment "Base class for different types of costs" .
+
+:DesignCost a :CostCategory ;
+    rdfs:label "Design Cost" ;
+    rdfs:comment "Costs associated with system design phase" .
+
+:ImplementationCost a :CostCategory ;
+    rdfs:label "Implementation Cost" ;
+    rdfs:comment "Costs associated with system implementation" .
+
+:OperationalCost a :CostCategory ;
+    rdfs:label "Operational Cost" ;
+    rdfs:comment "Recurring costs for system operation" .
+
+# Deployment Scales
+:DeploymentScale a owl:Class ;
+    rdfs:label "Deployment Scale" ;
+    rdfs:comment "Scale of system deployment" .
+
+:SmallDeployment a :DeploymentScale ;
+    rdfs:label "Small Deployment" ;
+    rdfs:comment "Small-scale deployment (up to 100 users)" ;
+    :userCount "100"^^xsd:integer ;
+    :queriesPerDay "1000"^^xsd:integer .
+
+:MediumDeployment a :DeploymentScale ;
+    rdfs:label "Medium Deployment" ;
+    rdfs:comment "Medium-scale deployment (up to 1000 users)" ;
+    :userCount "1000"^^xsd:integer ;
+    :queriesPerDay "10000"^^xsd:integer .
+
+:LargeDeployment a :DeploymentScale ;
+    rdfs:label "Large Deployment" ;
+    rdfs:comment "Large-scale deployment (1000+ users)" ;
+    :userCount "5000"^^xsd:integer ;
+    :queriesPerDay "50000"^^xsd:integer .
+
+# Cost Properties
+:hasBaseCost a owl:DatatypeProperty ;
+    rdfs:domain :CostCategory ;
+    rdfs:range xsd:decimal ;
+    rdfs:comment "Base cost in USD" .
+
+:hasCostMultiplier a owl:DatatypeProperty ;
+    rdfs:domain :DeploymentScale ;
+    rdfs:range xsd:decimal ;
+    rdfs:comment "Cost multiplier for deployment scale" .
+
+:hasTimeframe a owl:DatatypeProperty ;
+    rdfs:domain :CostCategory ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Timeframe for the cost" .
+
+# Cost Instances
+:smallDesignCost a :DesignCost ;
+    :hasBaseCost "20000.00"^^xsd:decimal ;
+    :hasTimeframe "2 months" ;
+    :appliesTo :SmallDeployment .
+
+:mediumDesignCost a :DesignCost ;
+    :hasBaseCost "35000.00"^^xsd:decimal ;
+    :hasTimeframe "3 months" ;
+    :appliesTo :MediumDeployment .
+
+:largeDesignCost a :DesignCost ;
+    :hasBaseCost "50000.00"^^xsd:decimal ;
+    :hasTimeframe "4 months" ;
+    :appliesTo :LargeDeployment .
+
+:monthlyInfrastructureCost a :OperationalCost ;
+    rdfs:comment "Monthly infrastructure costs including compute, storage, and networking" .
+
+:monthlyMLCost a :OperationalCost ;
+    rdfs:comment "Monthly costs for ML model hosting and inference" .
+
+:monthlyMaintenanceCost a :OperationalCost ;
+    rdfs:comment "Monthly maintenance and support costs" .
+
+# Assumptions
+:CostAssumption a owl:Class ;
+    rdfs:label "Cost Assumption" ;
+    rdfs:comment "Assumptions used in cost calculations" .
+
+:infrastructureAssumption a :CostAssumption ;
+    rdfs:comment "Base infrastructure cost per user per month: $2" .
+
+:mlModelAssumption a :CostAssumption ;
+    rdfs:comment "ML model inference cost per 1000 queries: $0.50" .
+
+:maintenanceAssumption a :CostAssumption ;
+    rdfs:comment "Monthly maintenance cost per deployment: 15% of implementation cost" . 

@@ -1,0 +1,137 @@
+@startuml cortex_teams_architecture
+
+skinparam {
+    BackgroundColor transparent
+    ArrowColor #666666
+    NodeFontName "Helvetica"
+    NodeFontSize 12
+    NodeFontColor #333333
+    PackageStyle rectangle
+    Padding 10
+}
+
+' Notes for overall architecture
+note as N1
+  **Enterprise Integration Architecture**
+  - Secure, stateful integration between Teams and Snowflake Cortex
+  - All data flows are encrypted in transit and at rest
+  - Compliant with enterprise security standards
+  - Supports high availability and disaster recovery
+end note
+
+' Core Components
+package "Microsoft Teams Integration" {
+    [Teams Bot Interface] as teamsBot #lightblue
+    [OAuth Authentication] as teamsAuth #lightgreen
+    [Query Processor] as queryProc #lightyellow
+    [Response Formatter] as respFormat #lightyellow
+    
+    teamsBot --> teamsAuth
+    teamsBot --> queryProc
+    queryProc --> respFormat
+
+    note right of teamsBot
+      - Handles user interactions
+      - Manages conversation flow
+      - Implements Teams Bot Framework
+      - Supports rich message formatting
+    end note
+
+    note right of queryProc
+      - NLP processing for user queries
+      - Query validation and sanitization
+      - Context-aware query enhancement
+      - Error handling and retry logic
+    end note
+}
+
+package "Snowflake Cortex Integration" {
+    [Cortex Connector] as cortexConn #lightblue
+    [Key Authentication] as cortexAuth #lightgreen
+    [Data Access Manager] as dataAccess #lightyellow
+    [Data Transformer] as dataTransform #lightyellow
+    
+    cortexConn --> cortexAuth
+    cortexConn --> dataAccess
+    dataAccess --> dataTransform
+
+    note left of cortexConn
+      - Manages Snowflake Cortex sessions
+      - Implements connection pooling
+      - Handles service interruptions
+      - Monitors service health
+    end note
+
+    note left of dataAccess
+      - Implements data access policies
+      - Query optimization
+      - Resource usage monitoring
+      - Data lineage tracking
+    end note
+}
+
+package "State Management" {
+    [Checkpoint Manager] as checkpointMgr #lightblue
+    [State Validator] as stateValidator #lightgreen
+    [Context Store] as contextStore #lightyellow
+    
+    checkpointMgr --> stateValidator
+    checkpointMgr --> contextStore
+
+    note right of contextStore
+      - Distributed state storage
+      - Session persistence
+      - State encryption
+      - TTL management
+    end note
+}
+
+' Cross-Component Relationships
+queryProc --> cortexConn : "Executes Queries"
+respFormat --> dataTransform : "Uses"
+teamsBot --> checkpointMgr : "Manages State"
+cortexConn --> checkpointMgr : "Updates State"
+
+note on link
+  Bi-directional state sync
+  with conflict resolution
+end note
+
+' Security Layer
+package "Security & Compliance" {
+    [Privacy Controller] as privacyCtrl #pink
+    [Access Control] as accessCtrl #pink
+    [Audit Logger] as auditLog #pink
+    
+    privacyCtrl --> accessCtrl
+    accessCtrl --> auditLog
+
+    note right of privacyCtrl
+      - PII/PHI detection
+      - Data masking
+      - Compliance rules engine
+      - Real-time policy enforcement
+    end note
+
+    note right of auditLog
+      - Immutable audit trail
+      - Compliance reporting
+      - Access patterns analysis
+      - Security metrics
+    end note
+}
+
+' Security Connections
+teamsAuth --> accessCtrl
+cortexAuth --> accessCtrl
+dataAccess --> privacyCtrl
+
+legend right
+    |Color|Component Type|
+    |<#lightblue>| Core Services |
+    |<#lightgreen>| Authentication & Validation |
+    |<#lightyellow>| Processing & Transformation |
+    |<#pink>| Security & Compliance |
+endlegend
+
+@enduml 

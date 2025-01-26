@@ -1,0 +1,113 @@
+@prefix : <./cortexteams#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix chatbot: <./chatbot#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+# Ontology metadata
+:CortexTeamsOntology a owl:Ontology ;
+    rdfs:label "Snowflake Cortex Teams Integration" ;
+    rdfs:comment "Ontology for the integration between Snowflake Cortex and Microsoft Teams" ;
+    owl:imports chatbot: ;
+    owl:versionInfo "0.1" .
+
+# Integration Context and Constraints (replacing blank nodes)
+:EnterpriseContext a chatbot:Context ;
+    rdfs:label "Enterprise Environment" ;
+    rdfs:comment "The enterprise environment requiring secure and scalable integration." .
+
+:PrivacyConstraint a chatbot:Constraint ;
+    rdfs:label "Data Privacy" ;
+    rdfs:comment "Compliance with enterprise data privacy regulations." .
+
+# Core Integration Components
+:TeamsBot a chatbot:Integration ;
+    rdfs:label "Teams Bot Interface" ;
+    rdfs:comment "Bot interface for Microsoft Teams integration" ;
+    chatbot:hasRequirement :TeamsAuthentication ;
+    chatbot:hasWorkflow :QueryWorkflow, :CheckpointRestartFlow ;
+    chatbot:connectsTo :CortexConnector .
+
+:CortexConnector a chatbot:Integration ;
+    rdfs:label "Snowflake Cortex Connector" ;
+    rdfs:comment "Connector for Snowflake Cortex services" ;
+    chatbot:hasRequirement :SnowflakeAuthentication ;
+    chatbot:hasWorkflow :DataAccessFlow, :CheckpointRestartFlow .
+
+# Authentication Requirements
+:TeamsAuthentication a chatbot:SecurityRequirement ;
+    rdfs:label "Teams OAuth Authentication" ;
+    rdfs:comment "OAuth 2.0 authentication for Microsoft Teams" .
+
+:SnowflakeAuthentication a chatbot:SecurityRequirement ;
+    rdfs:label "Snowflake Key Authentication" ;
+    rdfs:comment "Key-based authentication for Snowflake services" .
+
+# Integration Workflows
+:QueryWorkflow a chatbot:Workflow ;
+    rdfs:label "Query Processing Workflow" ;
+    rdfs:comment "Workflow for processing queries from Teams to Cortex" ;
+    chatbot:hasStep :UserQuery, :AuthCheck, :CortexQuery, :ResponseFormat .
+
+:DataAccessFlow a chatbot:Workflow ;
+    rdfs:label "Data Access Flow" ;
+    rdfs:comment "Workflow for secure data access and transformation" ;
+    chatbot:hasStep :AccessCheck, :DataFetch, :Transform .
+
+# Workflow Steps
+:UserQuery a chatbot:WorkflowStep ;
+    rdfs:label "User Query Input" ;
+    rdfs:comment "Process user query from Teams interface" .
+
+:AuthCheck a chatbot:WorkflowStep ;
+    rdfs:label "Authentication Check" ;
+    rdfs:comment "Verify user authentication and permissions" .
+
+:CortexQuery a chatbot:WorkflowStep ;
+    rdfs:label "Cortex Query Execution" ;
+    rdfs:comment "Execute query against Snowflake Cortex" .
+
+:ResponseFormat a chatbot:WorkflowStep ;
+    rdfs:label "Response Formatting" ;
+    rdfs:comment "Format Cortex response for Teams display" .
+
+# Add missing workflow steps
+:AccessCheck a chatbot:WorkflowStep ;
+    rdfs:label "Access Verification" ;
+    rdfs:comment "Verify data access permissions" .
+
+:DataFetch a chatbot:WorkflowStep ;
+    rdfs:label "Data Retrieval" ;
+    rdfs:comment "Fetch data from Snowflake Cortex" .
+
+:Transform a chatbot:WorkflowStep ;
+    rdfs:label "Data Transformation" ;
+    rdfs:comment "Transform data for Teams display" .
+
+# Add Checkpoint-Restart Workflow
+:CheckpointRestartFlow a chatbot:Workflow ;
+    rdfs:label "Checkpoint-Restart Flow" ;
+    rdfs:comment "Workflow for saving and restoring conversation state between Teams and Cortex" ;
+    chatbot:hasStep :SaveState, :ValidateState, :RestoreContext .
+
+# Checkpoint-Restart Steps
+:SaveState a chatbot:WorkflowStep ;
+    rdfs:label "Save Conversation State" ;
+    rdfs:comment "Serialize and store current conversation context: User identity and permissions; Current query context; Active Cortex session; Temporal markers" .
+
+:ValidateState a chatbot:WorkflowStep ;
+    rdfs:label "Validate State" ;
+    rdfs:comment "Verify stored state integrity and permissions: Check state freshness; Verify security context; Validate data access rights" .
+
+:RestoreContext a chatbot:WorkflowStep ;
+    rdfs:label "Restore Context" ;
+    rdfs:comment "Rebuild conversation context from stored state: Rehydrate user context; Restore Cortex session; Resume workflow position" .
+
+:architectureDiagram a :Documentation ;
+    rdfs:label "Architecture Diagram" ;
+    :path "assets/diagrams/generated/cortex_teams_architecture.svg" .
+
+:deploymentDiagram a :Documentation ;
+    rdfs:label "Deployment Diagram" ;
+    :path "assets/diagrams/generated/cortex_teams_deployment.svg" . 

@@ -1,0 +1,6 @@
+rdflib
+pyshacl
+
+[dev]
+pytest
+black

@@ -1,0 +1,147 @@
+@prefix : <./deployment#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix chatbot: <./chatbot#> .
+@prefix solution: <./solution#> .
+
+:DeploymentOntology a owl:Ontology ;
+    rdfs:label "Deployment Ontology" ;
+    rdfs:comment "Ontology for deployment architecture and infrastructure components" ;
+    owl:imports <./chatbot>, <./solution> ;
+    owl:versionInfo "1.0" .
+
+# Cloud Environments
+:CloudEnvironment a owl:Class ;
+    rdfs:label "Cloud Environment" ;
+    rdfs:comment "A cloud platform hosting services and components" .
+
+:MicrosoftAzure a :CloudEnvironment ;
+    rdfs:label "Microsoft Azure" ;
+    :primaryUseCase "Core service hosting and integration" .
+
+:SnowflakeCloud a :CloudEnvironment ;
+    rdfs:label "Snowflake Cloud" ;
+    :primaryUseCase "Data warehousing and analytics" .
+
+:Microsoft365 a :CloudEnvironment ;
+    rdfs:label "Microsoft 365" ;
+    :primaryUseCase "End-user interface and identity management" .
+
+# Infrastructure Components
+:InfrastructureComponent a owl:Class ;
+    rdfs:label "Infrastructure Component" ;
+    rdfs:comment "A deployable infrastructure service or resource" .
+
+:AppService a :InfrastructureComponent ;
+    rdfs:label "Azure App Service" ;
+    :hosts chatbot:TeamsBot, chatbot:StateManager ;
+    :scalingType "Horizontal" ;
+    :availabilityZones "Multi-region" .
+
+:KeyVault a :InfrastructureComponent ;
+    rdfs:label "Azure Key Vault" ;
+    :securityLevel "HSM-backed" ;
+    :managementType "RBAC" .
+
+# Database Choices
+:DatabaseSystem a owl:Class ;
+    rdfs:label "Database System" ;
+    rdfs:comment "A database management system with specific characteristics" .
+
+:CosmosDB a :DatabaseSystem ;
+    rdfs:label "Azure Cosmos DB" ;
+    :usagePattern "Operational" ;
+    :dataModel "Document" ;
+    :latencyTarget "Sub-millisecond" ;
+    :scalingModel "Automatic" ;
+    :primaryUseCase "Conversation history and audit logs" ;
+    :rationale """
+        1. Optimized for operational workloads with low-latency requirements
+        2. Native support for semi-structured conversation data
+        3. Cost-effective for high-frequency reads/writes
+        4. Built-in support for point-in-time recovery
+        5. Multi-region write capabilities
+    """ .
+
+:SnowflakeWarehouse a :DatabaseSystem ;
+    rdfs:label "Snowflake Data Warehouse" ;
+    :usagePattern "Analytical" ;
+    :dataModel "Columnar" ;
+    :latencyTarget "Query-optimized" ;
+    :scalingModel "Virtual Warehouse" ;
+    :primaryUseCase "Enterprise data analytics" ;
+    :rationale """
+        1. Optimized for analytical workloads
+        2. Efficient for large-scale data processing
+        3. Cost-effective for data warehousing
+        4. Strong data sharing capabilities
+        5. Separation of storage and compute
+    """ .
+
+# Deployment Properties
+:hosts a owl:ObjectProperty ;
+    rdfs:domain :InfrastructureComponent ;
+    rdfs:range chatbot:Component .
+
+:deployedIn a owl:ObjectProperty ;
+    rdfs:domain chatbot:Component ;
+    rdfs:range :CloudEnvironment .
+
+:dependsOn a owl:ObjectProperty ;
+    rdfs:domain :InfrastructureComponent ;
+    rdfs:range :InfrastructureComponent .
+
+:scalingType a owl:DatatypeProperty ;
+    rdfs:domain :InfrastructureComponent ;
+    rdfs:range xsd:string .
+
+:availabilityZones a owl:DatatypeProperty ;
+    rdfs:domain :InfrastructureComponent ;
+    rdfs:range xsd:string .
+
+:usagePattern a owl:DatatypeProperty ;
+    rdfs:domain :DatabaseSystem ;
+    rdfs:range xsd:string .
+
+:dataModel a owl:DatatypeProperty ;
+    rdfs:domain :DatabaseSystem ;
+    rdfs:range xsd:string .
+
+:latencyTarget a owl:DatatypeProperty ;
+    rdfs:domain :DatabaseSystem ;
+    rdfs:range xsd:string .
+
+:rationale a owl:DatatypeProperty ;
+    rdfs:domain owl:Thing ;
+    rdfs:range xsd:string .
+
+# Monitoring and Security
+:MonitoringSystem a owl:Class ;
+    rdfs:label "Monitoring System" ;
+    rdfs:comment "System for monitoring and observability" .
+
+:ApplicationInsights a :MonitoringSystem ;
+    rdfs:label "Azure Application Insights" ;
+    :monitoringType "Application Performance" ;
+    :dataRetention "90 days" .
+
+:LogAnalytics a :MonitoringSystem ;
+    rdfs:label "Azure Log Analytics" ;
+    :monitoringType "Log Analysis" ;
+    :dataRetention "2 years" .
+
+# Security Controls
+:SecurityControl a owl:Class ;
+    rdfs:label "Security Control" ;
+    rdfs:comment "Security measure or control" .
+
+:RBAC a :SecurityControl ;
+    rdfs:label "Role-Based Access Control" ;
+    :implementedBy :KeyVault, :CosmosDB, :SnowflakeWarehouse .
+
+:Encryption a :SecurityControl ;
+    rdfs:label "Encryption" ;
+    :encryptionType "At rest and in transit" ;
+    :implementedBy :CosmosDB, :SnowflakeWarehouse, :KeyVault . 

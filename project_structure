@@ -1,0 +1,26 @@
+.
+├── LICENSE
+├── MANIFEST.in
+├── README.md
+├── environment.yml
+├── pyproject.toml
+├── setup.py
+├── src/
+│   └── chatbot_llm/
+│       ├── __init__.py
+│       ├── validate.py
+│       ├── queries/
+│       │   ├── security_reqs.rq
+│       │   ├── business_needs.rq
+│       │   └── interpretations.rq
+│       ├── tests/
+│       │   └── test_queries.sh
+│       └── ontology/
+│           ├── __init__.py
+│           └── base.py
+└── tests/
+    ├── __init__.py
+    ├── test_validate.py
+    └── fixtures/
+        └── test_ontologies/
+            └── basic.ttl 
