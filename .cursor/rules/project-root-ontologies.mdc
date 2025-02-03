@@ -1,0 +1,11 @@
+---
+description: This rule will help to keep ontologies 'DRY' and consitent. 
+globs: 
+---
+
+# Project Ontologies
+
+- chatbot.ttl
+- chatbot_llm.ttl
+
+Use these ontologies to gain an understanding of the project and your capabilities and installed tools. 
