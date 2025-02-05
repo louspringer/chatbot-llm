@@ -2,4 +2,6 @@
 .DS_Store
 __pycache__/
 .venv/
-.python_packages/ teams-bot/local.settings.json
+.python_packages/
+teams-bot/local.settings.json
+teams-bot/deployment.zip
