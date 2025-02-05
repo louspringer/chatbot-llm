@@ -8,8 +8,76 @@
 @prefix solution: <./solution#> .
 @prefix conversation: <./conversation#> .
 @prefix guidance: <./guidance#> .
+@prefix metameta: <./metameta#> .
+@prefix dc: <http://purl.org/dc/elements/1.1/> .
+@prefix dct: <http://purl.org/dc/terms/> .
 
-# Validation Rules
+# Ontology Definition
+guidance:TeamsBotGuidanceOntology rdf:type owl:Ontology ;
+    dc:title "Teams Bot Guidance Ontology" ;
+    dc:version "1.0" ;
+    dct:created "2024-02-05"^^xsd:date ;
+    dct:publisher "Teams Bot Project" ;
+    dct:license <http://opensource.org/licenses/MIT> ;
+    dct:description "Guidance and validation rules for Teams Bot implementation" ;
+    dct:type dct:Dataset ;
+    dct:conformsTo <http://www.w3.org/2002/07/owl> ;
+    dct:requires <./meta>, <./problem>, <./solution>, <./conversation> ;
+    owl:imports <./meta>, <./problem>, <./solution>, <./conversation> .
+
+# Core Framework Classes
+guidance:Interpretation rdf:type owl:Class ;
+    rdfs:label "Interpretation" ;
+    rdfs:comment "Guidance on how to interpret an ontology element" ;
+    rdfs:subClassOf metameta:AbstractionDimension .
+
+guidance:Action rdf:type owl:Class ;
+    rdfs:label "Action" ;
+    rdfs:comment "An action that can be taken based on interpretation" .
+
+guidance:DomainAnalogy rdf:type owl:Class ;
+    rdfs:label "Domain Analogy" ;
+    rdfs:subClassOf guidance:Interpretation .
+
+# Core Framework Properties
+guidance:hasAction rdf:type owl:ObjectProperty ;
+    rdfs:domain guidance:Interpretation ;
+    rdfs:range guidance:Action .
+
+guidance:analogySource rdf:type owl:DatatypeProperty ;
+    rdfs:domain guidance:DomainAnalogy ;
+    rdfs:range xsd:string .
+
+guidance:analogyTarget rdf:type owl:DatatypeProperty ;
+    rdfs:domain guidance:DomainAnalogy ;
+    rdfs:range xsd:string .
+
+guidance:complexity rdf:type owl:DatatypeProperty ;
+    rdfs:domain guidance:Interpretation ;
+    rdfs:range xsd:integer .
+
+# Teams Bot Specific Classes
+guidance:ErrorHandlingPractice a rdfs:Class ;
+    rdfs:label "Error Handling Practice" ;
+    rdfs:comment "Best practices for error handling" ;
+    rdfs:subClassOf guidance:Action .
+
+guidance:LoggingPractice a rdfs:Class ;
+    rdfs:label "Logging Practice" ;
+    rdfs:comment "Best practices for logging" ;
+    rdfs:subClassOf guidance:Action .
+
+guidance:SecurityPractice a rdfs:Class ;
+    rdfs:label "Security Practice" ;
+    rdfs:comment "Best practices for security" ;
+    rdfs:subClassOf guidance:Action .
+
+guidance:PerformancePractice a rdfs:Class ;
+    rdfs:label "Performance Practice" ;
+    rdfs:comment "Best practices for performance" ;
+    rdfs:subClassOf guidance:Action .
+
+# Core Validation Rules
 guidance:RequestValidation a sh:NodeShape ;
     rdfs:label "Request Validation" ;
     rdfs:comment "Validation rules for HTTP requests" ;
@@ -18,6 +86,14 @@ guidance:RequestValidation a sh:NodeShape ;
         sh:path conversation:hasType ;
         sh:minCount 1 ;
         sh:datatype xsd:string ;
+        sh:pattern "^(message|typing|contactRelationUpdate|conversationUpdate)$" ;
+        sh:message "Activity type must be a valid Teams activity type."
+    ] ;
+    sh:property [
+        sh:path meta:hasServiceUrl ;
+        sh:minCount 1 ;
+        sh:datatype xsd:anyURI ;
+        sh:message "Service URL is required for Teams activities."
     ] .
 
 guidance:MessageValidation a sh:NodeShape ;
@@ -28,28 +104,141 @@ guidance:MessageValidation a sh:NodeShape ;
         sh:path conversation:hasText ;
         sh:minCount 1 ;
         sh:datatype xsd:string ;
+        sh:maxLength 4000 ;
+        sh:message "Message text must not exceed 4000 characters."
+    ] ;
+    sh:property [
+        sh:path conversation:hasLocale ;
+        sh:datatype xsd:string ;
+        sh:pattern "^[a-z]{2}-[A-Z]{2}$" ;
+        sh:message "Locale must be in format 'xx-XX' (e.g., 'en-US')."
     ] .
 
-# Best Practices
-guidance:ErrorHandlingPractice a rdfs:Class ;
-    rdfs:label "Error Handling Practice" ;
-    rdfs:comment "Best practices for error handling" .
+# Authentication Validation
+guidance:AuthenticationValidation a sh:NodeShape ;
+    rdfs:label "Authentication Validation" ;
+    rdfs:comment "Validation rules for authentication" ;
+    sh:targetClass meta:Activity ;
+    sh:property [
+        sh:path meta:hasAuthHeader ;
+        sh:minCount 1 ;
+        sh:pattern "^Bearer\\s[A-Za-z0-9-_=]+\\.[A-Za-z0-9-_=]+\\.?[A-Za-z0-9-_.+/=]*$" ;
+        sh:message "Authentication header must be a valid Bearer token."
+    ] .
 
-guidance:LoggingPractice a rdfs:Class ;
-    rdfs:label "Logging Practice" ;
-    rdfs:comment "Best practices for logging" .
+# Rate Limiting Rules
+guidance:RateLimitingShape a sh:NodeShape ;
+    rdfs:label "Rate Limiting Rules" ;
+    rdfs:comment "Rules for rate limiting" ;
+    sh:targetClass meta:Activity ;
+    sh:property [
+        sh:path meta:requestsPerMinute ;
+        sh:maxInclusive 100 ;
+        sh:message "Maximum 100 requests per minute per conversation."
+    ] .
 
-# Practice Instances
+# Best Practices Instances
 guidance:UseTraceActivity a guidance:ErrorHandlingPractice ;
     rdfs:label "Use Trace Activity" ;
-    rdfs:comment "Use trace activities for detailed error tracking" .
+    rdfs:comment "Use trace activities for detailed error tracking" ;
+    guidance:hasExample """
+        await turnContext.sendTraceActivity(
+            "Error Processing Message",
+            error.stack,
+            "https://www.botframework.com/schemas/error",
+            "TurnError"
+        )
+    """ .
+
+guidance:StructuredErrorResponse a guidance:ErrorHandlingPractice ;
+    rdfs:label "Structured Error Response" ;
+    rdfs:comment "Return structured error responses" ;
+    guidance:hasExample """
+        {
+            "error": {
+                "code": "InvalidInput",
+                "message": "The input message was invalid",
+                "details": ["Field 'text' cannot be empty"]
+            }
+        }
+    """ .
 
 guidance:StructuredLogging a guidance:LoggingPractice ;
     rdfs:label "Structured Logging" ;
-    rdfs:comment "Use structured logging with custom dimensions" .
+    rdfs:comment "Use structured logging with custom dimensions" ;
+    guidance:hasExample """
+        logger.info("Processing message", extra={
+            "activity_id": activity.id,
+            "conversation_id": activity.conversation.id,
+            "channel_id": activity.channel_id
+        })
+    """ .
+
+guidance:SensitiveDataLogging a guidance:LoggingPractice ;
+    rdfs:label "Sensitive Data Logging" ;
+    rdfs:comment "Avoid logging sensitive information" ;
+    guidance:hasExample """
+        # DO NOT log authorization headers or personal information
+        logger.info("Request received", extra={
+            "activity_type": activity.type,
+            "timestamp": activity.timestamp
+        })
+    """ .
+
+guidance:TokenValidation a guidance:SecurityPractice ;
+    rdfs:label "Token Validation" ;
+    rdfs:comment "Validate authentication tokens" ;
+    guidance:hasExample """
+        await JwtTokenValidation.validateAuthHeader(
+            activity.getConnectorClient().credentials.appId,
+            authHeader,
+            turnContext.activity.serviceUrl
+        )
+    """ .
+
+guidance:InputSanitization a guidance:SecurityPractice ;
+    rdfs:label "Input Sanitization" ;
+    rdfs:comment "Sanitize all user input" ;
+    guidance:hasExample """
+        sanitized_text = html.escape(activity.text)
+    """ .
+
+guidance:AsyncOperations a guidance:PerformancePractice ;
+    rdfs:label "Async Operations" ;
+    rdfs:comment "Use async/await for I/O operations" ;
+    guidance:hasExample """
+        async def on_message_activity(self, turn_context: TurnContext):
+            response = await self.process_message(turn_context)
+            await turn_context.send_activity(response)
+    """ .
+
+guidance:ConnectionPooling a guidance:PerformancePractice ;
+    rdfs:label "Connection Pooling" ;
+    rdfs:comment "Use connection pooling for external services" ;
+    guidance:hasExample """
+        aiohttp.ClientSession(
+            connector=aiohttp.TCPConnector(
+                limit=100,
+                keepalive_timeout=60
+            )
+        )
+    """ .
+
+# Teams Bot Domain Analogies
+guidance:TeamsMessageAnalogy a guidance:DomainAnalogy ;
+    rdfs:label "Teams Message Analogy" ;
+    rdfs:comment "Analogy between Teams messages and HTTP requests" ;
+    guidance:analogySource "HTTP Request/Response" ;
+    guidance:analogyTarget "Teams Message Activity" ;
+    guidance:complexity 2 .
+
+guidance:TeamsAuthAnalogy a guidance:DomainAnalogy ;
+    rdfs:label "Teams Authentication Analogy" ;
+    rdfs:comment "Analogy between Teams authentication and OAuth flows" ;
+    guidance:analogySource "OAuth 2.0 Flow" ;
+    guidance:analogyTarget "Teams Bot Authentication" ;
+    guidance:complexity 3 .
 
 # TODO: Add validation rules for:
-# - Authentication headers
 # - Response formats
-# - Rate limiting
 # - Security practices 
