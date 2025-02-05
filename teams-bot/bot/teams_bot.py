@@ -8,6 +8,7 @@ from botbuilder.core import (
     ConversationState,
     UserState
 )
+from botbuilder.schema import Activity
 import logging
 
 logger = logging.getLogger(__name__)
@@ -44,7 +45,18 @@ class TeamsBot(ActivityHandler):
     async def on_message_activity(self, turn_context: TurnContext):
         logger.info("Processing message activity")
         text = turn_context.activity.text.lower()
-        response_text = f"Echo: {text}"
         
-        await turn_context.send_activity(response_text)
-        logger.info(f"Sent response: {response_text}") 
+        # For local testing, just send text response
+        if turn_context.activity.channel_id == "emulator":
+            await turn_context.send_activity(f"Echo: {text}")
+            return
+        
+        # Create proper Activity for Teams
+        response = Activity(
+            type="message",
+            text=f"Echo: {text}",
+            service_url=turn_context.activity.service_url
+        )
+        
+        await turn_context.send_activity(response)
+        logger.info(f"Sent response: {response.text}") 

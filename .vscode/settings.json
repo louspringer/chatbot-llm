@@ -18,5 +18,11 @@
         "titleBar.inactiveBackground": "#fbd6bb99",
         "titleBar.inactiveForeground": "#15202b99"
     },
-    "peacock.color": "#fbd6bb"
+    "peacock.color": "#fbd6bb",
+    "azureFunctions.deploySubpath": "teams-bot",
+    "azureFunctions.scmDoBuildDuringDeployment": true,
+    "azureFunctions.pythonVenv": ".venv",
+    "azureFunctions.projectLanguage": "Python",
+    "azureFunctions.projectRuntime": "~4",
+    "debug.internalConsoleOptions": "neverOpen"
 }

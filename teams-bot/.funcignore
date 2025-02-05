@@ -25,4 +25,3 @@ var/
 *.egg-info/
 .installed.cfg
 *.egg
-.python_packages

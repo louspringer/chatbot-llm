@@ -86,3 +86,48 @@
         sh:minCount 1 ;
         sh:message "Must specify Teams app manifest location."
     ] .
+
+# Code Location Properties
+:codeLocation a owl:DatatypeProperty ;
+    rdfs:domain :InfrastructureComponent ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Root directory containing the code" .
+
+:sourceStructure a owl:ObjectProperty ;
+    rdfs:domain :InfrastructureComponent ;
+    rdfs:range :SourceStructure .
+
+:SourceStructure a owl:Class ;
+    rdfs:label "Source Code Structure" ;
+    rdfs:comment "Defines the structure of source code files" .
+
+:mainModule a owl:DatatypeProperty ;
+    rdfs:domain :SourceStructure ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Path to main bot module" .
+
+:configModule a owl:DatatypeProperty ;
+    rdfs:domain :SourceStructure ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Path to configuration module" .
+
+:functionRoot a owl:DatatypeProperty ;
+    rdfs:domain :SourceStructure ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Path to Azure Function entry point" .
+
+# Add Source Structure Validation
+:SourceStructureShape a sh:NodeShape ;
+    sh:targetClass :SourceStructure ;
+    sh:property [
+        sh:path :mainModule ;
+        sh:minCount 1 ;
+        sh:pattern "^bot/.*\\.py$" ;
+        sh:message "Main module must be in bot/ directory with .py extension"
+    ] ;
+    sh:property [
+        sh:path :functionRoot ;
+        sh:minCount 1 ;
+        sh:pattern "^teams-bot/.*\\.py$" ;
+        sh:message "Function root must be in teams-bot/ directory with .py extension"
+    ] .

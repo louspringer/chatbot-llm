@@ -14,6 +14,12 @@
     :scalingType "Horizontal" ;
     :availabilityZones "Multi-region" ;
     :hosts chatbot:TeamsBot ;
+    :codeLocation "teams-bot/" ;
+    :sourceStructure [
+        :mainModule "bot/cortex_bot.py" ;
+        :configModule "config.py" ;
+        :functionRoot "teams-bot/function_app.py"
+    ] ;
     :dependsOn :KeyVault ;
     :operationalCosts [
         :maintenanceCost "100.00"^^xsd:decimal ;
