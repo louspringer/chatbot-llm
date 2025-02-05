@@ -1,0 +1,54 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix meta: <./meta#> .
+@prefix conversation: <./conversation#> .
+
+# Message Classes
+conversation:Message a rdfs:Class ;
+    rdfs:label "Message" ;
+    rdfs:comment "A message in a conversation" ;
+    rdfs:subClassOf meta:Activity .
+
+conversation:Response a rdfs:Class ;
+    rdfs:label "Response" ;
+    rdfs:comment "A response to a message" ;
+    rdfs:subClassOf conversation:Message .
+
+conversation:TraceActivity a rdfs:Class ;
+    rdfs:label "Trace Activity" ;
+    rdfs:comment "A trace activity for debugging/monitoring" ;
+    rdfs:subClassOf meta:Activity .
+
+# Message Properties
+conversation:hasText a rdf:Property ;
+    rdfs:label "has text" ;
+    rdfs:comment "The text content of a message" ;
+    rdfs:domain conversation:Message ;
+    rdfs:range xsd:string .
+
+conversation:hasType a rdf:Property ;
+    rdfs:label "has type" ;
+    rdfs:comment "The type of message" ;
+    rdfs:domain conversation:Message ;
+    rdfs:range xsd:string .
+
+conversation:inConversation a rdf:Property ;
+    rdfs:label "in conversation" ;
+    rdfs:comment "The conversation this message belongs to" ;
+    rdfs:domain conversation:Message ;
+    rdfs:range xsd:string .
+
+# Trace Properties
+conversation:hasTraceName a rdf:Property ;
+    rdfs:label "has trace name" ;
+    rdfs:comment "Name of the trace activity" ;
+    rdfs:domain conversation:TraceActivity ;
+    rdfs:range xsd:string .
+
+conversation:hasTraceValue a rdf:Property ;
+    rdfs:label "has trace value" ;
+    rdfs:comment "Value being traced" ;
+    rdfs:domain conversation:TraceActivity ;
+    rdfs:range xsd:string . 

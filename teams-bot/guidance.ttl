@@ -1,0 +1,55 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix meta: <./meta#> .
+@prefix problem: <./problem#> .
+@prefix solution: <./solution#> .
+@prefix conversation: <./conversation#> .
+@prefix guidance: <./guidance#> .
+
+# Validation Rules
+guidance:RequestValidation a sh:NodeShape ;
+    rdfs:label "Request Validation" ;
+    rdfs:comment "Validation rules for HTTP requests" ;
+    sh:targetClass meta:Activity ;
+    sh:property [
+        sh:path conversation:hasType ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+    ] .
+
+guidance:MessageValidation a sh:NodeShape ;
+    rdfs:label "Message Validation" ;
+    rdfs:comment "Validation rules for messages" ;
+    sh:targetClass conversation:Message ;
+    sh:property [
+        sh:path conversation:hasText ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+    ] .
+
+# Best Practices
+guidance:ErrorHandlingPractice a rdfs:Class ;
+    rdfs:label "Error Handling Practice" ;
+    rdfs:comment "Best practices for error handling" .
+
+guidance:LoggingPractice a rdfs:Class ;
+    rdfs:label "Logging Practice" ;
+    rdfs:comment "Best practices for logging" .
+
+# Practice Instances
+guidance:UseTraceActivity a guidance:ErrorHandlingPractice ;
+    rdfs:label "Use Trace Activity" ;
+    rdfs:comment "Use trace activities for detailed error tracking" .
+
+guidance:StructuredLogging a guidance:LoggingPractice ;
+    rdfs:label "Structured Logging" ;
+    rdfs:comment "Use structured logging with custom dimensions" .
+
+# TODO: Add validation rules for:
+# - Authentication headers
+# - Response formats
+# - Rate limiting
+# - Security practices 

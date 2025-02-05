@@ -1,0 +1,158 @@
+@prefix : <./documentation#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix deployment: <./deployment#> .
+@prefix meta: <./meta#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+
+# Documentation Ontology
+:DocumentationOntology a owl:Ontology ;
+    rdfs:label "Documentation Ontology" ;
+    rdfs:comment "Ontology for Teams Bot documentation and validation process" ;
+    owl:imports <./deployment>, <./meta> ;
+    owl:versionInfo "1.0" .
+
+# Documentation Classes
+:Documentation a owl:Class ;
+    rdfs:label "Documentation" ;
+    rdfs:comment "Base class for documentation elements" .
+
+:ValidationProcess a owl:Class ;
+    rdfs:subClassOf :Documentation ;
+    rdfs:label "Validation Process" ;
+    rdfs:comment "Documentation of validation processes and steps" .
+
+:ValidationRule a owl:Class ;
+    rdfs:subClassOf :Documentation ;
+    rdfs:label "Validation Rule" ;
+    rdfs:comment "Documentation of validation rules and requirements" .
+
+:DocumentationSection a owl:Class ;
+    rdfs:subClassOf :Documentation ;
+    rdfs:label "Documentation Section" ;
+    rdfs:comment "A section in the documentation" .
+
+# Documentation Properties
+:hasValidationStep a owl:ObjectProperty ;
+    rdfs:domain :ValidationProcess ;
+    rdfs:range :ValidationStep ;
+    rdfs:comment "Links a validation process to its steps" .
+
+:hasValidationRule a owl:ObjectProperty ;
+    rdfs:domain :ValidationProcess ;
+    rdfs:range :ValidationRule ;
+    rdfs:comment "Links a validation process to its rules" .
+
+:hasErrorMessage a owl:DatatypeProperty ;
+    rdfs:domain :ValidationRule ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Error message for validation failure" .
+
+:hasExample a owl:DatatypeProperty ;
+    rdfs:domain :Documentation ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Example code or usage" .
+
+# Validation Steps
+:ValidationStep a owl:Class ;
+    rdfs:subClassOf :Documentation ;
+    rdfs:label "Validation Step" ;
+    rdfs:comment "A step in the validation process" .
+
+:LoadOntologies a :ValidationStep ;
+    rdfs:label "Load Ontologies" ;
+    rdfs:comment "Load all relevant ontology files" ;
+    :hasExample """
+    data_graph = Graph()
+    data_graph.parse("deployment_instance.ttl", format="turtle")
+    """ .
+
+:CheckComponents a :ValidationStep ;
+    rdfs:label "Check Components" ;
+    rdfs:comment "Check if all required components are present" ;
+    :hasExample """
+    required_components = [
+        (DEPLOYMENT.TeamsBotFunction, "Teams Bot Function"),
+        (DEPLOYMENT.BotKeyVault, "Key Vault")
+    ]
+    """ .
+
+:ValidateSHACL a :ValidationStep ;
+    rdfs:label "Validate SHACL" ;
+    rdfs:comment "Validate against SHACL rules" ;
+    :hasExample """
+    is_valid, results_graph, results_text = validate(
+        data_graph,
+        shacl_graph=shacl_graph,
+        ont_graph=ont_graph
+    )
+    """ .
+
+# Documentation Sections
+:DeploymentSection a :DocumentationSection ;
+    rdfs:label "Deployment Documentation" ;
+    :hasSubsection [
+        a :DocumentationSection ;
+        rdfs:label "Infrastructure Components" ;
+        :hasExample """
+        :TeamsBotFunction a :InfrastructureComponent ;
+            :scalingType "Horizontal" ;
+            :availabilityZones "Multi-region" .
+        """
+    ], [
+        a :DocumentationSection ;
+        rdfs:label "Cost Model" ;
+        :hasExample """
+        :TeamsBotCostModel a :CostModel ;
+            :baselineCost "500.00"^^xsd:decimal ;
+            :scalingFactor "1.5"^^xsd:decimal .
+        """
+    ] .
+
+:ValidationSection a :DocumentationSection ;
+    rdfs:label "Validation Documentation" ;
+    :hasSubsection [
+        a :DocumentationSection ;
+        rdfs:label "SHACL Rules" ;
+        :hasExample """
+        :TeamsValidationShape a sh:NodeShape ;
+            sh:targetClass :TeamsInfrastructure .
+        """
+    ], [
+        a :DocumentationSection ;
+        rdfs:label "Validation Process" ;
+        :hasValidationStep :LoadOntologies, :CheckComponents, :ValidateSHACL
+    ] .
+
+# Validation Rules Documentation
+:ComponentValidationRule a :ValidationRule ;
+    rdfs:label "Component Validation" ;
+    :hasErrorMessage "Missing required component: {component}" ;
+    :hasExample """
+    if not (None, None, component) in data_graph:
+        logger.error(f"Missing required component: {name}")
+    """ .
+
+:SHACLValidationRule a :ValidationRule ;
+    rdfs:label "SHACL Validation" ;
+    :hasErrorMessage "Validation failed: {message}" ;
+    :hasExample """
+    if not is_valid:
+        logger.error("Validation failed:")
+        logger.error(results_text)
+    """ .
+
+# Documentation Process
+:ValidationProcessInstance a :ValidationProcess ;
+    rdfs:label "Teams Bot Validation Process" ;
+    :hasValidationStep :LoadOntologies, :CheckComponents, :ValidateSHACL ;
+    :hasValidationRule :ComponentValidationRule, :SHACLValidationRule ;
+    rdfs:comment """
+    Complete validation process for Teams Bot deployment:
+    1. Load all ontology files
+    2. Check required components
+    3. Validate against SHACL rules
+    4. Report validation results
+    """ .

@@ -1,0 +1,46 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix meta: <./meta#> .
+@prefix problem: <./problem#> .
+
+# Error Classes
+problem:BotError a rdfs:Class ;
+    rdfs:label "Bot Error" ;
+    rdfs:comment "An error that occurs during bot operation" ;
+    rdfs:subClassOf meta:BotComponent .
+
+problem:RequestError a rdfs:Class ;
+    rdfs:label "Request Error" ;
+    rdfs:comment "An error in the HTTP request" ;
+    rdfs:subClassOf problem:BotError .
+
+problem:ValidationError a rdfs:Class ;
+    rdfs:label "Validation Error" ;
+    rdfs:comment "An error in request validation" ;
+    rdfs:subClassOf problem:RequestError .
+
+# Error Properties
+problem:hasErrorCode a rdf:Property ;
+    rdfs:label "has error code" ;
+    rdfs:comment "HTTP status code for the error" ;
+    rdfs:domain problem:RequestError ;
+    rdfs:range xsd:integer .
+
+problem:hasErrorMessage a rdf:Property ;
+    rdfs:label "has error message" ;
+    rdfs:comment "Human readable error message" ;
+    rdfs:domain problem:BotError ;
+    rdfs:range xsd:string .
+
+# Error Instances
+problem:ContentTypeError a problem:ValidationError ;
+    rdfs:label "Content Type Error" ;
+    problem:hasErrorCode "415"^^xsd:integer ;
+    problem:hasErrorMessage "Invalid content type. Expected application/json" .
+
+problem:InvalidJsonError a problem:ValidationError ;
+    rdfs:label "Invalid JSON Error" ;
+    problem:hasErrorCode "400"^^xsd:integer ;
+    problem:hasErrorMessage "Invalid JSON in request body" . 

@@ -1,0 +1,10 @@
+   {
+     "IsEncrypted": false,
+     "Values": {
+       "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+       "FUNCTIONS_WORKER_RUNTIME": "python",
+       "APPINSIGHTS_INSTRUMENTATIONKEY": "mx6xcb73xmpcztdwkct434ypm4",
+       "BOT_APP_ID": "5577A865-2903-4C74-8EE5-12B2141DEDE0",
+       "BOT_APP_SECRET": "vXezQUSjuVrm+hDBCoBnTFolZxrL28xZ"
+     }
+   }
