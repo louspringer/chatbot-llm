@@ -14,6 +14,19 @@
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 @prefix session: <./session#> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix dc: <http://purl.org/dc/elements/1.1/> .
+@prefix dct: <http://purl.org/dc/terms/> .
+
+# Session Metadata
+session:SessionOntology rdf:type owl:Ontology ;
+    dc:title "Teams Bot Session Ontology" ;
+    dc:version "1.2" ;
+    dct:created "2024-02-07"^^xsd:date ;
+    dct:modified "2024-02-07"^^xsd:date ;
+    dct:publisher "Ontology Framework Project" ;
+    dct:license <http://opensource.org/licenses/MIT> ;
+    dct:description "Ontology for managing Teams bot development session state" ;
+    owl:imports guidance: .
 
 # Session Context Management
 session:CurrentContext a owl:Class ;
@@ -85,14 +98,24 @@ session:task1 a session:Task ;
     session:hasStatus session:InProgress ;
     session:hasPriority 1 ;
     session:requiresOntology chatbot: ;
-    session:requiresOntology cortexteams: .
+    session:requiresOntology cortexteams: ;
+    session:completedSteps [
+        rdf:_1 "Directory structure reorganization" ;
+        rdf:_2 "Basic state management implementation" ;
+        rdf:_3 "Local development setup"
+    ] ;
+    session:lastUpdated "2024-02-07T18:15:00Z"^^xsd:dateTime .
 
 session:task2 a session:Task ;
     rdfs:label "Context Management Implementation" ;
     rdfs:comment "Implement robust context management in the Teams bot" ;
-    session:hasStatus session:Pending ;
+    session:hasStatus session:InProgress ;
     session:hasPriority 2 ;
-    session:dependsOn session:task1 .
+    session:dependsOn session:task1 ;
+    session:completedSteps [
+        rdf:_1 "Basic state manager implementation"
+    ] ;
+    session:lastUpdated "2024-02-07T18:15:00Z"^^xsd:dateTime .
 
 session:task3 a session:Task ;
     rdfs:label "Security Validation" ;
@@ -163,29 +186,12 @@ session:SnowflakeTeamsBot a session:Project ;
 session:phase1 a session:ProjectPhase ;
     rdfs:label "Core Teams Bot Setup" ;
     session:status session:InProgress ;
-    session:tasks (
-        [
-            a session:Task ;
-            rdfs:label "Basic Teams Bot Framework" ;
-            rdfs:comment "Set up basic Teams bot infrastructure and message handling" ;
-            session:hasStatus session:InProgress ;
-            session:hasPriority 1
-        ]
-        [
-            a session:Task ;
-            rdfs:label "Bot Authentication" ;
-            rdfs:comment "Implement secure authentication for Teams bot" ;
-            session:hasStatus session:Pending ;
-            session:hasPriority 1
-        ]
-        [
-            a session:Task ;
-            rdfs:label "Message Handling" ;
-            rdfs:comment "Implement basic message handling and routing" ;
-            session:hasStatus session:Pending ;
-            session:hasPriority 1
-        ]
-    ) .
+    session:completedSteps [
+        rdf:_1 "Directory structure setup" ;
+        rdf:_2 "Basic state management" ;
+        rdf:_3 "Local development environment"
+    ] ;
+    session:lastUpdated "2024-02-07T18:15:00Z"^^xsd:dateTime .
 
 session:phase2 a session:ProjectPhase ;
     rdfs:label "Snowflake Cortex Integration" ;
@@ -997,16 +1003,21 @@ session:configurationFiles a owl:ObjectProperty ;
 :currentEnvironment a session:EnvironmentState ;
     rdfs:label "Current Environment State" ;
     session:hasWorkingConfig true ;
-    session:lastTestedDate "2024-03-20T18:10:00Z"^^xsd:dateTime ;
+    session:lastTestedDate "2024-02-07T18:15:00Z"^^xsd:dateTime ;
     session:configurationFiles (
-        "pyproject.toml"
         "environment.yml"
+        ".env.template"
+        "teams_bot/config/settings.py"
     ) ;
-    session:notes [
-        rdf:_1 "Working bot environment confirmed through testing" ;
-        rdf:_2 "Primary configuration through pyproject.toml" ;
-        rdf:_3 "environment.yml for conda compatibility" ;
-        rdf:_4 "Dependencies managed through manage_deps.py tool"
+    session:recentChanges [
+        rdf:_1 "Reorganized directory structure" ;
+        rdf:_2 "Implemented state management" ;
+        rdf:_3 "Added local development configuration"
+    ] ;
+    session:pendingTasks [
+        rdf:_1 "Complete Teams bot authentication" ;
+        rdf:_2 "Implement message handling" ;
+        rdf:_3 "Add error handling middleware"
     ] .
 
 # Update current context to link environment state
@@ -1071,7 +1082,18 @@ session:currentPromptState a session:PromptState ;
 session:currentTask a session:Task ;
     rdfs:label "Teams Bot Development" ;
     session:requiresPromptUpdate true ;
-    session:hasStatus session:InProgress .
+    session:hasStatus session:InProgress ;
+    session:hasPriority 1 ;
+    session:implementations (
+        :stateManagerImpl
+        :teamsBotImpl
+        :securityImpl
+    ) ;
+    session:validationRequirements [
+        rdf:_1 "All security measures implemented" ;
+        rdf:_2 "State management fully tested" ;
+        rdf:_3 "Local development verified"
+    ] .
 
 # Checkpoint Components
 session:contextComponent a session:Component ;
@@ -1096,4 +1118,110 @@ session:validationComponent a session:Component ;
     session:requiredFiles "tools/validate_local_env.py" ;
     session:branch "feature/validation" ;
     session:issue "44" ;
-    session:issueTitle "Implement Validation System" . 
+    session:issueTitle "Implement Validation System" .
+
+# Add new validation rules
+session:DirectoryStructureShape a sh:NodeShape ;
+    sh:targetClass session:Project ;
+    sh:property [
+        sh:path session:hasDirectory ;
+        sh:minCount 1 ;
+        sh:message "Project must have at least one directory defined"
+    ] ;
+    sh:property [
+        sh:path session:hasValidation ;
+        sh:minCount 1 ;
+        sh:message "Project must have validation rules defined"
+    ] .
+
+# Security Context Definition
+session:SecurityContext a owl:Class ;
+    rdfs:label "Security Context" ;
+    rdfs:comment "Defines security requirements and validation state" ;
+    rdfs:subClassOf session:ContextState .
+
+session:securityLevel a owl:DatatypeProperty ;
+    rdfs:domain session:SecurityContext ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Security level requirement (Low, Medium, High)" .
+
+session:requiresValidation a owl:DatatypeProperty ;
+    rdfs:domain session:SecurityContext ;
+    rdfs:range xsd:boolean ;
+    rdfs:comment "Whether security validation is required" .
+
+# Directory Structure Properties
+session:hasDirectory a owl:ObjectProperty ;
+    rdfs:domain session:Project ;
+    rdfs:range session:Directory ;
+    rdfs:comment "Links a project to its directory structure" .
+
+session:Directory a owl:Class ;
+    rdfs:label "Directory" ;
+    rdfs:comment "Represents a directory in the project structure" .
+
+session:contains a owl:ObjectProperty ;
+    rdfs:domain session:Directory ;
+    rdfs:range session:Directory ;
+    rdfs:comment "Indicates directory containment relationships" .
+
+# State Definitions
+session:initialState a session:ContextState ;
+    rdfs:label "Initial Context State" ;
+    rdfs:comment "Starting state for new sessions" ;
+    session:lastUpdated "2024-02-07T18:15:00Z"^^xsd:dateTime .
+
+# Implementation Tracing
+session:ImplementationArtifact a owl:Class ;
+    rdfs:label "Implementation Artifact" ;
+    rdfs:comment "Represents a concrete implementation of requirements" .
+
+session:implements a owl:ObjectProperty ;
+    rdfs:domain session:ImplementationArtifact ;
+    rdfs:range session:Task ;
+    rdfs:comment "Links implementation to its requirements" .
+
+# Trace state manager implementation
+:stateManagerImpl a session:ImplementationArtifact ;
+    rdfs:label "State Manager Implementation" ;
+    session:implements session:task2 ;
+    session:sourceFile "teams_bot/bot/state_manager.py" ;
+    session:requirements [
+        rdf:_1 "Memory storage for development" ;
+        rdf:_2 "Conversation state persistence" ;
+        rdf:_3 "User profile management"
+    ] ;
+    session:validationStatus "Partial" ;
+    session:lastValidated "2024-02-07T18:15:00Z"^^xsd:dateTime .
+
+# Trace Teams bot implementation
+:teamsBotImpl a session:ImplementationArtifact ;
+    rdfs:label "Teams Bot Implementation" ;
+    session:implements session:task1 ;
+    session:sourceFile "teams_bot/bot/teams_bot.py" ;
+    session:requirements [
+        rdf:_1 "Basic message handling" ;
+        rdf:_2 "State management integration" ;
+        rdf:_3 "Local development support"
+    ] ;
+    session:validationStatus "InProgress" ;
+    session:lastValidated "2024-02-07T18:15:00Z"^^xsd:dateTime .
+
+# Security Implementation Tracing
+:securityImpl a session:ImplementationArtifact ;
+    rdfs:label "Security Implementation" ;
+    session:implements session:task3 ;
+    session:sourceFiles (
+        ".env.template"
+        "teams_bot/config/settings.py"
+    ) ;
+    session:requirements [
+        rdf:_1 "Secure credential management" ;
+        rdf:_2 "Environment configuration" ;
+        rdf:_3 "Access control"
+    ] ;
+    session:validationStatus "Pending" ;
+    session:blockers [
+        rdf:_1 "Need security audit" ;
+        rdf:_2 "Pending Azure Key Vault integration"
+    ] . 

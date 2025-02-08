@@ -32,7 +32,7 @@ def clean_uri(uri):
     if re.match(r".*nc[a-f0-9]{32}b\d+.*", uri):
         # If it's a nonce-only URI, return empty string
         if re.match(r"^nc[a-f0-9]{32}b\d+$", uri):
-            return ""
+        return ""
         # Otherwise remove the nonce part
         uri = re.sub(r"nc[a-f0-9]{32}b\d+", "", uri)
 
@@ -170,7 +170,7 @@ def main():
     
     base_path = str(Path.cwd().absolute())
     SESSION = Namespace("file://" + base_path + "/session#")
-    
+
     # Debug output
     print("\n=== Graph Structure ===\n")
     for s, p, o in g:
@@ -195,12 +195,12 @@ def main():
     
     if checkpoint:
         prompt = get_checkpoint_prompt(g, base_path)
-        if prompt:
+    if prompt:
             print("\n=== Current Checkpoint Prompt ===\n")
-            print(prompt)
+        print(prompt)
     else:
         print("No checkpoint found")
 
 
 if __name__ == "__main__":
-    main() 
+    main()
