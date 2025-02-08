@@ -1,147 +1,219 @@
-@prefix : <./deployment#> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
-@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix deploy: <./deployment#> .
 @prefix chatbot: <./chatbot#> .
 @prefix solution: <./solution#> .
 
-:DeploymentOntology a owl:Ontology ;
+deploy:DeploymentOntology rdf:type owl:Ontology ;
     rdfs:label "Deployment Ontology" ;
     rdfs:comment "Ontology for deployment architecture and infrastructure components" ;
-    owl:imports <./chatbot>, <./solution> ;
-    owl:versionInfo "1.0" .
+    owl:versionInfo "1.0" ;
+    owl:imports solution: ;
+    owl:imports chatbot: .
 
-# Cloud Environments
-:CloudEnvironment a owl:Class ;
-    rdfs:label "Cloud Environment" ;
-    rdfs:comment "A cloud platform hosting services and components" .
+# Classes
+deploy:Component rdf:type owl:Class ;
+    rdfs:label "Component" ;
+    rdfs:comment "Base class for all deployment components" .
 
-:MicrosoftAzure a :CloudEnvironment ;
-    rdfs:label "Microsoft Azure" ;
-    :primaryUseCase "Core service hosting and integration" .
+deploy:SharedComponent rdf:type owl:Class ;
+    rdfs:subClassOf deploy:Component ;
+    rdfs:label "Shared Component" ;
+    rdfs:comment "Components shared between deployment environments" .
 
-:SnowflakeCloud a :CloudEnvironment ;
-    rdfs:label "Snowflake Cloud" ;
-    :primaryUseCase "Data warehousing and analytics" .
+deploy:ConfigurationComponent rdf:type owl:Class ;
+    rdfs:subClassOf deploy:SharedComponent ;
+    rdfs:label "Configuration Component" ;
+    rdfs:comment "Shared configuration files" .
 
-:Microsoft365 a :CloudEnvironment ;
-    rdfs:label "Microsoft 365" ;
-    :primaryUseCase "End-user interface and identity management" .
+deploy:RuntimeDependency rdf:type owl:Class ;
+    rdfs:subClassOf deploy:SharedComponent ;
+    rdfs:label "Runtime Dependency" ;
+    rdfs:comment "Shared runtime dependencies" .
 
-# Infrastructure Components
-:InfrastructureComponent a owl:Class ;
+deploy:InfrastructureComponent rdf:type owl:Class ;
+    rdfs:subClassOf deploy:Component ;
     rdfs:label "Infrastructure Component" ;
-    rdfs:comment "A deployable infrastructure service or resource" .
+    rdfs:comment "Azure-specific infrastructure components" .
 
-:AppService a :InfrastructureComponent ;
-    rdfs:label "Azure App Service" ;
-    :hosts chatbot:TeamsBot, chatbot:StateManager ;
-    :scalingType "Horizontal" ;
-    :availabilityZones "Multi-region" .
+deploy:LocalComponent rdf:type owl:Class ;
+    rdfs:subClassOf deploy:Component ;
+    rdfs:label "Local Component" ;
+    rdfs:comment "Components specific to local development" .
 
-:KeyVault a :InfrastructureComponent ;
-    rdfs:label "Azure Key Vault" ;
-    :securityLevel "HSM-backed" ;
-    :managementType "RBAC" .
-
-# Database Choices
-:DatabaseSystem a owl:Class ;
-    rdfs:label "Database System" ;
-    rdfs:comment "A database management system with specific characteristics" .
-
-:CosmosDB a :DatabaseSystem ;
-    rdfs:label "Azure Cosmos DB" ;
-    :usagePattern "Operational" ;
-    :dataModel "Document" ;
-    :latencyTarget "Sub-millisecond" ;
-    :scalingModel "Automatic" ;
-    :primaryUseCase "Conversation history and audit logs" ;
-    :rationale """
-        1. Optimized for operational workloads with low-latency requirements
-        2. Native support for semi-structured conversation data
-        3. Cost-effective for high-frequency reads/writes
-        4. Built-in support for point-in-time recovery
-        5. Multi-region write capabilities
-    """ .
-
-:SnowflakeWarehouse a :DatabaseSystem ;
-    rdfs:label "Snowflake Data Warehouse" ;
-    :usagePattern "Analytical" ;
-    :dataModel "Columnar" ;
-    :latencyTarget "Query-optimized" ;
-    :scalingModel "Virtual Warehouse" ;
-    :primaryUseCase "Enterprise data analytics" ;
-    :rationale """
-        1. Optimized for analytical workloads
-        2. Efficient for large-scale data processing
-        3. Cost-effective for data warehousing
-        4. Strong data sharing capabilities
-        5. Separation of storage and compute
-    """ .
-
-# Deployment Properties
-:hosts a owl:ObjectProperty ;
-    rdfs:domain :InfrastructureComponent ;
-    rdfs:range chatbot:Component .
-
-:deployedIn a owl:ObjectProperty ;
-    rdfs:domain chatbot:Component ;
-    rdfs:range :CloudEnvironment .
-
-:dependsOn a owl:ObjectProperty ;
-    rdfs:domain :InfrastructureComponent ;
-    rdfs:range :InfrastructureComponent .
-
-:scalingType a owl:DatatypeProperty ;
-    rdfs:domain :InfrastructureComponent ;
-    rdfs:range xsd:string .
-
-:availabilityZones a owl:DatatypeProperty ;
-    rdfs:domain :InfrastructureComponent ;
-    rdfs:range xsd:string .
-
-:usagePattern a owl:DatatypeProperty ;
-    rdfs:domain :DatabaseSystem ;
-    rdfs:range xsd:string .
-
-:dataModel a owl:DatatypeProperty ;
-    rdfs:domain :DatabaseSystem ;
-    rdfs:range xsd:string .
-
-:latencyTarget a owl:DatatypeProperty ;
-    rdfs:domain :DatabaseSystem ;
-    rdfs:range xsd:string .
-
-:rationale a owl:DatatypeProperty ;
-    rdfs:domain owl:Thing ;
-    rdfs:range xsd:string .
-
-# Monitoring and Security
-:MonitoringSystem a owl:Class ;
+deploy:MonitoringSystem rdf:type owl:Class ;
     rdfs:label "Monitoring System" ;
     rdfs:comment "System for monitoring and observability" .
 
-:ApplicationInsights a :MonitoringSystem ;
-    rdfs:label "Azure Application Insights" ;
-    :monitoringType "Application Performance" ;
-    :dataRetention "90 days" .
-
-:LogAnalytics a :MonitoringSystem ;
-    rdfs:label "Azure Log Analytics" ;
-    :monitoringType "Log Analysis" ;
-    :dataRetention "2 years" .
-
-# Security Controls
-:SecurityControl a owl:Class ;
+deploy:SecurityControl rdf:type owl:Class ;
     rdfs:label "Security Control" ;
     rdfs:comment "Security measure or control" .
 
-:RBAC a :SecurityControl ;
-    rdfs:label "Role-Based Access Control" ;
-    :implementedBy :KeyVault, :CosmosDB, :SnowflakeWarehouse .
+deploy:DeploymentEnvironment rdf:type owl:Class ;
+    rdfs:label "Deployment Environment" ;
+    rdfs:comment "A specific deployment environment (Azure or Local)" .
 
-:Encryption a :SecurityControl ;
+deploy:CloudEnvironment rdf:type owl:Class ;
+    rdfs:label "Cloud Environment" ;
+    rdfs:comment "A cloud platform hosting services and components" .
+
+# Properties
+deploy:dependsOn rdf:type owl:ObjectProperty ;
+    rdfs:domain deploy:Component ;
+    rdfs:range deploy:Component ;
+    rdfs:comment "Indicates a dependency relationship between components" .
+
+deploy:configures rdf:type owl:ObjectProperty ;
+    rdfs:domain deploy:ConfigurationComponent ;
+    rdfs:range deploy:Component ;
+    rdfs:comment "Indicates a configuration relationship" .
+
+deploy:emulates rdf:type owl:ObjectProperty ;
+    rdfs:domain deploy:LocalComponent ;
+    rdfs:range deploy:InfrastructureComponent ;
+    rdfs:comment "Indicates which Azure service a local component emulates" .
+
+deploy:usedIn rdf:type owl:ObjectProperty ;
+    rdfs:domain owl:Thing ;
+    rdfs:range deploy:DeploymentEnvironment .
+
+# Shared Core Components
+deploy:BotFrameworkAdapter rdf:type deploy:SharedComponent ;
+    rdfs:label "Bot Framework Adapter" ;
+    deploy:dependsOn deploy:FunctionsApp ;
+    deploy:dependsOn deploy:CoreTools ;
+    deploy:usedIn deploy:AzureEnvironment ;
+    deploy:usedIn deploy:LocalEnvironment .
+
+deploy:StateManager rdf:type deploy:SharedComponent ;
+    rdfs:label "State Manager" ;
+    deploy:dependsOn deploy:BotFrameworkAdapter ;
+    deploy:usedIn deploy:AzureEnvironment ;
+    deploy:usedIn deploy:LocalEnvironment .
+
+deploy:MessageHandler rdf:type deploy:SharedComponent ;
+    rdfs:label "Message Handler" ;
+    deploy:dependsOn deploy:BotFrameworkAdapter ;
+    deploy:usedIn deploy:AzureEnvironment ;
+    deploy:usedIn deploy:LocalEnvironment .
+
+deploy:ErrorHandler rdf:type deploy:SharedComponent ;
+    rdfs:label "Error Handler" ;
+    deploy:dependsOn deploy:BotFrameworkAdapter ;
+    deploy:usedIn deploy:AzureEnvironment ;
+    deploy:usedIn deploy:LocalEnvironment .
+
+# Configuration Components
+deploy:HostJson rdf:type deploy:ConfigurationComponent ;
+    rdfs:label "host.json" ;
+    deploy:configures deploy:FunctionsApp ;
+    deploy:configures deploy:CoreTools .
+
+deploy:FunctionJson rdf:type deploy:ConfigurationComponent ;
+    rdfs:label "function.json" ;
+    deploy:configures deploy:FunctionsApp ;
+    deploy:configures deploy:CoreTools .
+
+deploy:EnvFile rdf:type deploy:ConfigurationComponent ;
+    rdfs:label ".env" ;
+    deploy:configures deploy:FunctionsApp ;
+    deploy:configures deploy:CoreTools .
+
+# Azure Components
+deploy:FunctionsApp rdf:type deploy:InfrastructureComponent ;
+    rdfs:label "Azure Functions App" ;
+    deploy:dependsOn deploy:KeyVault ;
+    deploy:dependsOn deploy:AzureStorage ;
+    deploy:dependsOn deploy:AzureAD ;
+    deploy:dependsOn deploy:AppInsights .
+
+deploy:KeyVault rdf:type deploy:InfrastructureComponent ;
+    rdfs:label "Azure Key Vault" .
+
+deploy:AzureStorage rdf:type deploy:InfrastructureComponent ;
+    rdfs:label "Azure Storage" .
+
+deploy:AzureAD rdf:type deploy:InfrastructureComponent ;
+    rdfs:label "Azure AD" .
+
+deploy:AppInsights rdf:type deploy:InfrastructureComponent ;
+    rdfs:label "Application Insights" .
+
+deploy:TeamsChannel rdf:type deploy:InfrastructureComponent ;
+    rdfs:label "Teams Channel" ;
+    deploy:dependsOn deploy:FunctionsApp .
+
+deploy:CosmosDB rdf:type deploy:InfrastructureComponent ;
+    rdfs:label "Cosmos DB" ;
+    deploy:dependsOn deploy:FunctionsApp .
+
+# Local Components
+deploy:CoreTools rdf:type deploy:LocalComponent ;
+    rdfs:label "Azure Functions Core Tools" ;
+    deploy:dependsOn deploy:BotEmulator ;
+    deploy:dependsOn deploy:Azurite ;
+    deploy:dependsOn deploy:LocalLogs .
+
+deploy:BotEmulator rdf:type deploy:LocalComponent ;
+    rdfs:label "Bot Framework Emulator" ;
+    deploy:emulates deploy:TeamsChannel .
+
+deploy:Azurite rdf:type deploy:LocalComponent ;
+    rdfs:label "Azurite Storage Emulator" ;
+    deploy:emulates deploy:AzureStorage .
+
+deploy:LocalLogs rdf:type deploy:LocalComponent ;
+    rdfs:label "Local Logs" ;
+    deploy:emulates deploy:ApplicationInsights .
+
+# Runtime Dependencies
+deploy:Python311 rdf:type deploy:RuntimeDependency ;
+    rdfs:label "Python 3.11" ;
+    deploy:dependsOn deploy:CoreTools ;
+    deploy:dependsOn deploy:FunctionsApp .
+
+deploy:BotFrameworkSDK rdf:type deploy:RuntimeDependency ;
+    rdfs:label "Bot Framework SDK" ;
+    deploy:dependsOn deploy:BotFrameworkAdapter .
+
+deploy:AzureFunctionsSDK rdf:type deploy:RuntimeDependency ;
+    rdfs:label "Azure Functions SDK" ;
+    deploy:dependsOn deploy:CoreTools ;
+    deploy:dependsOn deploy:FunctionsApp .
+
+# Cloud Environments
+deploy:MicrosoftAzure rdf:type deploy:CloudEnvironment ;
+    rdfs:label "Microsoft Azure" ;
+    deploy:primaryUseCase "Core service hosting and integration" .
+
+deploy:Microsoft365 rdf:type deploy:CloudEnvironment ;
+    rdfs:label "Microsoft 365" ;
+    deploy:primaryUseCase "End-user interface and identity management" .
+
+deploy:SnowflakeCloud rdf:type deploy:CloudEnvironment ;
+    rdfs:label "Snowflake Cloud" ;
+    deploy:primaryUseCase "Data warehousing and analytics" .
+
+# Deployment Environments
+deploy:AzureEnvironment rdf:type deploy:DeploymentEnvironment ;
+    rdfs:label "Azure Development Environment" ;
+    rdfs:comment "Production environment in Azure" .
+
+deploy:LocalEnvironment rdf:type deploy:DeploymentEnvironment ;
+    rdfs:label "Local Development Environment" ;
+    rdfs:comment "Local development environment" .
+
+# Security Controls
+deploy:Encryption rdf:type deploy:SecurityControl ;
     rdfs:label "Encryption" ;
-    :encryptionType "At rest and in transit" ;
-    :implementedBy :CosmosDB, :SnowflakeWarehouse, :KeyVault . 
+    deploy:encryptionType "At rest and in transit" ;
+    deploy:implementedBy deploy:KeyVault ;
+    deploy:implementedBy deploy:CosmosDB ;
+    deploy:implementedBy deploy:SnowflakeWarehouse .
+
+deploy:RBAC rdf:type deploy:SecurityControl ;
+    rdfs:label "Role-Based Access Control" ;
+    deploy:implementedBy deploy:KeyVault ;
+    deploy:implementedBy deploy:CosmosDB ;
+    deploy:implementedBy deploy:SnowflakeWarehouse . 
