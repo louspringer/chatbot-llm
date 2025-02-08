@@ -1,0 +1,267 @@
+{
+    "metadata": {
+        "version": "1.0.0",
+        "description": "Test cases for Teams Bot with Snowflake integration",
+        "requirement_categories": {
+            "BOT": "Basic Bot Functionality",
+            "SNOW": "Snowflake Integration",
+            "SEC": "Security Requirements",
+            "CONV": "Conversation Management",
+            "UI": "User Interface"
+        }
+    },
+    "test_cases": [
+        {
+            "name": "Basic Greeting",
+            "input_message": "Hello",
+            "expected_patterns": ["hello", "hi", "hey"],
+            "conversation_type": "message",
+            "timeout_seconds": 5,
+            "requirements": ["BOT-001"],
+            "description": "Basic greeting should receive appropriate response"
+        },
+        {
+            "name": "Help Command",
+            "input_message": "/help",
+            "expected_patterns": [
+                "available commands",
+                "help",
+                "Here's what I can do",
+                "Snowflake queries",
+                "data analysis"
+            ],
+            "conversation_type": "message",
+            "timeout_seconds": 5,
+            "requirements": ["BOT-002", "SNOW-001"],
+            "description": "Help command should list all available features including Snowflake capabilities"
+        },
+        {
+            "name": "Snowflake Query Intent",
+            "input_message": "Show me sales data",
+            "expected_patterns": [
+                "Which time period",
+                "specific region",
+                "data granularity"
+            ],
+            "conversation_type": "message",
+            "timeout_seconds": 5,
+            "requirements": ["SNOW-002", "CONV-001"],
+            "description": "Bot should recognize data query intent and ask for clarification"
+        },
+        {
+            "name": "Snowflake Query Refinement",
+            "input_message": "Show sales for last month in North America",
+            "expected_patterns": [
+                "sales data",
+                "North America",
+                "last month",
+                "chart",
+                "table"
+            ],
+            "conversation_type": "message",
+            "timeout_seconds": 10,
+            "requirements": ["SNOW-003", "UI-001"],
+            "description": "Bot should handle specific data requests and offer visualization options"
+        },
+        {
+            "name": "Snowflake Authentication Check",
+            "input_message": "Connect to Snowflake",
+            "expected_patterns": [
+                "authentication",
+                "credentials",
+                "secure connection"
+            ],
+            "conversation_type": "message",
+            "timeout_seconds": 5,
+            "requirements": ["SEC-001", "SNOW-004"],
+            "description": "Bot should handle Snowflake authentication securely"
+        },
+        {
+            "name": "Query Error Handling",
+            "input_message": "Show me invalid_table data",
+            "expected_patterns": [
+                "table not found",
+                "access denied",
+                "try different query"
+            ],
+            "conversation_type": "message",
+            "timeout_seconds": 5,
+            "requirements": ["SNOW-005", "BOT-003"],
+            "description": "Bot should handle Snowflake query errors gracefully"
+        },
+        {
+            "name": "Data Visualization Request",
+            "input_message": "Show this as a chart",
+            "expected_patterns": [
+                "chart type",
+                "bar chart",
+                "line chart",
+                "pie chart"
+            ],
+            "conversation_type": "message",
+            "timeout_seconds": 5,
+            "requirements": ["UI-002", "SNOW-006"],
+            "description": "Bot should offer appropriate visualization options for data"
+        },
+        {
+            "name": "Complex Query Building",
+            "input_message": "Compare sales across regions",
+            "expected_patterns": [
+                "which regions",
+                "time period",
+                "metrics",
+                "comparison type"
+            ],
+            "conversation_type": "message",
+            "timeout_seconds": 5,
+            "requirements": ["SNOW-007", "CONV-002"],
+            "description": "Bot should help build complex queries through conversation"
+        },
+        {
+            "name": "Query History",
+            "input_message": "Show my recent queries",
+            "expected_patterns": [
+                "recent queries",
+                "results",
+                "run again"
+            ],
+            "conversation_type": "message",
+            "timeout_seconds": 5,
+            "requirements": ["SNOW-008", "UI-003"],
+            "description": "Bot should maintain and display query history"
+        },
+        {
+            "name": "Data Export Request",
+            "input_message": "Export this data to Excel",
+            "expected_patterns": [
+                "export format",
+                "download link",
+                "security notice"
+            ],
+            "conversation_type": "message",
+            "timeout_seconds": 10,
+            "requirements": ["SNOW-009", "SEC-002"],
+            "description": "Bot should handle data export requests securely"
+        },
+        {
+            "name": "Query Performance",
+            "input_message": "This query is slow",
+            "expected_patterns": [
+                "optimization suggestions",
+                "warehouse scaling",
+                "query stats"
+            ],
+            "conversation_type": "message",
+            "timeout_seconds": 5,
+            "requirements": ["SNOW-010", "UI-004"],
+            "description": "Bot should provide query performance insights"
+        },
+        {
+            "name": "Data Refresh",
+            "input_message": "Refresh this data",
+            "expected_patterns": [
+                "refreshing data",
+                "latest results",
+                "timestamp"
+            ],
+            "conversation_type": "message",
+            "timeout_seconds": 10,
+            "requirements": ["SNOW-011", "UI-005"],
+            "description": "Bot should handle data refresh requests"
+        }
+    ],
+    "requirement_traces": {
+        "BOT-001": {
+            "description": "Bot must respond to basic greetings",
+            "acceptance_criteria": ["Response within 2 seconds", "Natural language response"]
+        },
+        "BOT-002": {
+            "description": "Bot must provide help information",
+            "acceptance_criteria": ["List all commands", "Include examples"]
+        },
+        "BOT-003": {
+            "description": "Bot must handle errors gracefully",
+            "acceptance_criteria": ["Clear error messages", "Recovery suggestions"]
+        },
+        "SNOW-001": {
+            "description": "Bot must expose Snowflake capabilities in help",
+            "acceptance_criteria": ["List query capabilities", "Show data access options"]
+        },
+        "SNOW-002": {
+            "description": "Bot must recognize data query intents",
+            "acceptance_criteria": ["Identify data requests", "Ask for clarification"]
+        },
+        "SNOW-003": {
+            "description": "Bot must handle specific data requests",
+            "acceptance_criteria": ["Parse time periods", "Parse regions", "Handle metrics"]
+        },
+        "SNOW-004": {
+            "description": "Bot must handle Snowflake authentication",
+            "acceptance_criteria": ["Secure credential handling", "Session management"]
+        },
+        "SNOW-005": {
+            "description": "Bot must handle Snowflake query errors",
+            "acceptance_criteria": ["Meaningful error messages", "Suggest corrections"]
+        },
+        "SNOW-006": {
+            "description": "Bot must support data visualization",
+            "acceptance_criteria": ["Multiple chart types", "Adaptive cards"]
+        },
+        "SNOW-007": {
+            "description": "Bot must support complex query building",
+            "acceptance_criteria": ["Multi-turn conversations", "Context retention"]
+        },
+        "SNOW-008": {
+            "description": "Bot must maintain query history",
+            "acceptance_criteria": ["Store recent queries", "Allow reuse"]
+        },
+        "SNOW-009": {
+            "description": "Bot must support secure data export",
+            "acceptance_criteria": ["Multiple formats", "Secure downloads"]
+        },
+        "SNOW-010": {
+            "description": "Bot must provide performance insights",
+            "acceptance_criteria": ["Query statistics", "Optimization suggestions"]
+        },
+        "SNOW-011": {
+            "description": "Bot must support data refreshing",
+            "acceptance_criteria": ["Clear refresh status", "Show data timestamp"]
+        },
+        "SEC-001": {
+            "description": "Bot must handle authentication securely",
+            "acceptance_criteria": ["Secure credential storage", "Token management"]
+        },
+        "SEC-002": {
+            "description": "Bot must handle data exports securely",
+            "acceptance_criteria": ["Secure downloads", "Access control"]
+        },
+        "CONV-001": {
+            "description": "Bot must maintain conversation context",
+            "acceptance_criteria": ["Context retention", "State management"]
+        },
+        "CONV-002": {
+            "description": "Bot must support multi-turn conversations",
+            "acceptance_criteria": ["Context building", "Progressive refinement"]
+        },
+        "UI-001": {
+            "description": "Bot must offer data presentation options",
+            "acceptance_criteria": ["Multiple formats", "Clear options"]
+        },
+        "UI-002": {
+            "description": "Bot must support visualization selection",
+            "acceptance_criteria": ["Chart type options", "Format switching"]
+        },
+        "UI-003": {
+            "description": "Bot must show query history clearly",
+            "acceptance_criteria": ["List recent queries", "Show results"]
+        },
+        "UI-004": {
+            "description": "Bot must show performance insights clearly",
+            "acceptance_criteria": ["Performance metrics", "Optimization tips"]
+        },
+        "UI-005": {
+            "description": "Bot must show data refresh status",
+            "acceptance_criteria": ["Clear status updates", "Progress indication"]
+        }
+    }
+} 

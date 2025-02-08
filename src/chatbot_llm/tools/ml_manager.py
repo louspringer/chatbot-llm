@@ -53,7 +53,7 @@ class ModelManager:
             }
             for ex in self.training_data
         ]
-        
+
         with output_path.open('w') as f:
             json.dump(data, f, indent=2)
 
@@ -61,7 +61,7 @@ class ModelManager:
         """Load training data from file."""
         with input_path.open('r') as f:
             data = json.load(f)
-        
+
         self.training_data = [
             QueryExample(**example) for example in data
         ]
@@ -76,7 +76,7 @@ class ModelManager:
             "translation_time": 0.0,
             "error_rate": 0.0
         }
-        
+
         # TODO: Implement actual evaluation logic
         return metrics
 
@@ -86,7 +86,7 @@ class ModelManager:
     ) -> None:
         """Update model performance metrics."""
         self.performance_metrics.update(metrics)
-        
+
         # Log performance changes
         logger.info(
             "Model performance updated: %s",
@@ -117,7 +117,7 @@ class QueryTranslator:
     ) -> Tuple[str, float]:
         """
         Translate natural language query to SQL.
-        
+
         Returns:
             Tuple of (sql_query, confidence_score)
         """
@@ -155,7 +155,7 @@ class QueryTranslator:
                 sql_query,
                 self.context
             )
-        
+
         # Log feedback
         logger.info(
             "Translation feedback - Query: %s, Success: %s, Feedback: %s",
@@ -204,10 +204,10 @@ class PerformanceMonitor:
     ) -> List[str]:
         """
         Check for performance degradation.
-        
+
         Args:
             threshold: Maximum allowed degradation (0.1 = 10%)
-        
+
         Returns:
             List of metrics showing degradation
         """
@@ -215,11 +215,11 @@ class PerformanceMonitor:
         for metric, values in self.metrics.items():
             if len(values) < 2:
                 continue
-                
+
             recent = np.mean(values[-10:])  # Last 10 measurements
             baseline = np.mean(values[:-10])  # Earlier measurements
-            
+
             if (baseline - recent) / baseline > threshold:
                 degraded.append(metric)
-        
-        return degraded 
+
+        return degraded

@@ -36,10 +36,10 @@ async def main(req: func.HttpRequest) -> func.HttpResponse:
     # Convert the request body to Activity
     body = req.get_body().decode()
     activity = Activity().deserialize(json.loads(body))
-    
+
     # Process activity
     auth_header = req.headers.get("Authorization", "")
-    
+
     response = await ADAPTER.process_activity(activity, auth_header, BOT.on_turn)
     if response:
         return func.HttpResponse(
@@ -53,13 +53,13 @@ async def main(req: func.HttpRequest) -> func.HttpResponse:
 if __name__ == "__main__":
     import asyncio
     from aiohttp import web
-    
+
     async def messages(req):
         """Handle local bot messages."""
         try:
             body = await req.json()
             activity = Activity().deserialize(body)
-            
+
             # For local testing, just echo back
             if activity.type == "message":
                 return web.json_response({
@@ -67,7 +67,7 @@ if __name__ == "__main__":
                     "text": f"Echo: {activity.text}"
                 })
             return web.Response(status=200)
-            
+
         except Exception as e:
             return web.json_response(
                 data={"error": str(e)},
@@ -76,5 +76,5 @@ if __name__ == "__main__":
 
     app = web.Application()
     app.router.add_post("/api/messages", messages)
-    
-    web.run_app(app, host="localhost", port=3978) 
+
+    web.run_app(app, host="localhost", port=3978)

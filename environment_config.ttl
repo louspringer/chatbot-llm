@@ -1,0 +1,277 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix meta: <./meta#> .
+@prefix problem: <./problem#> .
+@prefix solution: <./solution#> .
+@prefix conversation: <./conversation#> .
+@prefix guidance: <./guidance#> .
+@prefix metameta: <./metameta#> .
+@prefix envconfig: <./environment_config#> .
+@prefix dc: <http://purl.org/dc/elements/1.1/> .
+
+# Ontology Definition
+envconfig:EnvironmentConfigOntology rdf:type owl:Ontology ;
+    dc:title "Environment Configuration Ontology" ;
+    dc:version "1.1.0" ;
+    rdfs:label "Environment Configuration Ontology" ;
+    rdfs:comment "Ontology for managing environment configuration artifacts with impact analysis and drift detection" ;
+    owl:imports <./meta>, <./problem>, <./solution>, <./guidance> .
+
+# Core Classes
+envconfig:ConfigurationArtifact rdf:type owl:Class ;
+    rdfs:label "Configuration Artifact" ;
+    rdfs:comment "A configuration artifact in the system (e.g., .env files, templates)" ;
+    rdfs:subClassOf meta:AbstractionDimension .
+
+envconfig:EnvFile rdf:type owl:Class ;
+    rdfs:subClassOf envconfig:ConfigurationArtifact ;
+    rdfs:label "Environment File" ;
+    rdfs:comment "An environment file containing configuration variables" .
+
+envconfig:ConfigTemplate rdf:type owl:Class ;
+    rdfs:subClassOf envconfig:ConfigurationArtifact ;
+    rdfs:label "Configuration Template" ;
+    rdfs:comment "A template for configuration files" .
+
+envconfig:ConfigExample rdf:type owl:Class ;
+    rdfs:subClassOf envconfig:ConfigurationArtifact ;
+    rdfs:label "Configuration Example" ;
+    rdfs:comment "An example configuration with dummy values" .
+
+envconfig:Owner rdf:type owl:Class ;
+    rdfs:label "Configuration Owner" ;
+    rdfs:comment "An ontology that owns configuration artifacts" ;
+    rdfs:subClassOf owl:Ontology .
+
+# Properties
+envconfig:hasOwner rdf:type owl:ObjectProperty ;
+    rdfs:label "has owner" ;
+    rdfs:domain envconfig:ConfigurationArtifact ;
+    rdfs:range envconfig:Owner ;
+    rdfs:comment "Links a configuration artifact to its owning ontology" .
+
+envconfig:hasTemplate rdf:type owl:ObjectProperty ;
+    rdfs:label "has template" ;
+    rdfs:domain envconfig:EnvFile ;
+    rdfs:range envconfig:ConfigTemplate ;
+    rdfs:comment "Links an environment file to its template" .
+
+envconfig:hasExample rdf:type owl:ObjectProperty ;
+    rdfs:label "has example" ;
+    rdfs:domain envconfig:ConfigTemplate ;
+    rdfs:range envconfig:ConfigExample ;
+    rdfs:comment "Links a template to its example" .
+
+envconfig:requiredVariables rdf:type owl:DatatypeProperty ;
+    rdfs:label "required variables" ;
+    rdfs:domain envconfig:ConfigurationArtifact ;
+    rdfs:range rdf:List ;
+    rdfs:comment "List of required variables in the configuration" .
+
+# Impact Analysis Classes
+envconfig:ImpactLevel a owl:Class ;
+    rdfs:label "Impact Level" ;
+    rdfs:comment "Severity level of configuration changes" .
+
+envconfig:High a envconfig:ImpactLevel ;
+    rdfs:label "High Impact" ;
+    rdfs:comment "Changes that require full revalidation" .
+
+envconfig:Medium a envconfig:ImpactLevel ;
+    rdfs:label "Medium Impact" ;
+    rdfs:comment "Changes that require partial revalidation" .
+
+envconfig:Low a envconfig:ImpactLevel ;
+    rdfs:label "Low Impact" ;
+    rdfs:comment "Changes with minimal validation requirements" .
+
+envconfig:DependencyChain a owl:Class ;
+    rdfs:label "Dependency Chain" ;
+    rdfs:comment "Tracks configuration item dependencies and their impacts" .
+
+# Configuration Drift Classes
+envconfig:ConfigurationState a owl:Class ;
+    rdfs:label "Configuration State" ;
+    rdfs:comment "Represents a snapshot of configuration at a point in time" .
+
+envconfig:DriftStatus a owl:Class ;
+    rdfs:label "Drift Status" ;
+    rdfs:comment "Status of configuration drift detection" .
+
+envconfig:DriftThreshold a owl:Class ;
+    rdfs:label "Drift Threshold" ;
+    rdfs:comment "Threshold for acceptable configuration drift" .
+
+# Impact Analysis Properties
+envconfig:hasImpactLevel rdf:type owl:ObjectProperty ;
+    rdfs:label "has impact level" ;
+    rdfs:domain envconfig:ConfigurationArtifact ;
+    rdfs:range envconfig:ImpactLevel ;
+    rdfs:comment "Specifies the impact level of changes to this artifact" .
+
+envconfig:impactsArtifact rdf:type owl:ObjectProperty ;
+    rdfs:label "impacts artifact" ;
+    rdfs:domain envconfig:ConfigurationArtifact ;
+    rdfs:range envconfig:ConfigurationArtifact ;
+    rdfs:comment "Indicates which artifacts are impacted by changes" .
+
+envconfig:requiresRevalidation rdf:type owl:DatatypeProperty ;
+    rdfs:label "requires revalidation" ;
+    rdfs:domain envconfig:ConfigurationArtifact ;
+    rdfs:range xsd:boolean ;
+    rdfs:comment "Indicates if the artifact requires revalidation" .
+
+# Configuration Drift Properties
+envconfig:baselineState rdf:type owl:ObjectProperty ;
+    rdfs:label "baseline state" ;
+    rdfs:domain envconfig:ConfigurationArtifact ;
+    rdfs:range envconfig:ConfigurationState ;
+    rdfs:comment "The baseline configuration state" .
+
+envconfig:currentState rdf:type owl:ObjectProperty ;
+    rdfs:label "current state" ;
+    rdfs:domain envconfig:ConfigurationArtifact ;
+    rdfs:range envconfig:ConfigurationState ;
+    rdfs:comment "The current configuration state" .
+
+envconfig:driftThreshold rdf:type owl:DatatypeProperty ;
+    rdfs:label "drift threshold" ;
+    rdfs:domain envconfig:ConfigurationArtifact ;
+    rdfs:range xsd:float ;
+    rdfs:comment "Acceptable threshold for configuration drift (0.0-1.0)" .
+
+envconfig:lastValidated rdf:type owl:DatatypeProperty ;
+    rdfs:label "last validated" ;
+    rdfs:domain envconfig:ConfigurationArtifact ;
+    rdfs:range xsd:dateTime ;
+    rdfs:comment "Timestamp of last validation" .
+
+# Enhanced Validation Rules
+envconfig:ValidationRule a owl:Class ;
+    rdfs:label "Validation Rule" ;
+    rdfs:comment "Rule for validating configuration artifacts" .
+
+envconfig:ValidationFrequency a owl:Class ;
+    rdfs:label "Validation Frequency" ;
+    rdfs:comment "Required frequency of validation checks" .
+
+envconfig:Daily a envconfig:ValidationFrequency .
+envconfig:Weekly a envconfig:ValidationFrequency .
+envconfig:Monthly a envconfig:ValidationFrequency .
+envconfig:OnChange a envconfig:ValidationFrequency .
+
+# SHACL Validation Shapes
+envconfig:ConfigurationArtifactShape a sh:NodeShape ;
+    sh:targetClass envconfig:ConfigurationArtifact ;
+    sh:property [
+        sh:path envconfig:hasOwner ;
+        sh:minCount 1 ;
+        sh:message "Every configuration artifact must have an owner"
+    ] ;
+    sh:property [
+        sh:path envconfig:hasImpactLevel ;
+        sh:minCount 1 ;
+        sh:message "Every configuration artifact must have an impact level"
+    ] ;
+    sh:property [
+        sh:path envconfig:driftThreshold ;
+        sh:minCount 1 ;
+        sh:datatype xsd:float ;
+        sh:minInclusive 0.0 ;
+        sh:maxInclusive 1.0 ;
+        sh:message "Drift threshold must be between 0.0 and 1.0"
+    ] ;
+    sh:property [
+        sh:path envconfig:lastValidated ;
+        sh:minCount 1 ;
+        sh:message "Last validation timestamp must be recorded"
+    ] .
+
+# Instances
+envconfig:DotEnvTemplate rdf:type envconfig:ConfigTemplate ;
+    rdfs:label ".env.template" ;
+    envconfig:hasOwner meta:CoreOntology ;
+    envconfig:requiredVariables (
+        "TEAMS_BOT_ID"
+        "TEAMS_BOT_PASSWORD"
+        "DEBUG"
+        "LOG_LEVEL"
+        "OP_CONNECT_HOST"
+        "OP_CONNECT_TOKEN"
+    ) ;
+    envconfig:hasImpactLevel envconfig:High ;
+    envconfig:impactsArtifact envconfig:DotEnv ;
+    envconfig:requiresRevalidation true ;
+    envconfig:driftThreshold 0.1 ;
+    envconfig:lastValidated "2024-03-20T00:00:00Z"^^xsd:dateTime .
+
+envconfig:DotEnvExample rdf:type envconfig:ConfigExample ;
+    rdfs:label ".env.example" ;
+    envconfig:hasOwner guidance:LLMGuidanceOntology ;
+    envconfig:requiredVariables (
+        "TEAMS_BOT_ID=your-bot-id"
+        "TEAMS_BOT_PASSWORD=your-bot-password"
+        "DEBUG=true"
+        "LOG_LEVEL=DEBUG"
+        "OP_CONNECT_HOST=http://localhost:8080"
+        "OP_CONNECT_TOKEN=your-token"
+    ) .
+
+envconfig:DotEnv rdf:type envconfig:EnvFile ;
+    rdfs:label ".env" ;
+    envconfig:hasOwner solution:SolutionOntology ;
+    envconfig:hasTemplate envconfig:DotEnvTemplate ;
+    envconfig:hasExample envconfig:DotEnvExample ;
+    envconfig:requiredVariables (
+        "TEAMS_BOT_ID"
+        "TEAMS_BOT_PASSWORD"
+        "DEBUG"
+        "LOG_LEVEL"
+        "OP_CONNECT_HOST"
+        "OP_CONNECT_TOKEN"
+    ) .
+
+# Configuration State Tracking
+envconfig:TemplateState a envconfig:ConfigurationState ;
+    rdfs:label "Template State" ;
+    envconfig:stateHash "sha256:1234567890abcdef" ;
+    envconfig:timestamp "2024-03-20T00:00:00Z"^^xsd:dateTime ;
+    envconfig:validatedBy "environment-validator" .
+
+# Dependency Chain Example
+envconfig:EnvDependencyChain a envconfig:DependencyChain ;
+    rdfs:label "Environment Configuration Dependencies" ;
+    envconfig:primaryArtifact envconfig:DotEnvTemplate ;
+    envconfig:dependencies (
+        envconfig:DotEnv
+        envconfig:DotEnvExample
+    ) ;
+    envconfig:impactAssessment [
+        a rdf:Seq ;
+        rdf:_1 [
+            envconfig:artifact envconfig:DotEnv ;
+            envconfig:impactLevel envconfig:High ;
+            envconfig:validationRequired true
+        ] ;
+        rdf:_2 [
+            envconfig:artifact envconfig:DotEnvExample ;
+            envconfig:impactLevel envconfig:Medium ;
+            envconfig:validationRequired true
+        ]
+    ] .
+
+# Validation Rules
+envconfig:TemplateValidationRule a envconfig:ValidationRule ;
+    rdfs:label "Template Validation Rule" ;
+    envconfig:targetArtifact envconfig:DotEnvTemplate ;
+    envconfig:frequency envconfig:OnChange ;
+    envconfig:validationScript "validate_template.py" ;
+    envconfig:requiredChecks [
+        rdf:_1 "Check required variables" ;
+        rdf:_2 "Validate ownership metadata" ;
+        rdf:_3 "Verify format consistency" ;
+        rdf:_4 "Check security requirements"
+    ] . 

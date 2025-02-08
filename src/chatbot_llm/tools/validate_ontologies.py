@@ -19,7 +19,7 @@ def validate_all():
     """Validate all ontology files and their dependencies."""
     ontologies = [
         "meta.ttl",
-        "metameta.ttl", 
+        "metameta.ttl",
         "conversation.ttl",
         "problem.ttl",
         "solution.ttl",
@@ -27,15 +27,15 @@ def validate_all():
         "cortexteams.ttl",
         "guidance.ttl"
     ]
-    
+
     results = []
     for onto in ontologies:
         valid = check_ontology(onto)
         results.append((onto, valid))
         print(f"Checking {onto}: {'✓' if valid else '✗'}")
-    
+
     return all(valid for _, valid in results)
 
 
 if __name__ == "__main__":
-    validate_all() 
+    validate_all()

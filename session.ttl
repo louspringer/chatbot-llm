@@ -112,7 +112,8 @@ session:currentContext a session:ContextState ;
         a session:SecurityContext ;
         session:requiresValidation true ;
         session:securityLevel "High"
-    ] .
+    ] ;
+    session:hasEnvironmentState :currentEnvironment .
 
 # SHACL Validation
 session:TaskShape a sh:NodeShape ;
@@ -402,7 +403,7 @@ session:currentCheckpoint a session:CheckpointProjection ;
         session:lastUpdated "2024-03-20T18:10:00Z"^^xsd:dateTime ;
         session:linkedTask :ProjectStructureTask ;
         session:promptVersion "1.2" ;
-        session:validationStatus "Valid" ;
+        session:validationStatus "Completed" ;
         session:taskProgress [
             rdf:_1 "Define directory structure" ;
             rdf:_2 "Document file organization" ;
@@ -410,64 +411,11 @@ session:currentCheckpoint a session:CheckpointProjection ;
             rdf:_4 "Create project README"
         ] ;
         session:nextSteps [
-            rdf:_1 "Setup Development Environment" ;
-            rdf:_2 "Initialize Bot Structure" ;
-            rdf:_3 "Implement Core Features"
-        ] ;
-        session:responseFormat [
-            a session:ResponseFormat ;
-            session:syntax "turtle" ;
-            session:structure "RDF/OWL" ;
-            session:validation "SHACL"
+            rdf:_1 "Move to next issue" ;
+            rdf:_2 "Clean up development environment" ;
+            rdf:_3 "Archive completed tasks"
         ]
-    ] ;
-    session:resumptionPrompt """
-    Project: Snowflake Cortex Teams Bot
-    
-    Current Context:
-    - Branch: feature/p1-project-planning
-    - Issue: #1 Initial Project Structure and Planning
-    - Task: Project Structure Definition
-    
-    Current Status:
-    ✓ Directory structure defined and documented
-    ✓ File organization patterns established
-    ✓ Naming conventions specified
-    ✓ Project README completed
-    
-    Progress Indicators:
-    [██████████] 100% Complete
-    - Structure Definition: DONE
-    - Organization Docs: DONE
-    - Naming Rules: DONE
-    - README: DONE
-    
-    Next Steps:
-    1. Setup Development Environment
-       - Create conda environment
-       - Configure dependencies
-       - Setup development tools
-    
-    2. Initialize Bot Structure
-       - Core message handling
-       - State management
-       - Error middleware
-    
-    3. Implement Core Features
-       - Teams integration
-       - Snowflake connection
-       - Basic commands
-    
-    Response Format Requirements:
-    1. Syntax: Turtle/RDF
-    2. Structure: Use RDF/OWL classes and properties
-    3. Validation: Include SHACL shapes
-    4. Components:
-       - Clear class definitions
-       - Property relationships
-       - Instance examples
-       - Validation rules
-    """ .
+    ] .
 
 # Validation rules for checkpoints
 session:CheckpointShape a sh:NodeShape ;
@@ -927,4 +875,225 @@ session:PromptUpdateTrigger a owl:Class ;
         rdf:_2 "Update progress status" ;
         rdf:_3 "Update next steps" ;
         rdf:_4 "Validate format"
-    ] . 
+    ] .
+
+# Environment Management
+session:Environment a owl:Class ;
+    rdfs:label "Development Environment" ;
+    rdfs:comment "Represents a conda environment used in the project" .
+
+session:EnvironmentStatus a owl:Class ;
+    rdfs:label "Environment Status" ;
+    rdfs:comment "Status of a development environment" .
+
+session:Active a session:EnvironmentStatus ;
+    rdfs:label "Active" ;
+    rdfs:comment "Environment is currently in use" .
+
+session:Deprecated a session:EnvironmentStatus ;
+    rdfs:label "Deprecated" ;
+    rdfs:comment "Environment should not be used for new development" .
+
+session:hasEnvironmentStatus a owl:ObjectProperty ;
+    rdfs:domain session:Environment ;
+    rdfs:range session:EnvironmentStatus ;
+    rdfs:comment "Current status of the environment" .
+
+session:environmentFile a owl:DatatypeProperty ;
+    rdfs:domain session:Environment ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Path to environment.yml file" .
+
+session:pythonVersion a owl:DatatypeProperty ;
+    rdfs:domain session:Environment ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Python version used in environment" .
+
+session:createdDate a owl:DatatypeProperty ;
+    rdfs:domain session:Environment ;
+    rdfs:range xsd:date ;
+    rdfs:comment "Date environment was created" .
+
+session:purpose a owl:DatatypeProperty ;
+    rdfs:domain session:Environment ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Purpose and scope of the environment" .
+
+# Project Environment Instance
+session:chatbotLLMEnv a session:Environment ;
+    rdfs:label "chatbot-llm" ;
+    rdfs:comment "Main development environment for Snowflake Cortex Teams Bot" ;
+    session:hasEnvironmentStatus session:Active ;
+    session:environmentFile "environment.yml" ;
+    session:pythonVersion ">=3.10,<3.12" ;
+    session:createdDate "2024-03-20"^^xsd:date ;
+    session:purpose "Primary development environment for Teams bot with Snowflake integration" .
+
+# Environment Validation Shape
+session:EnvironmentShape a sh:NodeShape ;
+    sh:targetClass session:Environment ;
+    sh:property [
+        sh:path session:hasEnvironmentStatus ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:message "Environment must have exactly one status"
+    ] ;
+    sh:property [
+        sh:path session:environmentFile ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:message "Environment must reference an environment.yml file"
+    ] ;
+    sh:property [
+        sh:path session:pythonVersion ;
+        sh:minCount 1 ;
+        sh:message "Environment must specify Python version"
+    ] ;
+    sh:property [
+        sh:path session:purpose ;
+        sh:minCount 1 ;
+        sh:message "Environment must document its purpose"
+    ] .
+
+# Link environment to project phases
+session:phase1
+    session:requiresEnvironment session:chatbotLLMEnv.
+
+session:phase2
+    session:requiresEnvironment session:chatbotLLMEnv.
+
+session:phase3
+    session:requiresEnvironment session:chatbotLLMEnv.
+
+session:phase4
+    session:requiresEnvironment session:chatbotLLMEnv.
+
+# Environment State Management
+session:EnvironmentState a owl:Class ;
+    rdfs:label "Environment State" ;
+    rdfs:comment "Tracks the state of development environments" .
+
+session:hasEnvironmentState a owl:ObjectProperty ;
+    rdfs:domain session:CurrentContext ;
+    rdfs:range session:EnvironmentState ;
+    rdfs:comment "Links to current environment state" .
+
+session:hasWorkingConfig a owl:DatatypeProperty ;
+    rdfs:domain session:EnvironmentState ;
+    rdfs:range xsd:boolean ;
+    rdfs:comment "Indicates if environment has a working configuration" .
+
+session:lastTestedDate a owl:DatatypeProperty ;
+    rdfs:domain session:EnvironmentState ;
+    rdfs:range xsd:dateTime ;
+    rdfs:comment "When environment was last successfully tested" .
+
+session:configurationFiles a owl:ObjectProperty ;
+    rdfs:domain session:EnvironmentState ;
+    rdfs:range rdf:List ;
+    rdfs:comment "List of configuration files managing the environment" .
+
+# Current Environment State
+:currentEnvironment a session:EnvironmentState ;
+    rdfs:label "Current Environment State" ;
+    session:hasWorkingConfig true ;
+    session:lastTestedDate "2024-03-20T18:10:00Z"^^xsd:dateTime ;
+    session:configurationFiles (
+        "pyproject.toml"
+        "environment.yml"
+    ) ;
+    session:notes [
+        rdf:_1 "Working bot environment confirmed through testing" ;
+        rdf:_2 "Primary configuration through pyproject.toml" ;
+        rdf:_3 "environment.yml for conda compatibility" ;
+        rdf:_4 "Dependencies managed through manage_deps.py tool"
+    ] .
+
+# Update current context to link environment state
+session:currentContext
+    session:hasEnvironmentState :currentEnvironment .
+
+# Checkpoint Management
+session:Checkpoint a owl:Class ;
+    rdfs:label "Checkpoint" ;
+    rdfs:comment "Represents a checkpoint in the conversation flow" .
+
+session:Component a owl:Class ;
+    rdfs:label "Component" ;
+    rdfs:comment "A component of a checkpoint with specific functionality" .
+
+session:PromptState a owl:Class ;
+    rdfs:label "Prompt State" ;
+    rdfs:comment "The state of the current prompt in the conversation" .
+
+session:hasComponent a owl:ObjectProperty ;
+    rdfs:domain session:Checkpoint ;
+    rdfs:range session:Component ;
+    rdfs:comment "Links a checkpoint to its components" .
+
+session:hasPromptState a owl:ObjectProperty ;
+    rdfs:domain session:Checkpoint ;
+    rdfs:range session:PromptState ;
+    rdfs:comment "Links a checkpoint to its prompt state" .
+
+session:resumptionPrompt a owl:DatatypeProperty ;
+    rdfs:domain session:Checkpoint ;
+    rdfs:range xsd:string ;
+    rdfs:comment "The prompt to resume the conversation from this checkpoint" .
+
+session:componentPriority a owl:DatatypeProperty ;
+    rdfs:domain session:Component ;
+    rdfs:range xsd:integer ;
+    rdfs:comment "Priority order of the component (1-5)" .
+
+session:lastUpdated a owl:DatatypeProperty ;
+    rdfs:domain session:PromptState ;
+    rdfs:range xsd:dateTime ;
+    rdfs:comment "Timestamp of last prompt state update" .
+
+session:linkedTask a owl:ObjectProperty ;
+    rdfs:domain session:PromptState ;
+    rdfs:range session:Task ;
+    rdfs:comment "Links a prompt state to its associated task" .
+
+# Current Checkpoint Instance
+session:currentCheckpoint a session:Checkpoint ;
+    session:resumptionPrompt "How can I help you with the Teams Bot development?" ;
+    session:hasPromptState session:currentPromptState ;
+    session:hasComponent session:contextComponent ;
+    session:hasComponent session:taskComponent ;
+    session:hasComponent session:validationComponent .
+
+session:currentPromptState a session:PromptState ;
+    session:lastUpdated "2024-02-07T06:10:00Z"^^xsd:dateTime ;
+    session:linkedTask session:currentTask .
+
+session:currentTask a session:Task ;
+    rdfs:label "Teams Bot Development" ;
+    session:requiresPromptUpdate true ;
+    session:hasStatus session:InProgress .
+
+# Checkpoint Components
+session:contextComponent a session:Component ;
+    rdfs:label "Context Manager" ;
+    session:componentPriority 1 ;
+    session:requiredFiles "tools/validate_session_state.py" ;
+    session:branch "feature/context-management" ;
+    session:issue "42" ;
+    session:issueTitle "Implement Context Management" .
+
+session:taskComponent a session:Component ;
+    rdfs:label "Task Tracker" ;
+    session:componentPriority 2 ;
+    session:requiredFiles "tools/get_checkpoint.py" ;
+    session:branch "feature/task-tracking" ;
+    session:issue "43" ;
+    session:issueTitle "Implement Task Tracking" .
+
+session:validationComponent a session:Component ;
+    rdfs:label "Validation Handler" ;
+    session:componentPriority 3 ;
+    session:requiredFiles "tools/validate_local_env.py" ;
+    session:branch "feature/validation" ;
+    session:issue "44" ;
+    session:issueTitle "Implement Validation System" . 

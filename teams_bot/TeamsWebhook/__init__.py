@@ -45,7 +45,7 @@ async def on_error(context, error):
     """Error handler."""
     logger.error(f"Bot encountered error: {error}")
     logger.error(traceback.format_exc())
-    
+
     # Send trace activity
     await context.send_trace_activity(
         f"Bot encountered error: {error}",
@@ -53,7 +53,7 @@ async def on_error(context, error):
         "https://www.botframework.com/schemas/error",
         "TurnError"
     )
-    
+
     # Send error message to user
     await context.send_activity(
         "The bot encountered an error. Please try again."
@@ -70,13 +70,13 @@ async def process_request(req: func.HttpRequest) -> func.HttpResponse:
             "Invalid content type",
             status_code=415
         )
-    
+
     body = await req.get_body()
-    
+
     # Process activity
     async def callback(context):
         await BOT.on_turn(context)
-    
+
     try:
         await ADAPTER.process_activity(body, req.headers, callback)
         return func.HttpResponse(status_code=200)
@@ -96,4 +96,4 @@ async def teams_webhook_async(req: func.HttpRequest) -> func.HttpResponse:
 
 def main(req: func.HttpRequest) -> func.HttpResponse:
     """Azure Functions entry point."""
-    return asyncio.run(teams_webhook_async(req)) 
+    return asyncio.run(teams_webhook_async(req))

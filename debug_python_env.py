@@ -23,7 +23,7 @@ try:
     print("\nBotbuilder.core location:", os.path.dirname(botbuilder.core.__file__))
 except ImportError as e:
     print("\nFailed to import botbuilder.core:", e)
-    
+
     # Check if package exists in any sys.path location
     print("\nSearching for botbuilder in sys.path locations:")
     for path in sys.path:
@@ -38,4 +38,4 @@ except ImportError as e:
 # Print site-packages directories
 print("\nSite-packages directories:")
 for path in site.getsitepackages():
-    print(f"- {path}") 
+    print(f"- {path}")

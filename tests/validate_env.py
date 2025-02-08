@@ -45,10 +45,10 @@ def check_package(package: str, min_version: str) -> Tuple[bool, str]:
             module_name = package.replace("-", "_")
             importlib.import_module(module_name)
             version = pkg_resources.get_distribution(package).version
-        
+
         parsed_version = pkg_resources.parse_version(version)
         parsed_min = pkg_resources.parse_version(min_version)
-        
+
         if parsed_version >= parsed_min:
             return True, f"{package} version {version} OK"
         return False, f"{package} version {version} < required {min_version}"
@@ -81,19 +81,19 @@ def check_teams_bot_dependencies() -> List[Tuple[bool, str]]:
 def check_snowflake_dependencies() -> List[Tuple[bool, str]]:
     """Check Snowflake integration dependencies."""
     results = []
-    
+
     # Check package installation
     results.extend([
         check_package("snowflake-snowpark-python", "1.0.0"),
     ])
-    
+
     # Validate Snowpark session
     try:
         from snowflake.snowpark import Session
-        
+
         # Create session with minimal config
         session = Session.builder.configs({}).create()
-        
+
         # Run test query
         result = session.sql(
             "SELECT CURRENT_WAREHOUSE() as warehouse"
@@ -107,7 +107,7 @@ def check_snowflake_dependencies() -> List[Tuple[bool, str]]:
     except Exception as e:
         err_msg = f"Snowpark session validation failed: {str(e)}"
         results.append((False, err_msg))
-    
+
     return results
 
 
