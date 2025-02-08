@@ -1224,4 +1224,117 @@ session:implements a owl:ObjectProperty ;
     session:blockers [
         rdf:_1 "Need security audit" ;
         rdf:_2 "Pending Azure Key Vault integration"
-    ] . 
+    ] .
+
+# Update current task status
+:TeamsDeploymentTask a session:Task ;
+    rdfs:label "Teams Bot Deployment Structure" ;
+    rdfs:comment "Consolidate and optimize Teams bot deployment structure" ;
+    session:hasStatus session:Completed ;
+    session:hasPriority 1 ;
+    session:completedSteps [
+        rdf:_1 "Consolidated to Azure Functions structure" ;
+        rdf:_2 "Removed redundant local development files" ;
+        rdf:_3 "Moved function code to messages/ directory" ;
+        rdf:_4 "Updated start-local.sh for Azure Functions Core Tools" ;
+        rdf:_5 "Updated .gitignore for deployment artifacts"
+    ] ;
+    session:completionDate "2024-02-08"^^xsd:date .
+
+# Update current context state
+session:currentContext 
+    session:hasActiveTask :TeamsDeploymentTask ;
+    session:lastUpdated "2024-02-08T03:30:00Z"^^xsd:dateTime ;
+    session:deploymentState [
+        a session:DeploymentState ;
+        session:deploymentType "Azure Functions" ;
+        session:localDevelopment true ;
+        session:cloudDeployment true ;
+        session:deploymentStructure [
+            rdf:_1 "messages/ - Function code" ;
+            rdf:_2 "host.json - Function configuration" ;
+            rdf:_3 "start-local.sh - Local development script"
+        ] ;
+        session:validationStatus "Completed"
+    ] .
+
+# Add deployment validation requirements
+:DeploymentValidation a session:ValidationRequirement ;
+    rdfs:label "Deployment Structure Validation" ;
+    session:validationSteps [
+        rdf:_1 "Verify Azure Functions structure" ;
+        rdf:_2 "Test local development setup" ;
+        rdf:_3 "Validate cloud deployment" ;
+        rdf:_4 "Check environment configurations"
+    ] ;
+    session:completionStatus "Validated" ;
+    session:lastValidated "2024-02-08T03:30:00Z"^^xsd:dateTime .
+
+# Update next steps
+:NextSteps a session:PlanningPhase ;
+    rdfs:label "Next Steps After Deployment Structure" ;
+    session:hasStep [
+        rdf:_1 [
+            a session:Step ;
+            rdfs:label "Test Local Development" ;
+            session:priority 1 ;
+            session:requirements [
+                rdf:_1 "Run bot with Azure Functions Core Tools" ;
+                rdf:_2 "Test with Bot Framework Emulator" ;
+                rdf:_3 "Verify state management"
+            ]
+        ] ;
+        rdf:_2 [
+            a session:Step ;
+            rdfs:label "Complete Cloud Deployment" ;
+            session:priority 2 ;
+            session:requirements [
+                rdf:_1 "Deploy to Azure Functions" ;
+                rdf:_2 "Configure production settings" ;
+                rdf:_3 "Verify Teams integration"
+            ]
+        ] ;
+        rdf:_3 [
+            a session:Step ;
+            rdfs:label "Security Review" ;
+            session:priority 3 ;
+            session:requirements [
+                rdf:_1 "Review environment configurations" ;
+                rdf:_2 "Validate secret management" ;
+                rdf:_3 "Check deployment artifacts handling"
+            ]
+        ]
+    ] .
+
+# Update file mapping
+:DeploymentFileMapping a session:FileMapping ;
+    rdfs:label "Deployment Structure Files" ;
+    session:hasPrimaryPhase session:phase1 ;
+    session:files [
+        rdf:_1 [
+            rdfs:label "messages/__init__.py" ;
+            session:purpose "Main function code" ;
+            session:status "Active"
+        ] ;
+        rdf:_2 [
+            rdfs:label "messages/function.json" ;
+            session:purpose "Function configuration" ;
+            session:status "Active"
+        ] ;
+        rdf:_3 [
+            rdfs:label "host.json" ;
+            session:purpose "Function app configuration" ;
+            session:status "Active"
+        ] ;
+        rdf:_4 [
+            rdfs:label "start-local.sh" ;
+            session:purpose "Local development script" ;
+            session:status "Active"
+        ]
+    ] ;
+    session:removedFiles [
+        rdf:_1 "app.py" ;
+        rdf:_2 "function_app.py" ;
+        rdf:_3 "run_local.py"
+    ] ;
+    session:lastUpdated "2024-02-08T03:30:00Z"^^xsd:dateTime . 
