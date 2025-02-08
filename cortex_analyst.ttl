@@ -1,0 +1,114 @@
+@prefix meta: <./meta#> .
+@prefix metameta: <./metameta#> .
+@prefix problem: <./problem#> .
+@prefix solution: <./solution#> .
+@prefix conversation: <./conversation#> .
+@prefix guidance: <./guidance#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix ca: <./cortex_analyst#> .
+
+# Classes
+ca:AnalystSystem a owl:Class ;
+    rdfs:label "Cortex Analyst System" ;
+    rdfs:comment "The core system that provides AI-powered analysis capabilities" .
+
+ca:SemanticModel a owl:Class ;
+    rdfs:label "Semantic Model" ;
+    rdfs:comment "A YAML-based model defining the semantic layer for data analysis" .
+
+ca:Table a owl:Class ;
+    rdfs:label "Table" ;
+    rdfs:comment "A database table containing business data" .
+
+ca:Measure a owl:Class ;
+    rdfs:label "Measure" ;
+    rdfs:comment "A quantifiable metric that can be analyzed" .
+
+ca:TimeDimension a owl:Class ;
+    rdfs:label "Time Dimension" ;
+    rdfs:comment "A temporal dimension for analyzing data over time" .
+
+ca:ChatInterface a owl:Class ;
+    rdfs:label "Chat Interface" ;
+    rdfs:comment "User interface for interacting with the analyst system" .
+
+# Properties
+ca:hasMeasure a owl:ObjectProperty ;
+    rdfs:domain ca:Table ;
+    rdfs:range ca:Measure ;
+    rdfs:comment "Relates a table to its measures" .
+
+ca:hasTimeDimension a owl:ObjectProperty ;
+    rdfs:domain ca:Table ;
+    rdfs:range ca:TimeDimension ;
+    rdfs:comment "Relates a table to its time dimensions" .
+
+ca:hasExpression a owl:DatatypeProperty ;
+    rdfs:domain ca:Measure ;
+    rdfs:range xsd:string ;
+    rdfs:comment "The SQL expression defining a measure" .
+
+ca:hasSynonym a owl:DatatypeProperty ;
+    rdfs:domain ca:Measure ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Alternative names for a measure" .
+
+ca:hasDefaultAggregation a owl:DatatypeProperty ;
+    rdfs:domain ca:Measure ;
+    rdfs:range xsd:string ;
+    rdfs:comment "The default aggregation method for a measure" .
+
+# Individuals
+ca:RevenueModel a ca:SemanticModel ;
+    rdfs:label "Revenue Analysis Model" ;
+    rdfs:comment "Semantic model for revenue analysis and forecasting" .
+
+ca:DailyRevenueTable a ca:Table ;
+    rdfs:label "Daily Revenue" ;
+    rdfs:comment "Daily revenue and cost metrics" ;
+    ca:hasTimeDimension ca:DateDimension .
+
+ca:DateDimension a ca:TimeDimension ;
+    rdfs:label "Date" ;
+    rdfs:comment "Daily date dimension" .
+
+ca:DailyRevenueMeasure a ca:Measure ;
+    rdfs:label "Daily Revenue" ;
+    ca:hasExpression "revenue" ;
+    ca:hasDefaultAggregation "sum" ;
+    ca:hasSynonym "sales" ;
+    ca:hasSynonym "income" .
+
+ca:DailyProfitMeasure a ca:Measure ;
+    rdfs:label "Daily Profit" ;
+    ca:hasExpression "revenue - cogs" ;
+    ca:hasDefaultAggregation "sum" .
+
+# SHACL Shapes
+ca:MeasureShape a sh:NodeShape ;
+    sh:targetClass ca:Measure ;
+    sh:property [
+        sh:path ca:hasExpression ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+    ] ;
+    sh:property [
+        sh:path ca:hasDefaultAggregation ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+    ] .
+
+# TODO Section
+###
+# Future Enhancements:
+# 1. Add support for custom measure calculations
+# 2. Integrate with external semantic models
+# 3. Add validation rules for forecasting accuracy
+# 4. Expand chat interface capabilities
+### 
