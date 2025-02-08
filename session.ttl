@@ -1459,4 +1459,45 @@ session:Configuring a session:DeploymentStatus ;
         ]
     ] ;
     session:currentStage "Azure Development" ;
-    session:lastUpdated "2024-02-08T03:30:00Z"^^xsd:dateTime . 
+    session:lastUpdated "2024-02-08T03:30:00Z"^^xsd:dateTime .
+
+# Deployment View Management
+session:DeploymentView a owl:Class ;
+    rdfs:label "Deployment View" ;
+    rdfs:comment "Represents a deployment architecture view" .
+
+session:DeploymentComponent a owl:Class ;
+    rdfs:label "Deployment Component" ;
+    rdfs:comment "A component in a deployment view" .
+
+session:ComponentRelation a owl:Class ;
+    rdfs:label "Component Relation" ;
+    rdfs:comment "Represents a relationship between components" .
+
+session:hasComponent a owl:ObjectProperty ;
+    rdfs:domain session:DeploymentView ;
+    rdfs:range session:DeploymentComponent ;
+    rdfs:comment "Links a deployment view to its components" .
+
+session:hasRelation a owl:ObjectProperty ;
+    rdfs:domain session:DeploymentComponent ;
+    rdfs:range session:ComponentRelation ;
+    rdfs:comment "Links components to their relationships" .
+
+session:isSharedComponent a owl:DatatypeProperty ;
+    rdfs:domain session:DeploymentComponent ;
+    rdfs:range xsd:boolean ;
+    rdfs:comment "Indicates if a component is shared between deployments" .
+
+session:deploymentEnvironment a owl:DatatypeProperty ;
+    rdfs:domain session:DeploymentComponent ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Specifies which deployment environment(s) use this component" .
+
+# Current Deployment View
+:CurrentDeploymentView a session:DeploymentView ;
+    rdfs:label "Current Teams Bot Deployment View" ;
+    session:lastUpdated "2024-03-20T18:30:00Z"^^xsd:dateTime ;
+    session:version "1.0" ;
+    session:status "Active" ;
+    session:documentation "Combined view of local and Azure deployments showing commonality" . 
