@@ -8,7 +8,7 @@
 deploy:DeploymentOntology rdf:type owl:Ontology ;
     rdfs:label "Deployment Ontology" ;
     rdfs:comment "Ontology for deployment architecture and infrastructure components" ;
-    owl:versionInfo "1.0" ;
+    owl:versionInfo "1.0.0" ;
     owl:imports solution: ;
     owl:imports chatbot: .
 

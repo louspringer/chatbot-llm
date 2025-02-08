@@ -17,7 +17,7 @@
 :ChatbotLLMOntology a owl:Ontology ;
     rdfs:label "Chatbot LLM Ontology" ;
     rdfs:comment "Ontology to explore the problem and solution spaces for integrating LLMs into chat platforms." ;
-    owl:versionInfo "1.9" ;
+    owl:versionInfo "1.9.0" ;
     # Add explicit dependency declarations
     :requiresOntology [
         a :OntologyDependency ;

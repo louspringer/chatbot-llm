@@ -11,6 +11,12 @@
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix ca: <./cortex_analyst#> .
 
+# Ontology metadata
+ca:CortexAnalystOntology a owl:Ontology ;
+    rdfs:label "Cortex Analyst Ontology" ;
+    rdfs:comment "Ontology for the Cortex Analyst system and its components" ;
+    owl:versionInfo "0.1.0" .
+
 # Classes
 ca:AnalystSystem a owl:Class ;
     rdfs:label "Cortex Analyst System" ;

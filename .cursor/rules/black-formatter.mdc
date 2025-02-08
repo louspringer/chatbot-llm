@@ -1,0 +1,83 @@
+---
+description: Automatically format Python code using Black with opinionated settings
+globs: ["*.py"]
+---
+
+# Black Python Formatter
+
+Use the `format_with_black` tool to automatically format Python code according to Black's opinionated style.
+
+## Default Configuration
+
+```toml
+# pyproject.toml
+[tool.black]
+line-length = 88
+target-version = ['py38']
+include = '\.pyw?$'
+extend-exclude = '''
+# A regex preceded with ^/ will apply only to files and directories
+# in the root of the project.
+^/docs
+'''
+```
+
+## Usage Notes
+
+1. The formatter will automatically:
+   - Format to 88 characters line length (Black's default)
+   - Use double quotes for strings
+   - Normalize string quotes
+   - Remove unnecessary parentheses
+   - Normalize whitespace
+   - Sort imports (when used with isort)
+
+2. Best Practices:
+   - Run Black before committing code
+   - Use with pre-commit hooks
+   - Combine with isort for import sorting
+   - Keep pyproject.toml up to date
+
+3. Common Options:
+   ```bash
+   # Format a single file
+   black file.py
+
+   # Format all Python files in a directory
+   black .
+
+   # Check if files would be reformatted
+   black --check .
+
+   # Show diff of changes without applying
+   black --diff .
+   ```
+
+4. Integration Tips:
+   - Use with VSCode's format on save
+   - Configure in CI/CD pipelines
+   - Add to git pre-commit hooks
+   - Combine with pylint/flake8
+
+5. Handling Special Cases:
+   ```python
+   # fmt: off
+   # Code that should not be formatted by Black
+   matrix = [
+       1,    2,
+       3,    4,
+   ]
+   # fmt: on
+   ```
+
+6. Error Prevention:
+   - Always run tests after formatting
+   - Use version control
+   - Review diffs before committing
+   - Keep backups of critical files
+
+7. Performance:
+   - Use --fast flag for quick formatting
+   - Cache formatting results
+   - Skip specified files/directories
+   - Use parallel processing for large codebases 

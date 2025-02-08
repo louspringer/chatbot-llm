@@ -1,0 +1,80 @@
+---
+description: This rule provides SPARQL query capabilities for ontology files
+globs: ["*.ttl", "*.rdf", "*.owl"]
+---
+
+# SPARQL Query Tool
+
+Use the `run_sparql_query` tool to execute SPARQL queries against ontology files.
+
+## Common Prefixes
+Always include these common prefixes in your queries:
+```sparql
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+```
+
+## Example Queries
+
+### List All Ontologies and Versions
+```sparql
+SELECT ?ontology ?label ?version
+WHERE {
+  ?ontology a owl:Ontology ;
+            rdfs:label ?label ;
+            owl:versionInfo ?version .
+}
+ORDER BY ?label
+```
+
+### Find All Classes with Labels
+```sparql
+SELECT DISTINCT ?class ?label
+WHERE {
+  ?class a owl:Class ;
+         rdfs:label ?label .
+}
+ORDER BY ?label
+```
+
+### Find Dependencies Between Components
+```sparql
+SELECT ?component ?label ?dependency ?depLabel
+WHERE {
+  ?component a ?type ;
+            rdfs:label ?label .
+  OPTIONAL {
+    ?component ?dependencyProp ?dependency .
+    ?dependency rdfs:label ?depLabel .
+    FILTER(?dependencyProp = deploy:dependsOn)
+  }
+}
+ORDER BY ?label ?depLabel
+```
+
+## Usage Notes
+
+1. The tool will automatically:
+   - Create a temporary query file
+   - Execute using Jena's SPARQL command
+   - Format and return results
+
+2. Best Practices:
+   - Always include relevant prefixes
+   - Use DISTINCT when appropriate to avoid duplicates
+   - Include labels in queries for readability
+   - Order results for consistent output
+
+3. Error Handling:
+   - The tool will validate SPARQL syntax
+   - Check prefix declarations
+   - Verify file existence
+   - Report any execution errors
+
+4. Performance Tips:
+   - Be specific with your patterns
+   - Use OPTIONAL for optional patterns
+   - Add FILTER clauses to reduce results
+   - Consider result set size 

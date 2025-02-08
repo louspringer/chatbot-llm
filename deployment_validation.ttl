@@ -1,16 +1,24 @@
-@prefix : <./deployment#> .
+@prefix dv: <./deployment_validation#> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 @prefix chatbot: <./chatbot#> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix deploy: <./deployment#> .
+
+# Ontology metadata
+dv:DeploymentValidationOntology a owl:Ontology ;
+    rdfs:label "Deployment Validation Ontology" ;
+    rdfs:comment "SHACL shapes and validation rules for deployment configurations" ;
+    owl:versionInfo "0.1.0" ;
+    owl:imports deploy: .
 
 # Cloud Environment Validation
-:CloudEnvironmentShape a sh:NodeShape ;
-    sh:targetClass :CloudEnvironment ;
+dv:CloudEnvironmentShape a sh:NodeShape ;
+    sh:targetClass deploy:CloudEnvironment ;
     sh:property [
-        sh:path :primaryUseCase ;
+        sh:path deploy:primaryUseCase ;
         sh:datatype xsd:string ;
         sh:minCount 1 ;
         sh:maxCount 1 ;

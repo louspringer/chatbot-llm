@@ -1,13 +1,21 @@
-@prefix : <./documentation#> .
+@prefix docval: <./documentation_validation#> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix doc: <./documentation#> .
+
+# Ontology metadata
+docval:DocumentationValidationOntology a owl:Ontology ;
+    rdfs:label "Documentation Validation Ontology" ;
+    rdfs:comment "SHACL shapes and validation rules for Teams bot documentation" ;
+    owl:versionInfo "0.1.0" ;
+    owl:imports doc: .
 
 # Documentation Validation Rules
-:DocumentationShape a sh:NodeShape ;
-    sh:targetClass :Documentation ;
+docval:DocumentationShape a sh:NodeShape ;
+    sh:targetClass doc:Documentation ;
     sh:property [
         sh:path rdfs:label ;
         sh:minCount 1 ;
