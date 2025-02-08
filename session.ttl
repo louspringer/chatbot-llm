@@ -1337,4 +1337,126 @@ session:currentContext
         rdf:_2 "function_app.py" ;
         rdf:_3 "run_local.py"
     ] ;
+    session:lastUpdated "2024-02-08T03:30:00Z"^^xsd:dateTime .
+
+# Deployment Tracking
+session:Deployment a owl:Class ;
+    rdfs:label "Deployment" ;
+    rdfs:comment "Represents a deployment environment and configuration" .
+
+session:DeploymentType a owl:Class ;
+    rdfs:label "Deployment Type" ;
+    rdfs:comment "Type of deployment (local, development, production)" .
+
+session:DeploymentStatus a owl:Class ;
+    rdfs:label "Deployment Status" ;
+    rdfs:comment "Status of a deployment" .
+
+# Deployment Types
+session:LocalDevelopment a session:DeploymentType ;
+    rdfs:label "Local Development" ;
+    rdfs:comment "Local development environment using Azure Functions Core Tools" .
+
+session:AzureFunctions a session:DeploymentType ;
+    rdfs:label "Azure Functions" ;
+    rdfs:comment "Cloud deployment on Azure Functions" .
+
+# Deployment Statuses
+session:Active a session:DeploymentStatus ;
+    rdfs:label "Active" ;
+    rdfs:comment "Deployment is currently active and in use" .
+
+session:Configuring a session:DeploymentStatus ;
+    rdfs:label "Configuring" ;
+    rdfs:comment "Deployment is being configured" .
+
+# Current Deployments
+:LocalFunctionApp a session:Deployment ;
+    rdfs:label "Local Function App" ;
+    session:deploymentType session:LocalDevelopment ;
+    session:status session:Active ;
+    session:endpoint "http://localhost:7071" ;
+    session:configuration [
+        session:coreTools "Azure Functions Core Tools v4.0.6821" ;
+        session:pythonRuntime "3.11" ;
+        session:storageEmulator "Azurite" ;
+        session:authType "Anonymous" ;
+        session:configFiles [
+            rdf:_1 "local.settings.json" ;
+            rdf:_2 "host.json" ;
+            rdf:_3 ".env"
+        ]
+    ] ;
+    session:features [
+        rdf:_1 "Local debugging" ;
+        rdf:_2 "Hot reload" ;
+        rdf:_3 "Bot Framework Emulator support"
+    ] ;
+    session:lastTested "2024-02-08T03:30:00Z"^^xsd:dateTime .
+
+:AzureDevDeployment a session:Deployment ;
+    rdfs:label "Azure Development Function App" ;
+    session:deploymentType session:AzureFunctions ;
+    session:status session:Active ;
+    session:endpoint "https://echo-bot-func-test-lou.azurewebsites.net" ;
+    session:configuration [
+        session:subscription "Development Subscription" ;
+        session:resourceGroup "echo-bot-func-test-lou" ;
+        session:runtime "Python 3.11" ;
+        session:region "West US" ;
+        session:authType "Azure AD" ;
+        session:configFiles [
+            rdf:_1 "host.json" ;
+            rdf:_2 "function.json" ;
+            rdf:_3 "requirements.txt"
+        ]
+    ] ;
+    session:features [
+        rdf:_1 "Teams integration" ;
+        rdf:_2 "Application Insights" ;
+        rdf:_3 "Azure Key Vault integration (pending)"
+    ] ;
+    session:lastDeployed "2024-02-08T03:30:00Z"^^xsd:dateTime .
+
+# Deployment Requirements
+:DeploymentRequirements a session:ValidationRequirement ;
+    rdfs:label "Deployment Requirements" ;
+    session:localRequirements [
+        rdf:_1 "Azure Functions Core Tools v4+" ;
+        rdf:_2 "Python 3.11" ;
+        rdf:_3 "Bot Framework Emulator" ;
+        rdf:_4 "Azurite Storage Emulator"
+    ] ;
+    session:azureRequirements [
+        rdf:_1 "Azure Subscription" ;
+        rdf:_2 "Azure Functions service" ;
+        rdf:_3 "Azure AD App Registration" ;
+        rdf:_4 "Azure Key Vault (planned)"
+    ] ;
+    session:validationStatus "InProgress" .
+
+# Deployment Pipeline
+:DeploymentPipeline a session:Process ;
+    rdfs:label "Deployment Pipeline" ;
+    session:stages [
+        rdf:_1 [
+            rdfs:label "Local Development" ;
+            session:command "./start-local.sh" ;
+            session:validation "Bot Framework Emulator" ;
+            session:status "Active"
+        ] ;
+        rdf:_2 [
+            rdfs:label "Azure Development" ;
+            session:command "func azure functionapp publish echo-bot-func-test-lou" ;
+            session:validation "Teams Integration" ;
+            session:status "Active"
+        ] ;
+        rdf:_3 [
+            rdfs:label "Production" ;
+            session:command "TBD" ;
+            session:validation "TBD" ;
+            session:status "Pending"
+        ]
+    ] ;
+    session:currentStage "Azure Development" ;
     session:lastUpdated "2024-02-08T03:30:00Z"^^xsd:dateTime . 
