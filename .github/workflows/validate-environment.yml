@@ -44,7 +44,7 @@ jobs:
 
     - name: Install development dependencies
       run: |
-        python -m pip install pytest pytest-cov pyyaml
+        python -m pip install pytest pytest-cov pyyaml rdflib pyshacl
 
     - name: Run validator tests
       run: |
