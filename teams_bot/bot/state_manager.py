@@ -94,9 +94,7 @@ class StateManager:
         """Initialize the state manager and load existing state if available."""
         try:
             state = await self.load_state()
-            if state:
-                return True
-            return False
+            return bool(state)
         except Exception as e:
             logger.error(f"Failed to initialize state manager: {str(e)}")
             return False
@@ -104,10 +102,7 @@ class StateManager:
     def encrypt(self, value: Union[str, bytes]) -> str:
         """Encrypt a value using Fernet encryption."""
         if not self._fernet:
-            if isinstance(value, bytes):
-                return value.decode()
-            return str(value)
-            
+            return value.decode() if isinstance(value, bytes) else str(value)
         if isinstance(value, str):
             value = value.encode()
         encrypted = self._fernet.encrypt(value)
@@ -255,4 +250,51 @@ class StateManager:
                 await self._storage.write(changes)
         except Exception as e:
             logger.error(f"Failed to save user profile: {e}")
+            raise
+
+    async def create_checkpoint(self) -> None:
+        """Create a checkpoint of the current state."""
+        try:
+            if not self._conversation_id:
+                return
+                
+            data = await self.load_state()
+            if data:
+                data["checkpoint_timestamp"] = datetime.utcnow().isoformat()
+                if isinstance(self._storage, (ContainerProxy, AsyncContainerProxy)):
+                    await self._storage.upsert_item(body=data)
+                else:
+                    changes = {self._conversation_id: data}
+                    await self._storage.write(changes)
+                    
+            logger.info(f"Created checkpoint for conversation {self._conversation_id}")
+        except Exception as e:
+            logger.error(f"Failed to create checkpoint: {str(e)}")
+            raise
+
+    async def trigger_transition(
+        self,
+        context: TurnContext,
+        transition: str,
+        data: Optional[Dict[str, Any]] = None
+    ) -> None:
+        """Trigger a state transition."""
+        try:
+            if not context.activity or not context.activity.conversation:
+                raise ValueError("No conversation context available")
+                
+            conversation_id = context.activity.conversation.id
+            if not conversation_id:
+                raise ValueError("No conversation ID available")
+                
+            conversation_data = await self.get_conversation_data(context)
+            if conversation_data and conversation_data._machine:
+                await conversation_data._machine.trigger(transition, data)
+                await self.save_conversation_data(context, conversation_data)
+                
+            logger.info(
+                f"Triggered transition {transition} for conversation {conversation_id}"
+            )
+        except Exception as e:
+            logger.error(f"Failed to trigger transition: {str(e)}")
             raise

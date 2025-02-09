@@ -9,7 +9,7 @@ Tests for the error handling middleware implementation.
 """
 
 import pytest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 from datetime import datetime
 from botbuilder.core import TurnContext
 from botbuilder.schema import Activity, ActivityTypes
@@ -86,7 +86,11 @@ async def test_error_handling(error_middleware, turn_context):
 
 
 @pytest.mark.asyncio
-async def test_checkpoint_creation(error_middleware, turn_context, state_manager):
+async def test_checkpoint_creation(
+    error_middleware,
+    turn_context,
+    state_manager
+):
     """Test checkpoint creation on critical errors."""
     # Mock the next middleware
     async def next_middleware(context):
@@ -97,11 +101,15 @@ async def test_checkpoint_creation(error_middleware, turn_context, state_manager
         await error_middleware.on_turn(turn_context, next_middleware)
     
     # Verify checkpoint was created
-    state_manager.create_conversation_checkpoint.assert_called_once()
+    state_manager.create_checkpoint.assert_called_once()
 
 
 @pytest.mark.asyncio
-async def test_error_state_transition(error_middleware, turn_context, state_manager):
+async def test_error_state_transition(
+    error_middleware,
+    turn_context,
+    state_manager
+):
     """Test state transition on error."""
     # Mock the next middleware
     async def next_middleware(context):
