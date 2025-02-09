@@ -73,6 +73,7 @@ jobs:
       run: |
         python -c "
         import os
+        from pathlib import Path
         template = Path('.env.template').read_text()
         required_vars = ['TEAMS_BOT_ID', 'TEAMS_BOT_PASSWORD', 'DEBUG']
         missing = [var for var in required_vars if var not in template]
