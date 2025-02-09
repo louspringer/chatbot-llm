@@ -20,7 +20,7 @@
 # Session Metadata
 session:SessionOntology rdf:type owl:Ontology ;
     dc:title "Teams Bot Session Ontology" ;
-    dc:version "1.3" ;
+    dc:version "1.4" ;
     dct:created "2024-02-07"^^xsd:date ;
     dct:modified "2024-02-09"^^xsd:date ;
     dct:publisher "Ontology Framework Project" ;
@@ -34,7 +34,6 @@ session:DevelopmentTool a owl:Class ;
     rdfs:comment "Tools used in the development process" .
 
 session:CursorRule a owl:Class ;
-    rdfs:subClassOf session:DevelopmentTool ;
     rdfs:label "Cursor Rule" ;
     rdfs:comment "Rule definitions for Cursor AI assistance" .
 
@@ -53,6 +52,15 @@ session:BlackFormatterRule a owl:Individual ;
     session:filePattern "*.py" ;
     session:implementationStatus "Implemented" ;
     session:lastUpdated "2024-02-09"^^xsd:date .
+
+session:ArtifactTraceabilityRule a owl:Individual ;
+    rdf:type session:CursorRule ;
+    rdfs:label "Artifact Traceability Rule" ;
+    rdfs:comment "Rule for enforcing traceability between artifacts, ontologies, and requirements" ;
+    session:filePattern "*.py, *.ttl, *.md, *.sql, *.sh, *.yml, *.yaml" ;
+    session:implementationStatus "Implemented" ;
+    session:lastUpdated "2024-02-09"^^xsd:date ;
+    session:requiresGuidance guidance:ArtifactTraceabilityPattern .
 
 # Properties
 session:filePattern a owl:DatatypeProperty ;
@@ -168,13 +176,60 @@ session:task3 a session:Task ;
     session:hasStatus session:Pending ;
     session:hasPriority 1 .
 
+session:task4 a session:Task ;
+    rdfs:label "Ontology Semantic Versioning" ;
+    rdfs:comment "Update semantic versioning in all ontology files" ;
+    session:hasStatus session:Completed ;
+    session:hasPriority 1 ;
+    session:completedSteps [
+        rdf:_1 "Updated cortexteams.ttl version" ;
+        rdf:_2 "Updated chatbot.ttl version" ;
+        rdf:_3 "Updated deployment.ttl version" ;
+        rdf:_4 "Updated solution.ttl version" ;
+        rdf:_5 "Updated meta.ttl version"
+    ] ;
+    session:lastUpdated "2024-02-09T16:25:00Z"^^xsd:dateTime .
+
+session:task5 a session:Task ;
+    rdfs:label "Ontology Declarations" ;
+    rdfs:comment "Add missing ontology declarations to all TTL files" ;
+    session:hasStatus session:Completed ;
+    session:hasPriority 1 ;
+    session:completedSteps [
+        rdf:_1 "Added declaration to cortex_analyst.ttl" ;
+        rdf:_2 "Added declaration to cost_analysis.ttl" ;
+        rdf:_3 "Added declaration to meta.ttl" ;
+        rdf:_4 "Added declaration to deployment_validation.ttl" ;
+        rdf:_5 "Added declarations to teams_bot/*.ttl files"
+    ] ;
+    session:lastUpdated "2024-02-09T16:25:00Z"^^xsd:dateTime .
+
+session:task6 a session:Task ;
+    rdfs:label "Cursor Rules Implementation" ;
+    rdfs:comment "Implement Cursor rules for development workflow" ;
+    session:hasStatus session:Completed ;
+    session:hasPriority 2 ;
+    session:completedSteps [
+        rdf:_1 "Created SPARQL queries rule" ;
+        rdf:_2 "Created Black formatter rule" ;
+        rdf:_3 "Created artifact traceability rule"
+    ] ;
+    session:lastUpdated "2024-02-09T16:25:00Z"^^xsd:dateTime .
+
 # Current Context State
 session:currentContext a session:ContextState ;
     rdfs:label "Current Context" ;
-    session:activeTask session:task1 ;
+    session:activeTask session:task6 ;
     session:activeOntologies (
         chatbot:ChatbotLLMOntology
         cortexteams:TeamsOntology
+        meta:MetaOntology
+        deploy:DeploymentOntology
+    ) ;
+    session:activeCursorRules (
+        session:SPARQLQueryRule
+        session:BlackFormatterRule
+        session:ArtifactTraceabilityRule
     ) ;
     session:securityContext [
         a session:SecurityContext ;
@@ -1545,4 +1600,30 @@ session:deploymentEnvironment a owl:DatatypeProperty ;
     session:lastUpdated "2024-03-20T18:30:00Z"^^xsd:dateTime ;
     session:version "1.0" ;
     session:status "Active" ;
-    session:documentation "Combined view of local and Azure deployments showing commonality" . 
+    session:documentation "Combined view of local and Azure deployments showing commonality" .
+
+# Add new validation patterns
+session:CursorRuleValidation a sh:NodeShape ;
+    sh:targetClass session:CursorRule ;
+    sh:property [
+        sh:path session:filePattern ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "Cursor rule must specify file patterns"
+    ] ;
+    sh:property [
+        sh:path session:implementationStatus ;
+        sh:in ("Implemented" "Pending" "Deprecated") ;
+        sh:message "Implementation status must be valid"
+    ] .
+
+# Add rule relationships
+session:hasRule a owl:ObjectProperty ;
+    rdfs:domain session:CurrentContext ;
+    rdfs:range session:CursorRule ;
+    rdfs:comment "Links the current context to active Cursor rules" .
+
+session:requiresGuidance a owl:ObjectProperty ;
+    rdfs:domain session:CursorRule ;
+    rdfs:range guidance:Pattern ;
+    rdfs:comment "Links a Cursor rule to its required guidance patterns" . 
