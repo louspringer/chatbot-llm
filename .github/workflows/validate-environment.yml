@@ -67,7 +67,7 @@ jobs:
 
     - name: Validate environment.yml
       run: |
-        conda env create --dry-run -f environment.yml
+        conda env update --dry-run -f environment.yml --prune
 
     - name: Validate .env.template
       run: |
