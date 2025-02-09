@@ -319,9 +319,7 @@ async def test_cosmos_storage():
 
     async def mock_read_item(**kwargs):
         key = kwargs.get("item")
-        if key in stored_data:
-            return stored_data[key]
-        return test_data
+        return stored_data[key] if key in stored_data else test_data
 
     async def mock_upsert_item(**kwargs):
         item = kwargs.get("body", {})
