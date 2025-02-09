@@ -15,6 +15,7 @@ authors = [
 dependencies = [
     "rdflib",
     "pyshacl",
+    "pyyaml",  # Required by validate_local_env.py
 ]
 classifiers = [
     "Development Status :: 3 - Alpha",
@@ -38,6 +39,9 @@ target-version = ['py310']
 include = '\.pyi?$'
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
+testpaths = ["tests", "tools/tests"]
 python_files = ["test_*.py"]
-addopts = "-ra -q" 
+addopts = "-ra -q"
+
+[tool.setuptools]
+packages = ["tools", "tools.tests"] 
