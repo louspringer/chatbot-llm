@@ -8,18 +8,10 @@
 Main implementation of the Teams bot.
 """
 
-from typing import Dict, Optional, List
+from typing import Dict, Optional, List, Any
 import logging
 
-from botbuilder.core import (
-    TurnContext,
-    ConversationState,
-    UserState,
-    Storage,
-    ActivityHandler,
-    Middleware,
-    BotAdapter
-)
+from botbuilder.core import ActivityHandler, TurnContext, Middleware
 from botbuilder.schema import ConversationReference, ActivityTypes
 
 from .state_manager import StateManager
@@ -35,100 +27,113 @@ class TeamsBot(ActivityHandler):
 
     def __init__(
         self,
-        conversation_state: ConversationState,
-        user_state: UserState,
-        storage: Storage,
+        config: Dict[str, Any],
+        state_manager: StateManager,
         middleware: Optional[List[Middleware]] = None,
-        adapter: Optional[BotAdapter] = None
-    ) -> None:
-        """Initialize the bot."""
-        if not conversation_state:
-            raise ValueError("conversation_state cannot be None")
-        if not user_state:
-            raise ValueError("user_state cannot be None")
-        if not storage:
-            raise ValueError("storage cannot be None")
+    ):
+        """Initialize the Teams bot.
 
+        Args:
+            config: Configuration dictionary
+            state_manager: State manager instance
+            middleware: Optional list of middleware to add
+        """
+        if not state_manager:
+            raise ValueError("state_manager cannot be None")
+            
         super().__init__()
-        self.conversation_state = conversation_state
-        self.user_state = user_state
-        self._storage = storage
+        self._config = config
+        self._state_manager = state_manager
+        self._adapter = None
         self._conversation_references: Dict[str, ConversationReference] = {}
-        self._adapter = adapter
-        self._state_manager = None
         
         # Add error handling middleware
         if middleware is None:
             middleware = []
-        error_middleware = ErrorHandlingMiddleware()
+        error_middleware = ErrorHandlingMiddleware(state_manager)
         middleware.append(error_middleware)
         for middleware_instance in middleware:
             if self._adapter:
                 self._adapter.use(middleware_instance)
 
-    async def on_turn(self, turn_context: TurnContext) -> None:
-        """Handle bot framework turn."""
-        if turn_context.activity.type != ActivityTypes.message:
-            return
-        # Get conversation ID
-        if not turn_context.activity.conversation:
-            raise ValueError("No conversation context available")
-
-        conversation_id = turn_context.activity.conversation.id
-        if not conversation_id:
-            raise ValueError("No conversation ID available")
-
-        # Initialize state manager
-        self._state_manager = StateManager(self._storage, conversation_id)
-        await self._state_manager.initialize()
-
-        try:
-            # Process the message
-            await self.on_message_activity(turn_context)
-
-            # Save state changes
-            await self.conversation_state.save_changes(turn_context)
-            await self.user_state.save_changes(turn_context)
-
-        except Exception as e:
-            if self._state_manager:
-                await self._state_manager.handle_error(turn_context, e)
-            await turn_context.send_activity(
-                "I encountered an error processing your request."
-            )
-
-    async def on_message_activity(self, turn_context: TurnContext) -> None:
-        """Handle message activities."""
+    async def _validate_conversation_context(
+        self,
+        turn_context: TurnContext
+    ) -> str:
+        """Validate conversation context and return conversation ID."""
         if not turn_context.activity.conversation:
             raise ValueError("No conversation context available")
             
         conversation_id = turn_context.activity.conversation.id
         if not conversation_id:
             raise ValueError("No conversation ID available")
+        return conversation_id
 
-        if not self._state_manager:
-            self._state_manager = StateManager(self._storage, conversation_id)
-            await self._state_manager.initialize()
+    async def _process_message_turn(
+        self,
+        turn_context: TurnContext,
+        conversation_id: str
+    ) -> None:
+        """Process a message turn and save state."""
+        # Get and save conversation data
+        conv_data = await self._state_manager.get_conversation_data(
+            turn_context
+        )
+        await self._state_manager.save_conversation_data(
+            turn_context,
+            conv_data
+        )
 
+    async def _handle_message_activity(
+        self,
+        turn_context: TurnContext,
+        conversation_id: str
+    ) -> None:
+        """Handle a message activity."""
+        message = turn_context.activity.text
+        if not message:
+            await turn_context.send_activity("I received an empty message.")
+            return
+
+        # Save the conversation reference
+        self._conversation_references[conversation_id] = (
+            TurnContext.get_conversation_reference(turn_context.activity)
+        )
+
+        # Send acknowledgment
+        await turn_context.send_activity(f"Processing your message: {message}")
+
+    async def on_turn(self, turn_context: TurnContext) -> None:
+        """Process each turn of the conversation."""
+        await super().on_turn(turn_context)
+        
         try:
-            # Process the message
-            message = turn_context.activity.text
-            if not message:
-                await turn_context.send_activity(
-                    "I received an empty message."
+            conversation_id = await self._validate_conversation_context(
+                turn_context
+            )
+            
+            # Process the message if it's a message activity
+            if turn_context.activity.type == ActivityTypes.message:
+                await self._handle_message_activity(
+                    turn_context,
+                    conversation_id
                 )
-                return
+                await self._process_message_turn(
+                    turn_context,
+                    conversation_id
+                )
+                
+        except Exception as error:
+            logger.error("Error processing message: %s", str(error))
+            raise
 
-            # Save the conversation reference
-            self._conversation_references[conversation_id] = (
-                TurnContext.get_conversation_reference(turn_context.activity)
+    async def on_message_activity(self, turn_context: TurnContext) -> None:
+        """Handle message activities."""
+        try:
+            conversation_id = await self._validate_conversation_context(
+                turn_context
             )
-
-            # Send acknowledgment
-            await turn_context.send_activity(
-                f"Processing your message: {message}"
-            )
-
+            await self._handle_message_activity(turn_context, conversation_id)
         except Exception as e:
             if self._state_manager:
                 await self._state_manager.handle_error(turn_context, e)
@@ -137,46 +142,59 @@ class TeamsBot(ActivityHandler):
             )
 
     def get_conversation_reference(
-        self, conversation_id: str
+        self,
+        conversation_id: str
     ) -> Optional[ConversationReference]:
         """Get the conversation reference for a conversation ID."""
         return self._conversation_references.get(conversation_id)
 
+    async def _handle_member_added(
+        self,
+        member: Any,
+        turn_context: TurnContext
+    ) -> None:
+        """Handle a new member being added."""
+        # Initialize user profile
+        user_profile = UserProfile(name=member.name or "User")
+        await self._state_manager.save_user_profile(
+            turn_context,
+            user_profile
+        )
+        
+        # Send welcome message
+        welcome_text = (
+            f"Welcome {user_profile.name}! "
+            "I'm your Snowflake Cortex Teams Bot assistant."
+        )
+        await turn_context.send_activity(welcome_text)
+        logger.info(f"Sent welcome message to {user_profile.name}")
+
     async def on_members_added_activity(
         self,
-        members_added,
+        members_added: List[Any],
         turn_context: TurnContext
-    ):
+    ) -> None:
         """Handle members being added with state initialization."""
         for member in members_added:
-            if member.id and turn_context.activity.recipient and member.id != turn_context.activity.recipient.id:
+            # Check if the member added is not the bot itself
+            is_not_bot = (
+                member.id and 
+                turn_context.activity.recipient and 
+                member.id != turn_context.activity.recipient.id
+            )
+            if is_not_bot:
                 try:
-                    # Initialize user profile
-                    user_profile = UserProfile(
-                        name=member.name or "User"
-                    )
-                    if self._state_manager:
-                        await self._state_manager.save_user_profile(
-                            turn_context,
-                            user_profile
-                        )
-                    
-                    # Send welcome message
-                    welcome_text = (
-                        f"Welcome {user_profile.name}! "
-                        "I'm your Snowflake Cortex Teams Bot assistant."
-                    )
-                    await turn_context.send_activity(welcome_text)
-                    logger.info(
-                        f"Sent welcome message to {user_profile.name}"
-                    )
+                    await self._handle_member_added(member, turn_context)
                 except Exception as e:
                     logger.error(
                         f"Error in members added processing: {str(e)}"
                     )
                     raise
 
-    async def on_conversation_update_activity(self, turn_context: TurnContext):
+    async def on_conversation_update_activity(
+        self,
+        turn_context: TurnContext
+    ) -> None:
         """Handle conversation updates with state cleanup."""
         if turn_context.activity.members_added:
             await self.on_members_added_activity(
@@ -185,9 +203,7 @@ class TeamsBot(ActivityHandler):
             )
         elif turn_context.activity.members_removed:
             try:
-                # Clean up state for removed members
-                if self._state_manager:
-                    await self._state_manager.clear_state(turn_context)
+                await self._state_manager.clear_state(turn_context)
                 logger.info("Cleared state for removed members")
             except Exception as e:
                 logger.error(
