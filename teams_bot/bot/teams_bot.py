@@ -68,33 +68,34 @@ class TeamsBot(ActivityHandler):
 
     async def on_turn(self, turn_context: TurnContext) -> None:
         """Handle bot framework turn."""
-        if turn_context.activity.type == ActivityTypes.message:
-            # Get conversation ID
-            if not turn_context.activity.conversation:
-                raise ValueError("No conversation context available")
-                
-            conversation_id = turn_context.activity.conversation.id
-            if not conversation_id:
-                raise ValueError("No conversation ID available")
+        if turn_context.activity.type != ActivityTypes.message:
+            return
+        # Get conversation ID
+        if not turn_context.activity.conversation:
+            raise ValueError("No conversation context available")
 
-            # Initialize state manager
-            self._state_manager = StateManager(self._storage, conversation_id)
-            await self._state_manager.initialize()
+        conversation_id = turn_context.activity.conversation.id
+        if not conversation_id:
+            raise ValueError("No conversation ID available")
 
-            try:
-                # Process the message
-                await self.on_message_activity(turn_context)
+        # Initialize state manager
+        self._state_manager = StateManager(self._storage, conversation_id)
+        await self._state_manager.initialize()
 
-                # Save state changes
-                await self.conversation_state.save_changes(turn_context)
-                await self.user_state.save_changes(turn_context)
+        try:
+            # Process the message
+            await self.on_message_activity(turn_context)
 
-            except Exception as e:
-                if self._state_manager:
-                    await self._state_manager.handle_error(turn_context, e)
-                await turn_context.send_activity(
-                    "I encountered an error processing your request."
-                )
+            # Save state changes
+            await self.conversation_state.save_changes(turn_context)
+            await self.user_state.save_changes(turn_context)
+
+        except Exception as e:
+            if self._state_manager:
+                await self._state_manager.handle_error(turn_context, e)
+            await turn_context.send_activity(
+                "I encountered an error processing your request."
+            )
 
     async def on_message_activity(self, turn_context: TurnContext) -> None:
         """Handle message activities."""
@@ -148,33 +149,32 @@ class TeamsBot(ActivityHandler):
     ):
         """Handle members being added with state initialization."""
         for member in members_added:
-            if member.id and turn_context.activity.recipient:
-                if member.id != turn_context.activity.recipient.id:
-                    try:
-                        # Initialize user profile
-                        user_profile = UserProfile(
-                            name=member.name or "User"
+            if member.id and turn_context.activity.recipient and member.id != turn_context.activity.recipient.id:
+                try:
+                    # Initialize user profile
+                    user_profile = UserProfile(
+                        name=member.name or "User"
+                    )
+                    if self._state_manager:
+                        await self._state_manager.save_user_profile(
+                            turn_context,
+                            user_profile
                         )
-                        if self._state_manager:
-                            await self._state_manager.save_user_profile(
-                                turn_context,
-                                user_profile
-                            )
-                        
-                        # Send welcome message
-                        welcome_text = (
-                            f"Welcome {user_profile.name}! "
-                            "I'm your Snowflake Cortex Teams Bot assistant."
-                        )
-                        await turn_context.send_activity(welcome_text)
-                        logger.info(
-                            f"Sent welcome message to {user_profile.name}"
-                        )
-                    except Exception as e:
-                        logger.error(
-                            f"Error in members added processing: {str(e)}"
-                        )
-                        raise
+                    
+                    # Send welcome message
+                    welcome_text = (
+                        f"Welcome {user_profile.name}! "
+                        "I'm your Snowflake Cortex Teams Bot assistant."
+                    )
+                    await turn_context.send_activity(welcome_text)
+                    logger.info(
+                        f"Sent welcome message to {user_profile.name}"
+                    )
+                except Exception as e:
+                    logger.error(
+                        f"Error in members added processing: {str(e)}"
+                    )
+                    raise
 
     async def on_conversation_update_activity(self, turn_context: TurnContext):
         """Handle conversation updates with state cleanup."""
