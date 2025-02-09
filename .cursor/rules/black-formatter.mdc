@@ -3,9 +3,55 @@ description: Automatically format Python code using Black with opinionated setti
 globs: ["*.py"]
 ---
 
-# Black Python Formatter
+# Black Code Formatter Rules
 
-Use the `format_with_black` tool to automatically format Python code according to Black's opinionated style.
+This rule enforces consistent Python code formatting using Black.
+
+## Configuration
+
+Black is configured with these opinionated settings:
+- Line length: 88 characters
+- String normalization: True
+- Skip string normalization: False
+- Fast mode: False
+
+## Usage
+
+The formatter will automatically:
+1. Format Python files on save
+2. Maintain consistent style across the project
+3. Follow PEP 8 guidelines
+4. Preserve semantic meaning
+
+## Style Guidelines
+
+Black enforces:
+- Double quotes for strings
+- Trailing commas in multi-line structures
+- Consistent whitespace
+- Proper line breaks
+- Standard import ordering
+
+## Best Practices
+
+1. Run Black before committing code
+2. Don't mix Black with other formatters
+3. Use pre-commit hooks for consistency
+4. Keep configuration in pyproject.toml
+
+## Common Issues
+
+- Line too long: Split into multiple lines
+- String quotes: Let Black handle normalization
+- Import ordering: Use isort before Black
+- Formatting conflicts: Remove manual formatting
+
+## Integration Tips
+
+1. Configure editor to format on save
+2. Use with version control hooks
+3. Include in CI/CD pipeline
+4. Document exceptions in pyproject.toml
 
 ## Default Configuration
 

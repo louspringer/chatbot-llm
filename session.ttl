@@ -20,13 +20,58 @@
 # Session Metadata
 session:SessionOntology rdf:type owl:Ontology ;
     dc:title "Teams Bot Session Ontology" ;
-    dc:version "1.2" ;
+    dc:version "1.3" ;
     dct:created "2024-02-07"^^xsd:date ;
-    dct:modified "2024-02-07"^^xsd:date ;
+    dct:modified "2024-02-09"^^xsd:date ;
     dct:publisher "Ontology Framework Project" ;
     dct:license <http://opensource.org/licenses/MIT> ;
     dct:description "Ontology for managing Teams bot development session state" ;
     owl:imports guidance: .
+
+# Development Tools
+session:DevelopmentTool a owl:Class ;
+    rdfs:label "Development Tool" ;
+    rdfs:comment "Tools used in the development process" .
+
+session:CursorRule a owl:Class ;
+    rdfs:subClassOf session:DevelopmentTool ;
+    rdfs:label "Cursor Rule" ;
+    rdfs:comment "Rule definitions for Cursor AI assistance" .
+
+session:SPARQLQueryRule a owl:Individual ;
+    rdf:type session:CursorRule ;
+    rdfs:label "SPARQL Query Rule" ;
+    rdfs:comment "Rule for executing SPARQL queries against ontology files" ;
+    session:filePattern "*.ttl, *.rdf, *.owl" ;
+    session:implementationStatus "Implemented" ;
+    session:lastUpdated "2024-02-09"^^xsd:date .
+
+session:BlackFormatterRule a owl:Individual ;
+    rdf:type session:CursorRule ;
+    rdfs:label "Black Formatter Rule" ;
+    rdfs:comment "Rule for formatting Python code using Black" ;
+    session:filePattern "*.py" ;
+    session:implementationStatus "Implemented" ;
+    session:lastUpdated "2024-02-09"^^xsd:date .
+
+# Properties
+session:filePattern a owl:DatatypeProperty ;
+    rdfs:label "File Pattern" ;
+    rdfs:comment "Glob pattern for files the rule applies to" ;
+    rdfs:domain session:CursorRule ;
+    rdfs:range xsd:string .
+
+session:implementationStatus a owl:DatatypeProperty ;
+    rdfs:label "Implementation Status" ;
+    rdfs:comment "Current status of the tool implementation" ;
+    rdfs:domain session:DevelopmentTool ;
+    rdfs:range xsd:string .
+
+session:lastUpdated a owl:DatatypeProperty ;
+    rdfs:label "Last Updated" ;
+    rdfs:comment "Date the tool or rule was last updated" ;
+    rdfs:domain session:DevelopmentTool ;
+    rdfs:range xsd:date .
 
 # Session Context Management
 session:CurrentContext a owl:Class ;

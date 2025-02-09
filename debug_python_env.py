@@ -6,8 +6,11 @@ import os
 print("CWD:", os.getcwd())
 
 # Print environment variables related to Python paths
-print("\nPYTHONPATH:", os.environ.get('PYTHONPATH', 'Not set'))
-print("AZURE_FUNCTIONS_ENVIRONMENT:", os.environ.get('AZURE_FUNCTIONS_ENVIRONMENT', 'Not set'))
+print("\nPYTHONPATH:", os.environ.get("PYTHONPATH", "Not set"))
+print(
+    "AZURE_FUNCTIONS_ENVIRONMENT:",
+    os.environ.get("AZURE_FUNCTIONS_ENVIRONMENT", "Not set"),
+)
 
 # Print Python executable location
 print("\nPython executable:", sys.executable)
@@ -20,6 +23,7 @@ for path in sys.path:
 # Try to locate the specific botbuilder package
 try:
     import botbuilder.core
+
     print("\nBotbuilder.core location:", os.path.dirname(botbuilder.core.__file__))
 except ImportError as e:
     print("\nFailed to import botbuilder.core:", e)
@@ -27,7 +31,7 @@ except ImportError as e:
     # Check if package exists in any sys.path location
     print("\nSearching for botbuilder in sys.path locations:")
     for path in sys.path:
-        potential_path = os.path.join(path, 'botbuilder')
+        potential_path = os.path.join(path, "botbuilder")
         if os.path.exists(potential_path):
             print(f"Found botbuilder at: {potential_path}")
             # List contents of the botbuilder directory
