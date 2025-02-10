@@ -11,12 +11,13 @@
 @prefix solution: <./solution#> .
 @prefix risks: <./risks#> .
 @prefix guidance: <./guidance#> .
+@prefix cortexteams: <./cortexteams#> .
 
 ### Ontology Metadata
 :ChatbotLLMOntology a owl:Ontology ;
     rdfs:label "Chatbot LLM Ontology" ;
     rdfs:comment "Ontology to explore the problem and solution spaces for integrating LLMs into chat platforms." ;
-    owl:versionInfo "1.9" ;
+    owl:versionInfo "1.9.0" ;
     # Add explicit dependency declarations
     :requiresOntology [
         a :OntologyDependency ;
@@ -496,3 +497,20 @@
     rdfs:domain :PythonClass ;
     rdfs:range xsd:string ;
     rdfs:comment "Path to the Python module" .
+
+# Add Teams-specific integration
+:TeamsIntegration a owl:Class ;
+    rdfs:subClassOf :Integration ;
+    rdfs:label "Teams Integration" ;
+    rdfs:comment "Specific integration points for Microsoft Teams" .
+
+:hasTeamsContext a owl:ObjectProperty ;
+    rdfs:domain :Bot ;
+    rdfs:range :TeamsIntegration ;
+    rdfs:comment "Links a bot instance to its Teams-specific context" .
+
+# Link to cortexteams ontology
+:TeamsIntegration owl:equivalentClass cortexteams:TeamsBot .
+
+# TODO: Add deployment-specific properties
+# TODO: Add Teams-specific validation rules

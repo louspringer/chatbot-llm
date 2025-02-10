@@ -10,7 +10,7 @@
     rdfs:label "Snowflake Cortex Teams Integration" ;
     rdfs:comment "Ontology for the integration between Snowflake Cortex and Microsoft Teams" ;
     owl:imports chatbot: ;
-    owl:versionInfo "0.1" .
+    owl:versionInfo "0.1.0" .
 
 # Integration Context and Constraints (replacing blank nodes)
 :EnterpriseContext a chatbot:Context ;

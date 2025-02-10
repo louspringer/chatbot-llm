@@ -1,0 +1,141 @@
+@prefix depext: <./deployment_extensions#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix chatbot: <./chatbot#> .
+@prefix solution: <./solution#> .
+@prefix deploy: <./deployment#> .
+
+# Ontology metadata
+depext:DeploymentExtensionsOntology a owl:Ontology ;
+    rdfs:label "Deployment Extensions Ontology" ;
+    rdfs:comment "Teams-specific extensions to the deployment ontology" ;
+    owl:versionInfo "0.1.0" ;
+    owl:imports deploy: ;
+    owl:imports chatbot: .
+
+# Teams Bot Specific Infrastructure
+depext:TeamsInfrastructure a owl:Class ;
+    rdfs:subClassOf deploy:InfrastructureComponent ;
+    rdfs:label "Teams Infrastructure" ;
+    rdfs:comment "Infrastructure components specific to Teams integration" .
+
+depext:TeamsAuthComponent a depext:TeamsInfrastructure ;
+    rdfs:label "Teams Authentication Component" ;
+    depext:authType "OAuth 2.0" ;
+    depext:requiredScopes "botframework.graph" .
+
+depext:TeamsChannelComponent a depext:TeamsInfrastructure ;
+    rdfs:label "Teams Channel Component" ;
+    deploy:channelType "MS Teams" ;
+    deploy:messageTypes "text,adaptive-card" .
+
+# Teams Bot Validation Rules
+depext:TeamsValidationShape a sh:NodeShape ;
+    sh:targetClass depext:TeamsInfrastructure ;
+    sh:property [
+        sh:path depext:authType ;
+        sh:in ("OAuth 2.0" "Certificate") ;
+        sh:minCount 1 ;
+        sh:message "Teams components must specify valid auth type."
+    ] ;
+    sh:property [
+        sh:path depext:requiredScopes ;
+        sh:datatype xsd:string ;
+        sh:pattern "^(botframework|graph|teams)\\.[a-zA-Z\\.]+$" ;
+        sh:minCount 1 ;
+        sh:message "Must specify valid Teams API scopes."
+    ] .
+
+depext:TeamsChannelValidation a sh:NodeShape ;
+    sh:targetClass depext:TeamsChannelComponent ;
+    sh:property [
+        sh:path deploy:channelType ;
+        sh:hasValue "MS Teams" ;
+        sh:message "Channel type must be MS Teams."
+    ] ;
+    sh:property [
+        sh:path deploy:messageTypes ;
+        sh:datatype xsd:string ;
+        sh:pattern "^(text|adaptive-card|hero-card)(,(text|adaptive-card|hero-card))*$" ;
+        sh:minCount 1 ;
+        sh:message "Must specify supported message types."
+    ] .
+
+# Teams Bot Deployment Properties
+depext:teamsAppId a owl:DatatypeProperty ;
+    rdfs:domain depext:TeamsInfrastructure ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Microsoft Teams App ID" .
+
+depext:teamsAppSecret a owl:DatatypeProperty ;
+    rdfs:domain depext:TeamsInfrastructure ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Microsoft Teams App Secret (reference only, not value)" .
+
+depext:teamsManifest a owl:DatatypeProperty ;
+    rdfs:domain depext:TeamsInfrastructure ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Teams App Manifest location" .
+
+# Teams Bot Security Requirements
+depext:TeamsSecurityShape a sh:NodeShape ;
+    sh:targetClass depext:TeamsInfrastructure ;
+    sh:property [
+        sh:path depext:teamsAppSecret ;
+        sh:pattern "^op://.*$" ;
+        sh:minCount 1 ;
+        sh:message "Teams app secret must use 1Password reference."
+    ] ;
+    sh:property [
+        sh:path depext:teamsManifest ;
+        sh:minCount 1 ;
+        sh:message "Must specify Teams app manifest location."
+    ] .
+
+# Code Location Properties
+depext:codeLocation a owl:DatatypeProperty ;
+    rdfs:domain deploy:InfrastructureComponent ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Root directory containing the code" .
+
+depext:sourceStructure a owl:ObjectProperty ;
+    rdfs:domain deploy:InfrastructureComponent ;
+    rdfs:range deploy:SourceStructure .
+
+depext:SourceStructure a owl:Class ;
+    rdfs:label "Source Code Structure" ;
+    rdfs:comment "Defines the structure of source code files" .
+
+depext:mainModule a owl:DatatypeProperty ;
+    rdfs:domain deploy:SourceStructure ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Path to main bot module" .
+
+depext:configModule a owl:DatatypeProperty ;
+    rdfs:domain deploy:SourceStructure ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Path to configuration module" .
+
+depext:functionRoot a owl:DatatypeProperty ;
+    rdfs:domain deploy:SourceStructure ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Path to Azure Function entry point" .
+
+# Add Source Structure Validation
+depext:SourceStructureShape a sh:NodeShape ;
+    sh:targetClass deploy:SourceStructure ;
+    sh:property [
+        sh:path deploy:mainModule ;
+        sh:minCount 1 ;
+        sh:pattern "^bot/.*\\.py$" ;
+        sh:message "Main module must be in bot/ directory with .py extension"
+    ] ;
+    sh:property [
+        sh:path deploy:functionRoot ;
+        sh:minCount 1 ;
+        sh:pattern "^teams-bot/.*\\.py$" ;
+        sh:message "Function root must be in teams-bot/ directory with .py extension"
+    ] .

@@ -1,119 +1,140 @@
-# Cortex Teams Chatbot System
+# Snowflake Cortex Teams Bot
 
-An enterprise-grade chatbot system integrated with Microsoft Teams, providing secure and scalable natural language interfaces to business processes and data.
+A Microsoft Teams bot integration for Snowflake Cortex, enabling seamless data analytics and collaboration within Teams channels.
 
-## Documentation
+## Overview and Purpose
 
-### Executive Documentation
-- [Executive Overview](docs/executive_overview.md) - Complete project overview, stakeholders, risks, and timeline
-- [Cost Analysis](cost_analysis.md) - Detailed cost breakdown for different deployment scales
+The Snowflake Cortex Teams Bot is designed to bridge the gap between Microsoft Teams collaboration and Snowflake's data analytics capabilities. This integration allows teams to:
 
-### Architecture & Design
-- [Ontology Framework](docs/architecture/ontology.md) - System ontology and knowledge representation
-- [Deployment Architecture](assets/diagrams/generated/cortex_teams_deployment.svg) - System architecture and deployment patterns
-- [Solution Structure](assets/diagrams/source/solution_structure.puml) - Detailed solution components and interactions
-- [Requirements Diagram](assets/diagrams/generated/requirements_diagram.svg) - Visual representation of system requirements
+- Query Snowflake data directly from Teams channels
+- Receive automated alerts and insights
+- Share and collaborate on data analytics
+- Manage data access and permissions seamlessly
 
-### Guides
-- [Deployment Guide](docs/guides/deployment.md) - Detailed deployment instructions
-- [FAQ](docs/guides/faq.md) - Frequently asked questions
-- [Contributing](CONTRIBUTING.md) - Contributing guidelines
-
-### Ontology Documentation
-Our system uses a comprehensive ontology framework to model:
-- [Core Ontology](meta.ttl) - Base concepts and relationships
-- [Problem Domain](problem.ttl) - Problem space definition
-- [Solution Framework](solution.ttl) - Solution components and interactions
-- [Deployment Model](deployment.ttl) - Deployment patterns and configurations
-- [Risk Management](risks.ttl) - Risk assessment and mitigation strategies
-- [Validation Framework](deployment_validation.ttl) - System validation and verification
-
-## Project Structure
+## Directory Structure
 
 ```
 .
-├── assets/                    # Static assets
-│   └── diagrams/             # Architecture and design diagrams
-│       ├── generated/        # Generated SVG diagrams
-│       └── source/          # Source PlantUML files
-├── docs/                     # Documentation files
-│   ├── architecture/        # Architecture documentation
-│   ├── guides/             # User and developer guides
-│   └── api/                # API documentation
-├── src/                     # Source code
-├── ontology-framework/      # Ontology framework files
-├── tests/                   # Test suite
-└── deployment/             # Deployment configurations
+├── teams-bot/              # Main bot application
+│   ├── bot/               # Core bot logic
+│   ├── handlers/          # Message and event handlers
+│   └── middleware/        # Bot middleware components
+├── tools/                 # Development and utility scripts
+├── tests/                 # Test suite
+├── docs/                  # Documentation
+└── ontologies/           # RDF/OWL ontologies for bot knowledge
 ```
 
-## Getting Started
+## Setup Instructions
 
 ### Prerequisites
-- Python 3.10 or higher
+
+- Python 3.8 or higher
 - Conda package manager
 - Microsoft Teams development account
-- Azure subscription (for deployment)
+- Snowflake account with appropriate permissions
 
-### Installation
+### Environment Setup
 
-1. Clone the repository:
-```bash
-git clone https://github.com/yourusername/chatbot-llm.git
-```
-
-2. Create conda environment:
+1. Create the conda environment:
 ```bash
 conda env create -f environment.yml
+conda activate chatbot-llm
 ```
 
-3. Activate the environment:
+2. Configure environment variables:
 ```bash
-conda activate chatbot-env
+cp .env.example .env
+# Edit .env with your credentials
 ```
 
-4. Install development dependencies:
+3. Register the bot in Microsoft Teams:
+   - Follow the [Microsoft Teams Bot Registration Guide](https://docs.microsoft.com/en-us/microsoftteams/platform/bots/how-to/create-a-bot-for-teams)
+   - Add the bot credentials to your `.env` file
+
+### Development Setup
+
+1. Install development dependencies:
 ```bash
-pip install -e ".[dev]"
+conda install -n chatbot-llm --file requirements-dev.txt
 ```
 
-## Development
-
-### Setting Up Development Environment
-1. Configure Teams development environment
-2. Set up local development settings
-3. Configure authentication
-
-### Running Tests
+2. Set up pre-commit hooks:
 ```bash
-pytest tests/
+pre-commit install
 ```
 
-### Building Documentation
+## Development Workflow
+
+1. **Branch Management**
+   - Main branch: `main` - production-ready code
+   - Development branch: `develop` - integration branch
+   - Feature branches: `feature/*` - new features
+   - Hotfix branches: `hotfix/*` - urgent fixes
+
+2. **Development Process**
+   - Create a feature branch from `develop`
+   - Implement changes with tests
+   - Submit PR for review
+   - Merge to `develop` after approval
+
+3. **Testing**
 ```bash
-mkdocs serve
+# Run unit tests
+pytest tests/unit
+
+# Run integration tests
+pytest tests/integration
+
+# Run all tests with coverage
+pytest --cov=teams-bot tests/
 ```
 
-## Deployment
+## Contribution Guidelines
 
-See [Deployment Guide](docs/guides/deployment.md) for detailed deployment instructions.
+1. **Code Style**
+   - Follow PEP 8 guidelines
+   - Use type hints
+   - Document functions and classes
+   - Keep functions focused and small
 
-## Contributing
+2. **Pull Request Process**
+   - Create descriptive PR titles
+   - Fill out the PR template
+   - Include test coverage
+   - Link related issues
 
-Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
+3. **Commit Messages**
+   - Use conventional commits format
+   - Reference issues where applicable
+   - Keep commits focused and atomic
+
+4. **Documentation**
+   - Update README for major changes
+   - Document new features
+   - Keep API documentation current
+
+## Ontology Integration
+
+The bot uses RDF/OWL ontologies for knowledge representation:
+
+```turtle
+@prefix bot: <./chatbot#> .
+@prefix snow: <./snowflake#> .
+@prefix teams: <./teams#> .
+
+bot:TeamsBot a owl:Class ;
+    rdfs:label "Teams Bot" ;
+    rdfs:comment "Main bot application class" .
+```
 
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## Acknowledgments
-
-- Microsoft Teams Platform team
-- OpenAI for ML models
-- Contributors and maintainers
-
 ## Support
 
-For support and questions, please:
-1. Check the [FAQ](docs/guides/faq.md)
-2. Open an issue
-3. Contact the development team 
+For support and questions:
+- Create an issue in the repository
+- Contact the development team
+- Check the [documentation](docs/) 

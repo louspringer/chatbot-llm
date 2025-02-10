@@ -1,3 +1,6 @@
 [submodule "ontology-framework"]
 	path = ontology-framework
 	url = https://github.com/louspringer/ontology-framework/
+[submodule "cortex-analyst"]
+	path = cortex-analyst
+	url = https://github.com/louspringer/sfguide-getting-started-with-cortex-analyst

@@ -1,0 +1,344 @@
+@prefix docval: <./documentation_validation#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix doc: <./documentation#> .
+
+# Ontology metadata
+docval:DocumentationValidationOntology a owl:Ontology ;
+    rdfs:label "Documentation Validation Ontology" ;
+    rdfs:comment "SHACL shapes and validation rules for Teams bot documentation" ;
+    owl:versionInfo "0.1.0" ;
+    owl:imports doc: .
+
+# Documentation Validation Rules
+docval:DocumentationShape a sh:NodeShape ;
+    sh:targetClass doc:Documentation ;
+    sh:property [
+        sh:path rdfs:label ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "Documentation must have a label."
+    ] ;
+    sh:property [
+        sh:path rdfs:comment ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "Documentation must have a description."
+    ] .
+
+# Validation Process Rules
+:ValidationProcessShape a sh:NodeShape ;
+    sh:targetClass :ValidationProcess ;
+    sh:property [
+        sh:path :hasValidationStep ;
+        sh:minCount 1 ;
+        sh:node :ValidationStep ;
+        sh:message "Validation process must have at least one step."
+    ] ;
+    sh:property [
+        sh:path :hasValidationRule ;
+        sh:minCount 1 ;
+        sh:node :ValidationRule ;
+        sh:message "Validation process must have at least one rule."
+    ] .
+
+# Validation Step Rules
+:ValidationStepShape a sh:NodeShape ;
+    sh:targetClass :ValidationStep ;
+    sh:property [
+        sh:path :hasExample ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "Validation step must include an example."
+    ] .
+
+# Documentation Section Rules
+:DocumentationSectionShape a sh:NodeShape ;
+    sh:targetClass :DocumentationSection ;
+    sh:property [
+        sh:path :hasSubsection ;
+        sh:node :DocumentationSection ;
+        sh:message "Subsections must be valid documentation sections."
+    ] ;
+    sh:property [
+        sh:path :hasExample ;
+        sh:datatype xsd:string ;
+        sh:message "Examples must be strings."
+    ] .
+
+# Validation Rule Documentation
+:ValidationRuleShape a sh:NodeShape ;
+    sh:targetClass :ValidationRule ;
+    sh:property [
+        sh:path :hasErrorMessage ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "Validation rule must have an error message."
+    ] ;
+    sh:property [
+        sh:path :hasExample ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "Validation rule must include an example."
+    ] .
+
+# Enhanced Example Format Rules
+:ExampleFormatShape a sh:NodeShape ;
+    sh:targetClass :Documentation ;
+    sh:property [
+        sh:path :hasExample ;
+        sh:pattern """^(
+            (```(turtle|python|json|yaml|typescript|javascript|http|bash|powershell)\\n[\\s\\S]*?\\n```)|
+            (```\\n[\\s\\S]*?\\n```)|
+            ([\\s\\S]*))$""" ;
+        sh:message "Code examples must specify a valid language (turtle, python, json, yaml, typescript, javascript, http, bash, powershell) or be plain text."
+    ] ;
+    sh:property [
+        sh:path :hasExample ;
+        sh:pattern "^(?!.*`[^`]*$).*$" ;  # Ensure backticks are properly closed
+        sh:message "Code block backticks must be properly closed."
+    ] ;
+    sh:property [
+        sh:path :hasExample ;
+        sh:maxLength 2000 ;
+        sh:message "Code examples should not exceed 2000 characters."
+    ] .
+
+# Enhanced Cross-Reference Rules
+:CrossReferenceShape a sh:NodeShape ;
+    sh:targetClass :Documentation ;
+    sh:rule [
+        a sh:SPARQLRule ;
+        sh:construct """
+            CONSTRUCT {
+                ?this :validationWarning "Referenced components should exist in deployment ontology."
+            }
+            WHERE {
+                ?this :hasExample ?example .
+                FILTER CONTAINS(?example, ":TeamsBotFunction")
+                FILTER NOT EXISTS { deployment:TeamsBotFunction a ?type }
+            }
+        """
+    ] ;
+    sh:rule [
+        a sh:SPARQLRule ;
+        sh:construct """
+            CONSTRUCT {
+                ?this :validationWarning "Referenced bot components should exist in meta ontology."
+            }
+            WHERE {
+                ?this :hasExample ?example .
+                FILTER (CONTAINS(?example, "meta:BotComponent") ||
+                       CONTAINS(?example, "meta:Handler") ||
+                       CONTAINS(?example, "meta:Activity") ||
+                       CONTAINS(?example, "meta:Context"))
+                FILTER NOT EXISTS {
+                    ?component a meta:BotComponent
+                }
+            }
+        """
+    ] ;
+    sh:rule [
+        a sh:SPARQLRule ;
+        sh:construct """
+            CONSTRUCT {
+                ?this :validationWarning "Referenced solution components should exist in solution ontology."
+            }
+            WHERE {
+                ?this :hasExample ?example .
+                FILTER (CONTAINS(?example, "solution:TeamsBot") ||
+                       CONTAINS(?example, "solution:BotAdapter") ||
+                       CONTAINS(?example, "solution:ErrorHandler"))
+                FILTER NOT EXISTS {
+                    ?component a solution:TeamsBot
+                }
+            }
+        """
+    ] ;
+    sh:rule [
+        a sh:SPARQLRule ;
+        sh:construct """
+            CONSTRUCT {
+                ?this :validationWarning "Referenced conversation components should exist in conversation ontology."
+            }
+            WHERE {
+                ?this :hasExample ?example .
+                FILTER (CONTAINS(?example, "conversation:Message") ||
+                       CONTAINS(?example, "conversation:Response") ||
+                       CONTAINS(?example, "conversation:hasText") ||
+                       CONTAINS(?example, "conversation:hasType"))
+                FILTER NOT EXISTS {
+                    ?component a conversation:Message
+                }
+            }
+        """
+    ] .
+
+# Enhanced Documentation Completeness Rules
+:DocumentationCompletenessShape a sh:NodeShape ;
+    sh:targetClass :DocumentationSection ;
+    sh:property [
+        sh:path :hasExample ;
+        sh:minCount 1 ;
+        sh:message "Each documentation section must have at least one example."
+    ] ;
+    sh:property [
+        sh:path :hasSubsection ;
+        sh:minCount 1 ;
+        sh:message "Each major documentation section should have subsections."
+    ] ;
+    sh:property [
+        sh:path rdfs:comment ;
+        sh:minLength 20 ;
+        sh:message "Documentation sections should have meaningful descriptions (at least 20 characters)."
+    ] ;
+    sh:property [
+        sh:path :hasBestPractices ;
+        sh:minCount 1 ;
+        sh:message "Each major section should include best practices."
+    ] ;
+    sh:property [
+        sh:path :hasSecurityConsiderations ;
+        sh:minCount 1 ;
+        sh:message "Documentation must include security considerations where applicable."
+    ] ;
+    sh:property [
+        sh:path :hasValidationCriteria ;
+        sh:minCount 1 ;
+        sh:message "Documentation must specify validation criteria for implementations."
+    ] .
+
+# Enhanced Documentation Link Validation
+:DocumentationLinkShape a sh:NodeShape ;
+    sh:targetClass :Documentation ;
+    sh:property [
+        sh:path :hasReference ;
+        sh:pattern "^(https?://(?:www\\.)?[a-zA-Z0-9-]+(?:\\.[a-zA-Z]{2,})+(?:/[^\\s]*)?|#[\\w-]+|\\.{0,2}/[^\\s]+)$" ;
+        sh:message "Documentation links must be valid URLs (http/https), anchors (#section), or relative paths."
+    ] ;
+    sh:property [
+        sh:path :hasInternalReference ;
+        sh:pattern "^#[a-z][a-zA-Z0-9_-]*$" ;
+        sh:message "Internal references must start with # followed by valid identifier characters."
+    ] .
+
+# Enhanced Security Documentation Rules
+:SecurityDocumentationShape a sh:NodeShape ;
+    sh:targetClass :DocumentationSection ;
+    sh:property [
+        sh:path :hasSecurityConsiderations ;
+        sh:property [
+            sh:path :hasSensitiveDataHandling ;
+            sh:minCount 1 ;
+            sh:pattern "(?i).*(encryption|masking|tokenization|data protection).*" ;
+            sh:message "Must document sensitive data handling practices including encryption, masking, or tokenization."
+        ] ;
+        sh:property [
+            sh:path :hasAuthenticationRequirements ;
+            sh:minCount 1 ;
+            sh:pattern "(?i).*(oauth|jwt|token|certificate|authentication).*" ;
+            sh:message "Must specify authentication requirements including protocol and token types."
+        ] ;
+        sh:property [
+            sh:path :hasAuthorizationControls ;
+            sh:minCount 1 ;
+            sh:pattern "(?i).*(rbac|permissions|roles|access control).*" ;
+            sh:message "Must document authorization controls including roles and permissions."
+        ] ;
+        sh:property [
+            sh:path :hasSecurityHeaders ;
+            sh:minCount 1 ;
+            sh:pattern "(?i).*(content-security-policy|x-frame-options|strict-transport-security).*" ;
+            sh:message "Must document required security headers including CSP, HSTS, etc."
+        ]
+    ] .
+
+# Best Practices Documentation Rules
+:BestPracticesShape a sh:NodeShape ;
+    sh:targetClass :DocumentationSection ;
+    sh:property [
+        sh:path :hasBestPractices ;
+        sh:property [
+            sh:path :hasImplementationGuidelines ;
+            sh:minCount 1 ;
+            sh:message "Must include implementation guidelines."
+        ] ;
+        sh:property [
+            sh:path :hasErrorHandlingPractices ;
+            sh:minCount 1 ;
+            sh:message "Must document error handling practices."
+        ] ;
+        sh:property [
+            sh:path :hasPerformanceConsiderations ;
+            sh:minCount 1 ;
+            sh:message "Must include performance considerations."
+        ] ;
+        sh:property [
+            sh:path :hasScalabilityGuidelines ;
+            sh:minCount 1 ;
+            sh:message "Must document scalability guidelines."
+        ]
+    ] .
+
+# Enhanced API Documentation Rules
+:APIDocumentationShape a sh:NodeShape ;
+    sh:targetClass :DocumentationSection ;
+    sh:property [
+        sh:path :hasAPIDocumentation ;
+        sh:property [
+            sh:path :hasEndpointDescription ;
+            sh:minCount 1 ;
+            sh:pattern "(?i)^(GET|POST|PUT|DELETE|PATCH)\\s+/[\\w\\-/{}]*\\s+" ;
+            sh:message "Must document API endpoints with HTTP method and path."
+        ] ;
+        sh:property [
+            sh:path :hasRequestFormat ;
+            sh:minCount 1 ;
+            sh:pattern "(?i).*(application/json|multipart/form-data|application/x-www-form-urlencoded).*" ;
+            sh:message "Must specify request format with content type."
+        ] ;
+        sh:property [
+            sh:path :hasResponseFormat ;
+            sh:minCount 1 ;
+            sh:pattern "(?i).*(2[0-9]{2}|4[0-9]{2}|5[0-9]{2}).*" ;
+            sh:message "Must specify response format with status codes."
+        ]
+    ] .
+
+# Enhanced Testing Documentation Rules
+:TestingDocumentationShape a sh:NodeShape ;
+    sh:targetClass :DocumentationSection ;
+    sh:property [
+        sh:path :hasTestingGuidelines ;
+        sh:property [
+            sh:path :hasUnitTestRequirements ;
+            sh:minCount 1 ;
+            sh:pattern "(?i).*(assert|expect|should|test case).*" ;
+            sh:message "Must specify unit testing requirements with assertion methods."
+        ] ;
+        sh:property [
+            sh:path :hasIntegrationTestGuidelines ;
+            sh:minCount 1 ;
+            sh:pattern "(?i).*(integration|end-to-end|e2e|system test).*" ;
+            sh:message "Must include integration testing guidelines with test types."
+        ] ;
+        sh:property [
+            sh:path :hasTestCoverage ;
+            sh:minCount 1 ;
+            sh:pattern "^([1-9][0-9]|100)%$" ;
+            sh:message "Must specify required test coverage percentage (1-100%)."
+        ]
+    ] .
+
+# Enhanced Version Tracking Rules
+:VersionTrackingShape a sh:NodeShape ;
+    sh:targetClass owl:Ontology ;
+    sh:property [
+        sh:path owl:versionInfo ;
+        sh:minCount 1 ;
+        sh:pattern "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$" ;
+        sh:message "Ontology version must follow semantic versioning (MAJOR.MINOR.PATCH[-PRERELEASE][+BUILD])."
+    ] .

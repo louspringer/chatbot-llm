@@ -5,3 +5,15 @@ __pycache__/
 .python_packages/
 teams-bot/local.settings.json
 teams-bot/deployment.zip
+
+# Deployment artifacts
+deployment.zip
+.python_packages
+.funcignore
+.deployment
+
+# Azure Functions local settings
+local.settings.json
+
+# Azure Storage Emulator
+.azurite/

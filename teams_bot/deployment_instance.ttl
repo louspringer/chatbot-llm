@@ -1,0 +1,93 @@
+@prefix depinst: <./deployment_instance#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix chatbot: <./chatbot#> .
+@prefix solution: <./solution#> .
+@prefix deploy: <./deployment#> .
+
+# Ontology metadata
+depinst:DeploymentInstanceOntology a owl:Ontology ;
+    rdfs:label "Deployment Instance Ontology" ;
+    rdfs:comment "Specific deployment instances and configurations for the Teams bot" ;
+    owl:versionInfo "0.1.0" ;
+    owl:imports deploy: ;
+    owl:imports chatbot: .
+
+# Teams Bot Azure Function Instance
+depinst:TeamsBotFunction a deploy:InfrastructureComponent ;
+    rdfs:label "Teams Bot Azure Function" ;
+    rdfs:comment "Azure Function hosting the Teams Bot" ;
+    deploy:scalingType "Horizontal" ;
+    deploy:availabilityZones "Multi-region" ;
+    deploy:hosts chatbot:TeamsBot ;
+    deploy:codeLocation "teams-bot/" ;
+    deploy:sourceStructure [
+        deploy:mainModule "bot/cortex_bot.py" ;
+        deploy:configModule "config.py" ;
+        deploy:functionRoot "teams-bot/function_app.py"
+    ] ;
+    deploy:dependsOn :KeyVault ;
+    deploy:operationalCosts [
+        :maintenanceCost "100.00"^^xsd:decimal ;
+        :supportTier "Standard" ;
+        :slaRequirement "99.95%" ;
+        :backupCost "50.00"^^xsd:decimal
+    ] ;
+    deploy:utilizationMetrics [
+        :targetUtilization "0.7"^^xsd:decimal ;
+        :peakMultiplier "2.0"^^xsd:decimal ;
+        :costPerUnit "0.10"^^xsd:decimal
+    ] .
+
+# Key Vault Instance
+:BotKeyVault a :KeyVault ;
+    rdfs:label "Bot Key Vault" ;
+    :securityLevel "HSM-backed" ;
+    :managementType "RBAC" ;
+    :operationalCosts [
+        :maintenanceCost "50.00"^^xsd:decimal ;
+        :supportTier "Standard" ;
+        :slaRequirement "99.99%" ;
+        :backupCost "25.00"^^xsd:decimal
+    ] .
+
+# Application Insights Instance
+:BotAppInsights a :ApplicationInsights ;
+    rdfs:label "Bot Application Insights" ;
+    :monitoringType "Application Performance" ;
+    :dataRetention "90 days" ;
+    :operationalCosts [
+        :maintenanceCost "75.00"^^xsd:decimal ;
+        :supportTier "Standard" ;
+        :slaRequirement "99.95%" ;
+        :backupCost "0.00"^^xsd:decimal
+    ] .
+
+# Cost Model
+:TeamsBotCostModel a :CostModel ;
+    rdfs:label "Teams Bot Cost Model" ;
+    :baselineCost "500.00"^^xsd:decimal ;
+    :scalingFactor "1.5"^^xsd:decimal ;
+    :costComponents [
+        a :CostComponentShape ;
+        :componentType "Compute" ;
+        :unitCost "0.10"^^xsd:decimal ;
+        :billingUnit "Hour"
+    ], [
+        a :CostComponentShape ;
+        :componentType "Storage" ;
+        :unitCost "0.05"^^xsd:decimal ;
+        :billingUnit "GB"
+    ], [
+        a :CostComponentShape ;
+        :componentType "Network" ;
+        :unitCost "0.01"^^xsd:decimal ;
+        :billingUnit "Transaction"
+    ], [
+        a :CostComponentShape ;
+        :componentType "Support" ;
+        :unitCost "100.00"^^xsd:decimal ;
+        :billingUnit "Month"
+    ] .

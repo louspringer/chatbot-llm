@@ -1,0 +1,184 @@
+---
+description: Enforce traceability between artifacts, ontologies, and requirements
+globs: ["*.py", "*.ttl", "*.md", "*.sql", "*.sh", "*.yml", "*.yaml"]
+---
+
+# Artifact Traceability Rule
+
+All artifacts (code, documentation, configuration, scripts) must be traceable to:
+1. An ontology class or property that defines its purpose and relationships
+2. A requirement that justifies its existence
+3. A guidance pattern from guidance.ttl that validates its structure and relationships
+
+## Required Header Format
+
+Every file must include a header in the appropriate comment style:
+
+```python
+# Ontology: chatbot:MLComponent
+# Implements: chatbot:QueryTranslator
+# Requirement: REQ-ML-001 Natural language query translation
+# Guidance: guidance:MLPatterns#NLPComponent
+# Description: Translates natural language queries to SQL using LLM
+```
+
+```turtle
+# Ontology: meta:SecurityConcept
+# Implements: meta:AuthenticationConcept
+# Requirement: REQ-SEC-001 Secure credential management
+# Guidance: guidance:SecurityPatterns#AuthenticationPattern
+# Description: Defines security patterns for authentication
+```
+
+```yaml
+# Ontology: deploy:Component
+# Implements: deploy:ConfigurationComponent
+# Requirement: REQ-DEP-001 Environment configuration
+# Guidance: guidance:DeploymentPatterns#ConfigurationManagement
+# Description: Deployment configuration for cloud resources
+```
+
+## Validation Rules
+
+1. Ontology References:
+   - Must reference an existing ontology class or property
+   - Must use proper prefix:name format
+   - Class/property must exist in the referenced ontology
+
+2. Requirement References:
+   - Must follow format: REQ-{DOMAIN}-{NUMBER}
+   - Domains: ML (Machine Learning), SEC (Security), DEP (Deployment)
+   - Must exist in requirements.ttl or linked documentation
+
+3. Guidance Pattern References:
+   - Must reference a pattern from guidance.ttl
+   - Must use format: guidance:{PatternGroup}#{PatternName}
+   - Pattern must be appropriate for the artifact type
+
+4. Implementation Details:
+   - Must specify what is being implemented
+   - Implementation must be a subclass/property of the ontology reference
+   - Must conform to the referenced guidance pattern
+   - Description must explain the specific implementation
+
+## Examples
+
+### Python Class Implementation
+```python
+# Ontology: chatbot:MLComponent
+# Implements: chatbot:ModelManager
+# Requirement: REQ-ML-002 Model lifecycle management
+# Guidance: guidance:MLPatterns#ModelLifecycle
+# Description: Manages ML model versions and updates
+class ModelManager:
+    """Handles ML model lifecycle operations."""
+    pass
+```
+
+### Configuration File
+```yaml
+# Ontology: deploy:InfrastructureComponent
+# Implements: deploy:FunctionsApp
+# Requirement: REQ-DEP-003 Serverless function deployment
+# Guidance: guidance:DeploymentPatterns#ServerlessConfig
+# Description: Azure Functions configuration for bot hosting
+version: 1.0
+functions:
+  - name: bot_handler
+    type: python
+```
+
+### Shell Script
+```bash
+# Ontology: deploy:RuntimeDependency
+# Implements: deploy:PythonEnvironment
+# Requirement: REQ-DEP-002 Development environment setup
+# Guidance: guidance:DevOpsPatterns#EnvironmentSetup
+# Description: Sets up Python virtual environment with dependencies
+```
+
+## Validation Queries
+
+Use these SPARQL queries to validate traceability:
+
+```sparql
+# Find artifacts without guidance patterns
+SELECT ?file
+WHERE {
+  ?file a :Artifact .
+  FILTER NOT EXISTS { ?file :hasGuidancePattern ?pattern }
+}
+
+# Validate pattern compatibility
+SELECT ?file ?pattern ?artifactType
+WHERE {
+  ?file :hasGuidancePattern ?pattern ;
+        a ?artifactType .
+  ?pattern guidance:appliesTo ?validType .
+  FILTER NOT EXISTS { ?artifactType rdfs:subClassOf ?validType }
+}
+
+# Check complete traceability
+SELECT ?file
+WHERE {
+  ?file a :Artifact .
+  FILTER NOT EXISTS { 
+    ?file :hasOntologyReference ?ref ;
+          :hasRequirement ?req ;
+          :hasGuidancePattern ?pattern 
+  }
+}
+
+# Validate pattern implementation
+SELECT ?file ?pattern ?violation
+WHERE {
+  ?file :hasGuidancePattern ?pattern .
+  ?pattern guidance:hasConstraint ?constraint .
+  ?file guidance:violatesConstraint ?violation .
+}
+```
+
+## Error Prevention
+
+1. Before creating new files:
+   - Check existing ontologies for relevant concepts
+   - Identify applicable requirements
+   - Select appropriate guidance patterns
+   - Verify pattern constraints
+
+2. During code review:
+   - Verify ontology references exist
+   - Validate requirement links
+   - Check pattern compliance
+   - Ensure pattern constraints are met
+
+3. CI/CD Integration:
+   - Run automated header checks
+   - Validate ontology references
+   - Verify requirement existence
+   - Check guidance pattern compliance
+   - Generate traceability reports
+
+## Best Practices
+
+1. Ontology First:
+   - Define concepts in ontology before implementation
+   - Use existing patterns when possible
+   - Extend ontologies thoughtfully
+
+2. Requirements Mapping:
+   - Link to specific, atomic requirements
+   - Maintain requirements documentation
+   - Update links when requirements change
+
+3. Pattern Compliance:
+   - Choose appropriate guidance patterns
+   - Follow pattern constraints
+   - Document pattern usage
+   - Update when patterns evolve
+
+4. Implementation Clarity:
+   - Be specific about what is being implemented
+   - Document relationships clearly
+   - Keep descriptions focused and relevant
+   - Explain pattern application 

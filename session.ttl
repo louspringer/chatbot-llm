@@ -1,0 +1,1658 @@
+@base <./session#> .
+@prefix : <./session#> .
+@prefix meta: <./meta#> .
+@prefix metameta: <./metameta#> .
+@prefix problem: <./problem#> .
+@prefix solution: <./solution#> .
+@prefix conversation: <./conversation#> .
+@prefix guidance: <./guidance#> .
+@prefix chatbot: <./chatbot#> .
+@prefix cortexteams: <./cortexteams#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix session: <./session#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix dc: <http://purl.org/dc/elements/1.1/> .
+@prefix dct: <http://purl.org/dc/terms/> .
+
+# Session Metadata
+session:SessionOntology rdf:type owl:Ontology ;
+    dc:title "Teams Bot Session Ontology" ;
+    dc:version "1.4" ;
+    dct:created "2024-02-07"^^xsd:date ;
+    dct:modified "2024-02-09"^^xsd:date ;
+    dct:publisher "Ontology Framework Project" ;
+    dct:license <http://opensource.org/licenses/MIT> ;
+    dct:description "Ontology for managing Teams bot development session state" ;
+    owl:imports guidance: .
+
+# Development Tools
+session:DevelopmentTool a owl:Class ;
+    rdfs:label "Development Tool" ;
+    rdfs:comment "Tools used in the development process" .
+
+session:CursorRule a owl:Class ;
+    rdfs:label "Cursor Rule" ;
+    rdfs:comment "Rule definitions for Cursor AI assistance" .
+
+session:SPARQLQueryRule a owl:Individual ;
+    rdf:type session:CursorRule ;
+    rdfs:label "SPARQL Query Rule" ;
+    rdfs:comment "Rule for executing SPARQL queries against ontology files" ;
+    session:filePattern "*.ttl, *.rdf, *.owl" ;
+    session:implementationStatus "Implemented" ;
+    session:lastUpdated "2024-02-09"^^xsd:date .
+
+session:BlackFormatterRule a owl:Individual ;
+    rdf:type session:CursorRule ;
+    rdfs:label "Black Formatter Rule" ;
+    rdfs:comment "Rule for formatting Python code using Black" ;
+    session:filePattern "*.py" ;
+    session:implementationStatus "Implemented" ;
+    session:lastUpdated "2024-02-09"^^xsd:date .
+
+session:ArtifactTraceabilityRule a owl:Individual ;
+    rdf:type session:CursorRule ;
+    rdfs:label "Artifact Traceability Rule" ;
+    rdfs:comment "Rule for enforcing traceability between artifacts, ontologies, and requirements" ;
+    session:filePattern "*.py, *.ttl, *.md, *.sql, *.sh, *.yml, *.yaml" ;
+    session:implementationStatus "Implemented" ;
+    session:lastUpdated "2024-02-09"^^xsd:date ;
+    session:requiresGuidance guidance:ArtifactTraceabilityPattern .
+
+# Properties
+session:filePattern a owl:DatatypeProperty ;
+    rdfs:label "File Pattern" ;
+    rdfs:comment "Glob pattern for files the rule applies to" ;
+    rdfs:domain session:CursorRule ;
+    rdfs:range xsd:string .
+
+session:implementationStatus a owl:DatatypeProperty ;
+    rdfs:label "Implementation Status" ;
+    rdfs:comment "Current status of the tool implementation" ;
+    rdfs:domain session:DevelopmentTool ;
+    rdfs:range xsd:string .
+
+session:lastUpdated a owl:DatatypeProperty ;
+    rdfs:label "Last Updated" ;
+    rdfs:comment "Date the tool or rule was last updated" ;
+    rdfs:domain session:DevelopmentTool ;
+    rdfs:range xsd:date .
+
+# Session Context Management
+session:CurrentContext a owl:Class ;
+    rdfs:label "Current Session Context" ;
+    rdfs:comment "Tracks the active context and relationships for the current session" .
+
+session:hasActiveOntology a owl:ObjectProperty ;
+    rdfs:domain session:CurrentContext ;
+    rdfs:range owl:Ontology ;
+    rdfs:comment "Links to ontologies currently relevant to the session" .
+
+session:hasContextState a owl:ObjectProperty ;
+    rdfs:domain session:CurrentContext ;
+    rdfs:range session:ContextState ;
+    rdfs:comment "Defines the current state of context tracking" .
+
+# Context State
+session:ContextState a owl:Class ;
+    rdfs:label "Context State" ;
+    rdfs:comment "Represents the state of context tracking in the session" .
+
+# Link to existing project ontologies
+session:currentSession a session:CurrentContext ;
+    session:hasActiveOntology chatbot: ;
+    session:hasActiveOntology cortexteams: ;
+    session:hasContextState session:initialState .
+
+# Task Management
+session:Task a owl:Class ;
+    rdfs:label "Task" ;
+    rdfs:comment "Represents a specific task or work item in the current session" .
+
+session:TaskStatus a owl:Class ;
+    rdfs:label "Task Status" ;
+    rdfs:comment "Represents the current status of a task" .
+
+session:hasStatus a owl:ObjectProperty ;
+    rdfs:domain session:Task ;
+    rdfs:range session:TaskStatus ;
+    rdfs:comment "Links a task to its current status" .
+
+session:hasPriority a owl:DatatypeProperty ;
+    rdfs:domain session:Task ;
+    rdfs:range xsd:integer ;
+    rdfs:comment "Priority level of the task (1-5)" .
+
+session:dependsOn a owl:ObjectProperty ;
+    rdfs:domain session:Task ;
+    rdfs:range session:Task ;
+    rdfs:comment "Indicates task dependencies" .
+
+# Task Status Instances
+session:Pending a session:TaskStatus ;
+    rdfs:label "Pending" .
+
+session:InProgress a session:TaskStatus ;
+    rdfs:label "In Progress" .
+
+session:Completed a session:TaskStatus ;
+    rdfs:label "Completed" .
+
+session:Blocked a session:TaskStatus ;
+    rdfs:label "Blocked" .
+
+# Current Tasks
+session:task1 a session:Task ;
+    rdfs:label "Teams Bot Integration" ;
+    rdfs:comment "Integrate the chatbot with Microsoft Teams platform" ;
+    session:hasStatus session:InProgress ;
+    session:hasPriority 1 ;
+    session:requiresOntology chatbot: ;
+    session:requiresOntology cortexteams: ;
+    session:completedSteps [
+        rdf:_1 "Directory structure reorganization" ;
+        rdf:_2 "Basic state management implementation" ;
+        rdf:_3 "Local development setup"
+    ] ;
+    session:lastUpdated "2024-02-07T18:15:00Z"^^xsd:dateTime .
+
+session:task2 a session:Task ;
+    rdfs:label "Context Management Implementation" ;
+    rdfs:comment "Implement robust context management in the Teams bot" ;
+    session:hasStatus session:InProgress ;
+    session:hasPriority 2 ;
+    session:dependsOn session:task1 ;
+    session:completedSteps [
+        rdf:_1 "Basic state manager implementation"
+    ] ;
+    session:lastUpdated "2024-02-07T18:15:00Z"^^xsd:dateTime .
+
+session:task3 a session:Task ;
+    rdfs:label "Security Validation" ;
+    rdfs:comment "Validate security requirements and implementations" ;
+    session:hasStatus session:Pending ;
+    session:hasPriority 1 .
+
+session:task4 a session:Task ;
+    rdfs:label "Ontology Semantic Versioning" ;
+    rdfs:comment "Update semantic versioning in all ontology files" ;
+    session:hasStatus session:Completed ;
+    session:hasPriority 1 ;
+    session:completedSteps [
+        rdf:_1 "Updated cortexteams.ttl version" ;
+        rdf:_2 "Updated chatbot.ttl version" ;
+        rdf:_3 "Updated deployment.ttl version" ;
+        rdf:_4 "Updated solution.ttl version" ;
+        rdf:_5 "Updated meta.ttl version"
+    ] ;
+    session:lastUpdated "2024-02-09T16:25:00Z"^^xsd:dateTime .
+
+session:task5 a session:Task ;
+    rdfs:label "Ontology Declarations" ;
+    rdfs:comment "Add missing ontology declarations to all TTL files" ;
+    session:hasStatus session:Completed ;
+    session:hasPriority 1 ;
+    session:completedSteps [
+        rdf:_1 "Added declaration to cortex_analyst.ttl" ;
+        rdf:_2 "Added declaration to cost_analysis.ttl" ;
+        rdf:_3 "Added declaration to meta.ttl" ;
+        rdf:_4 "Added declaration to deployment_validation.ttl" ;
+        rdf:_5 "Added declarations to teams_bot/*.ttl files"
+    ] ;
+    session:lastUpdated "2024-02-09T16:25:00Z"^^xsd:dateTime .
+
+session:task6 a session:Task ;
+    rdfs:label "Cursor Rules Implementation" ;
+    rdfs:comment "Implement Cursor rules for development workflow" ;
+    session:hasStatus session:Completed ;
+    session:hasPriority 2 ;
+    session:completedSteps [
+        rdf:_1 "Created SPARQL queries rule" ;
+        rdf:_2 "Created Black formatter rule" ;
+        rdf:_3 "Created artifact traceability rule"
+    ] ;
+    session:lastUpdated "2024-02-09T16:25:00Z"^^xsd:dateTime .
+
+# Current Context State
+session:currentContext a session:ContextState ;
+    rdfs:label "Current Context" ;
+    session:activeTask session:task6 ;
+    session:activeOntologies (
+        chatbot:ChatbotLLMOntology
+        cortexteams:TeamsOntology
+        meta:MetaOntology
+        deploy:DeploymentOntology
+    ) ;
+    session:activeCursorRules (
+        session:SPARQLQueryRule
+        session:BlackFormatterRule
+        session:ArtifactTraceabilityRule
+    ) ;
+    session:securityContext [
+        a session:SecurityContext ;
+        session:requiresValidation true ;
+        session:securityLevel "High"
+    ] ;
+    session:hasEnvironmentState :currentEnvironment .
+
+# SHACL Validation
+session:TaskShape a sh:NodeShape ;
+    sh:targetClass session:Task ;
+    sh:property [
+        sh:path session:hasStatus ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:message "Task must have exactly one status"
+    ] ;
+    sh:property [
+        sh:path session:hasPriority ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:minInclusive 1 ;
+        sh:maxInclusive 5 ;
+        sh:message "Task must have a priority between 1 and 5"
+    ] .
+
+# TODO: Add context transition rules
+# TODO: Add validation constraints
+
+# Project Definition
+session:Project a owl:Class ;
+    rdfs:label "Project" ;
+    rdfs:comment "Represents the overall project and its goals" .
+
+session:ProjectPhase a owl:Class ;
+    rdfs:label "Project Phase" ;
+    rdfs:comment "Major phase of project development" .
+
+session:hasPhase a owl:ObjectProperty ;
+    rdfs:domain session:Project ;
+    rdfs:range session:ProjectPhase .
+
+# Main Project Instance
+session:SnowflakeTeamsBot a session:Project ;
+    rdfs:label "Snowflake Cortex Teams Bot" ;
+    rdfs:comment "Integration of Snowflake Cortex capabilities with Microsoft Teams" ;
+    session:hasPhase session:phase1 ;
+    session:hasPhase session:phase2 ;
+    session:hasPhase session:phase3 ;
+    session:hasPhase session:phase4 .
+
+# Project Phases
+session:phase1 a session:ProjectPhase ;
+    rdfs:label "Core Teams Bot Setup" ;
+    session:status session:InProgress ;
+    session:completedSteps [
+        rdf:_1 "Directory structure setup" ;
+        rdf:_2 "Basic state management" ;
+        rdf:_3 "Local development environment"
+    ] ;
+    session:lastUpdated "2024-02-07T18:15:00Z"^^xsd:dateTime .
+
+session:phase2 a session:ProjectPhase ;
+    rdfs:label "Snowflake Cortex Integration" ;
+    session:status session:Pending ;
+    session:tasks (
+        [
+            a session:Task ;
+            rdfs:label "Snowflake Connection" ;
+            rdfs:comment "Set up secure connection to Snowflake" ;
+            session:hasStatus session:Pending ;
+            session:hasPriority 2
+        ]
+        [
+            a session:Task ;
+            rdfs:label "Query Processing" ;
+            rdfs:comment "Implement natural language to SQL processing" ;
+            session:hasStatus session:Pending ;
+            session:hasPriority 2
+        ]
+        [
+            a session:Task ;
+            rdfs:label "Result Formatting" ;
+            rdfs:comment "Format query results for Teams display" ;
+            session:hasStatus session:Pending ;
+            session:hasPriority 2
+        ]
+    ) .
+
+session:phase3 a session:ProjectPhase ;
+    rdfs:label "Advanced Features" ;
+    session:status session:Pending ;
+    session:tasks (
+        [
+            a session:Task ;
+            rdfs:label "Conversation Context" ;
+            rdfs:comment "Implement conversation memory and context tracking" ;
+            session:hasStatus session:Pending ;
+            session:hasPriority 3
+        ]
+        [
+            a session:Task ;
+            rdfs:label "Adaptive Cards" ;
+            rdfs:comment "Implement rich Teams Adaptive Cards for interactions" ;
+            session:hasStatus session:Pending ;
+            session:hasPriority 3
+        ]
+        [
+            a session:Task ;
+            rdfs:label "Error Handling" ;
+            rdfs:comment "Implement robust error handling and user feedback" ;
+            session:hasStatus session:Pending ;
+            session:hasPriority 3
+        ]
+    ) .
+
+session:phase4 a session:ProjectPhase ;
+    rdfs:label "Deployment & Security" ;
+    session:status session:Pending ;
+    session:tasks (
+        [
+            a session:Task ;
+            rdfs:label "Security Audit" ;
+            rdfs:comment "Complete security review and implement recommendations" ;
+            session:hasStatus session:Pending ;
+            session:hasPriority 1
+        ]
+        [
+            a session:Task ;
+            rdfs:label "Deployment Pipeline" ;
+            rdfs:comment "Set up automated deployment pipeline" ;
+            session:hasStatus session:Pending ;
+            session:hasPriority 2
+        ]
+        [
+            a session:Task ;
+            rdfs:label "Documentation" ;
+            rdfs:comment "Complete user and developer documentation" ;
+            session:hasStatus session:Pending ;
+            session:hasPriority 2
+        ]
+    ) .
+
+# Add branch naming strategy
+session:BranchStrategy a owl:Class ;
+    rdfs:label "Branch Strategy" ;
+    rdfs:comment "Defines the branch naming and management strategy" .
+
+session:BranchType a owl:Class ;
+    rdfs:label "Branch Type" ;
+    rdfs:comment "Type of branch (feature, fix, etc.)" .
+
+# Branch Types
+session:feature a session:BranchType ;
+    rdfs:label "feature" ;
+    rdfs:comment "New features and major changes" .
+
+session:fix a session:BranchType ;
+    rdfs:label "fix" ;
+    rdfs:comment "Bug fixes and minor corrections" .
+
+session:refactor a session:BranchType ;
+    rdfs:label "refactor" ;
+    rdfs:comment "Code refactoring with Sourcery integration" .
+
+session:experiment a session:BranchType ;
+    rdfs:label "experiment" ;
+    rdfs:comment "Experimental branches with unknown outcomes" .
+
+# Branch naming pattern
+session:BranchNaming a owl:Class ;
+    rdfs:label "Branch Naming Pattern" ;
+    rdfs:comment "Pattern: <type>/<phase>-<task-name> or experiment/<pioneer>-<adjective>-<concept>" .
+
+# Example branches for each phase
+session:phase1Branches a rdf:Seq ;
+    rdf:_1 "feature/p1-teams-bot-core" ;
+    rdf:_2 "feature/p1-auth-setup" ;
+    rdf:_3 "feature/p1-message-handling" .
+
+session:phase2Branches a rdf:Seq ;
+    rdf:_1 "feature/p2-snowflake-connect" ;
+    rdf:_2 "feature/p2-query-processor" ;
+    rdf:_3 "feature/p2-result-format" .
+
+session:phase3Branches a rdf:Seq ;
+    rdf:_1 "feature/p3-conversation-context" ;
+    rdf:_2 "feature/p3-adaptive-cards" ;
+    rdf:_3 "feature/p3-error-handling" .
+
+session:phase4Branches a rdf:Seq ;
+    rdf:_1 "feature/p4-security-audit" ;
+    rdf:_2 "feature/p4-deployment" ;
+    rdf:_3 "feature/p4-docs" .
+
+# Sourcery Integration
+session:SourceryConfig a owl:Class ;
+    rdfs:label "Sourcery Configuration" ;
+    rdfs:comment "Sourcery.ai integration configuration" .
+
+session:sourcerySetup a session:SourceryConfig ;
+    rdfs:label "Sourcery Setup" ;
+    session:configFile ".sourcery.yaml" ;
+    session:autoRefactor true ;
+    session:refactorBranchPrefix "refactor/sourcery" .
+
+# Naming theme for experimental branches
+session:ExperimentNaming a owl:Class ;
+    rdfs:label "Experiment Branch Naming" ;
+    rdfs:comment "Docker-style three-tuple naming using AI pioneers theme" .
+
+session:nameComponents a owl:Class ;
+    rdfs:subClassOf session:ExperimentNaming .
+
+# Example name components for AI pioneer theme
+session:pioneers a rdf:Seq ;
+    rdf:_1 "turing" ;
+    rdf:_2 "neumann" ;
+    rdf:_3 "shannon" ;
+    rdf:_4 "minsky" ;
+    rdf:_5 "wiener" ;
+    rdf:_6 "hinton" ;
+    rdf:_7 "bengio" ;
+    rdf:_8 "lecun" .
+
+session:adjectives a rdf:Seq ;
+    rdf:_1 "curious" ;
+    rdf:_2 "quantum" ;
+    rdf:_3 "neural" ;
+    rdf:_4 "fuzzy" ;
+    rdf:_5 "recursive" ;
+    rdf:_6 "learning" ;
+    rdf:_7 "thinking" ;
+    rdf:_8 "dreaming" .
+
+session:concepts a rdf:Seq ;
+    rdf:_1 "tensor" ;
+    rdf:_2 "matrix" ;
+    rdf:_3 "vector" ;
+    rdf:_4 "neuron" ;
+    rdf:_5 "circuit" ;
+    rdf:_6 "network" ;
+    rdf:_7 "pattern" ;
+    rdf:_8 "graph" .
+
+# Example experimental branch names
+session:experimentBranches a rdf:Seq ;
+    rdf:_1 "experiment/turing-fuzzy-tensor" ;
+    rdf:_2 "experiment/shannon-neural-circuit" ;
+    rdf:_3 "experiment/hinton-dreaming-network" .
+
+# Checkpoint Projection
+session:CheckpointProjection a owl:Class ;
+    rdfs:label "Checkpoint Projection" ;
+    rdfs:comment "Information needed to resume work with correct context" .
+
+session:ProjectionComponent a owl:Class ;
+    rdfs:label "Projection Component" ;
+    rdfs:comment "A component required for context restoration" .
+
+session:hasComponent a owl:ObjectProperty ;
+    rdfs:domain session:CheckpointProjection ;
+    rdfs:range session:ProjectionComponent ;
+    rdfs:comment "Links a checkpoint to its required components" .
+
+session:componentPriority a owl:DatatypeProperty ;
+    rdfs:domain session:ProjectionComponent ;
+    rdfs:range xsd:integer ;
+    rdfs:comment "Priority order for loading components" .
+
+# Current Checkpoint
+session:currentCheckpoint a session:CheckpointProjection ;
+    rdfs:label "Current Checkpoint" ;
+    session:hasPromptState [
+        a session:PromptState ;
+        session:lastUpdated "2024-03-20T18:10:00Z"^^xsd:dateTime ;
+        session:linkedTask :ProjectStructureTask ;
+        session:promptVersion "1.2" ;
+        session:validationStatus "Completed" ;
+        session:taskProgress [
+            rdf:_1 "Define directory structure" ;
+            rdf:_2 "Document file organization" ;
+            rdf:_3 "Specify naming conventions" ;
+            rdf:_4 "Create project README"
+        ] ;
+        session:nextSteps [
+            rdf:_1 "Move to next issue" ;
+            rdf:_2 "Clean up development environment" ;
+            rdf:_3 "Archive completed tasks"
+        ]
+    ] .
+
+# Validation rules for checkpoints
+session:CheckpointShape a sh:NodeShape ;
+    sh:targetClass session:CheckpointProjection ;
+    sh:property [
+        sh:path session:hasComponent ;
+        sh:minCount 1 ;
+        sh:message "Checkpoint must have at least one component"
+    ] ;
+    sh:property [
+        sh:path session:resumptionPrompt ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:message "Checkpoint must have exactly one resumption prompt"
+    ] ;
+    sh:property [
+        sh:path session:hasPromptState ;
+        sh:minCount 1 ;
+        sh:message "Checkpoint must have prompt state"
+    ] ;
+    sh:property [
+        sh:path session:promptUpdateTriggers ;
+        sh:minCount 1 ;
+        sh:message "Must define prompt update triggers"
+    ] .
+
+# Add file mapping structure
+session:FileMapping a owl:Class ;
+    rdfs:label "File Mapping" ;
+    rdfs:comment "Maps files to project phases and dependencies" .
+
+session:hasPrimaryPhase a owl:ObjectProperty ;
+    rdfs:domain session:FileMapping ;
+    rdfs:range session:ProjectPhase ;
+    rdfs:comment "Primary phase this file belongs to" .
+
+session:hasSecondaryPhase a owl:ObjectProperty ;
+    rdfs:domain session:FileMapping ;
+    rdfs:range session:ProjectPhase ;
+    rdfs:comment "Secondary phases this file supports" .
+
+session:dependsOn a owl:ObjectProperty ;
+    rdfs:domain session:FileMapping ;
+    rdfs:range session:FileMapping ;
+    rdfs:comment "Files this file depends on" .
+
+session:missingComponents a owl:DatatypeProperty ;
+    rdfs:domain session:FileMapping ;
+    rdfs:range rdf:List ;
+    rdfs:comment "List of missing components for this file" .
+
+# Add refactoring property
+session:requiresRefactoring a owl:DatatypeProperty ;
+    rdfs:domain session:FileMapping ;
+    rdfs:range rdf:List ;
+    rdfs:comment "Required refactoring tasks for this file" .
+
+# File Mappings
+:TeamsBotMapping a session:FileMapping ;
+    rdfs:label "teams_bot.py" ;
+    session:hasPrimaryPhase session:phase1 ;
+    session:hasSecondaryPhase session:phase3 ;
+    session:dependsOn [
+        rdf:_1 "botbuilder.core" ;
+        rdf:_2 "logging"
+    ] ;
+    session:missingComponents [
+        rdf:_1 "Error handling middleware" ;
+        rdf:_2 "Adaptive card templates" ;
+        rdf:_3 "Conversation state management implementation"
+    ] ;
+    session:requiresRefactoring [
+        rdf:_1 "Convert to async/await pattern throughout" ;
+        rdf:_2 "Add type hints to all methods" ;
+        rdf:_3 "Extract message handling to separate class" ;
+        rdf:_4 "Add proper logging configuration"
+    ] .
+
+:DeploymentMapping a session:FileMapping ;
+    rdfs:label "deployment_instance.ttl" ;
+    session:hasPrimaryPhase session:phase4 ;
+    session:hasSecondaryPhase session:phase1 ;
+    session:dependsOn [
+        rdf:_1 "chatbot.ttl" ;
+        rdf:_2 "Azure Function configuration"
+    ] ;
+    session:missingComponents [
+        rdf:_1 "Actual Azure Function configuration files" ;
+        rdf:_2 "Environment variable templates" ;
+        rdf:_3 "Deployment scripts"
+    ] ;
+    session:requiresRefactoring [
+        rdf:_1 "Split into separate files for each deployment component" ;
+        rdf:_2 "Add SHACL validation rules" ;
+        rdf:_3 "Link with Azure Function configuration"
+    ] .
+
+:ChatbotMapping a session:FileMapping ;
+    rdfs:label "chatbot.ttl" ;
+    session:hasPrimaryPhase session:phase1 ;
+    session:hasSecondaryPhase session:phase2 ;
+    session:hasSecondaryPhase session:phase3 ;
+    session:dependsOn [
+        rdf:_1 "meta.ttl" ;
+        rdf:_2 "metameta.ttl" ;
+        rdf:_3 "guidance.ttl"
+    ] ;
+    session:missingComponents [
+        rdf:_1 "Complete solution space modeling" ;
+        rdf:_2 "Detailed use case scenarios" ;
+        rdf:_3 "Risk monitoring implementation"
+    ] ;
+    session:requiresRefactoring [
+        rdf:_1 "Add missing class relationships" ;
+        rdf:_2 "Complete SHACL validation rules" ;
+        rdf:_3 "Link with Snowflake Cortex ontology"
+    ] .
+
+:CortexTeamsMapping a session:FileMapping ;
+    rdfs:label "cortexteams.ttl" ;
+    session:hasPrimaryPhase session:phase2 ;
+    session:hasSecondaryPhase session:phase1 ;
+    session:hasSecondaryPhase session:phase3 ;
+    session:dependsOn [
+        rdf:_1 "chatbot.ttl"
+    ] ;
+    session:missingComponents [
+        rdf:_1 "Actual Snowflake Cortex integration code" ;
+        rdf:_2 "Query processing implementation" ;
+        rdf:_3 "Data transformation templates"
+    ] ;
+    session:requiresRefactoring [
+        rdf:_1 "Add query processing workflow details" ;
+        rdf:_2 "Define data transformation rules" ;
+        rdf:_3 "Add security constraint definitions"
+    ] .
+
+:DebugEnvMapping a session:FileMapping ;
+    rdfs:label "debug_python_env.py" ;
+    session:hasPrimaryPhase session:phase1 ;
+    session:hasSecondaryPhase session:phase4 ;
+    session:dependsOn [
+        rdf:_1 "sys" ;
+        rdf:_2 "site" ;
+        rdf:_3 "os"
+    ] ;
+    session:missingComponents [
+        rdf:_1 "Integration with deployment pipeline" ;
+        rdf:_2 "Environment validation checks" ;
+        rdf:_3 "Production environment configuration"
+    ] ;
+    session:requiresRefactoring [
+        rdf:_1 "Add configuration file handling" ;
+        rdf:_2 "Implement proper error reporting" ;
+        rdf:_3 "Add environment validation methods"
+    ] .
+
+# Update validation shape to require refactoring
+session:FileMappingResponseShape 
+    sh:property [
+        sh:path session:hasPrimaryPhase ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:message "Must have exactly one primary phase"
+    ] ;
+    sh:property [
+        sh:path session:dependsOn ;
+        sh:minCount 1 ;
+        sh:message "Must have at least one dependency"
+    ] ;
+    sh:property [
+        sh:path session:missingComponents ;
+        sh:minCount 1 ;
+        sh:message "Must have at least one missing component"
+    ] ;
+    sh:property [
+        sh:path session:requiresRefactoring ;
+        sh:minCount 1 ;
+        sh:message "Must specify required refactoring tasks"
+    ] .
+
+# Next Steps Planning
+:NextStepsMapping a session:PlanningPhase ;
+    rdfs:label "Next Steps for Project Structure" ;
+    session:hasStep [
+        rdf:_1 [
+            a session:Step ;
+            rdfs:label "Setup Development Environment" ;
+            session:priority 1 ;
+            session:targetFile "debug_python_env.py" ;
+            session:requirements [
+                rdf:_1 "Create conda environment.yml" ;
+                rdf:_2 "Add botbuilder-core dependencies" ;
+                rdf:_3 "Configure development settings"
+            ]
+        ] ;
+        rdf:_2 [
+            a session:Step ;
+            rdfs:label "Implement Core Bot Structure" ;
+            session:priority 2 ;
+            session:targetFile "teams-bot/bot/teams_bot.py" ;
+            session:requirements [
+                rdf:_1 "Add error handling middleware" ;
+                rdf:_2 "Implement conversation state" ;
+                rdf:_3 "Create adaptive card templates"
+            ]
+        ] ;
+        rdf:_3 [
+            a session:Step ;
+            rdfs:label "Setup Deployment Configuration" ;
+            session:priority 3 ;
+            session:targetFile "teams-bot/deployment_instance.ttl" ;
+            session:requirements [
+                rdf:_1 "Create Azure Function configuration" ;
+                rdf:_2 "Setup environment templates" ;
+                rdf:_3 "Initialize deployment scripts"
+            ]
+        ]
+    ] .
+
+:CurrentPriority a session:PriorityTask ;
+    rdfs:label "Current Priority Task" ;
+    session:taskFile "debug_python_env.py" ;
+    session:taskPhase session:phase1 ;
+    session:taskStatus "Pending" ;
+    session:nextAction "Create conda environment.yml" ;
+    session:blockingIssues [
+        rdf:_1 "Missing dependency specifications" ;
+        rdf:_2 "Undefined Python version requirements"
+    ] .
+
+# Update completed task status
+:FileAnalysisTask a session:Task ;
+    rdfs:label "File Analysis and Phase Mapping" ;
+    rdfs:comment "Map files to phases, identify dependencies and refactoring needs" ;
+    session:hasStatus session:Completed ;
+    session:hasPriority 1 ;
+    session:completedSteps [
+        rdf:_1 "Map each file to project phase" ;
+        rdf:_2 "Identify missing components" ;
+        rdf:_3 "Document file dependencies" ;
+        rdf:_4 "Note required refactoring"
+    ] ;
+    session:completionDate "2024-03-20"^^xsd:date .
+
+# Next task in Issue #1
+:ProjectStructureTask a session:Task ;
+    rdfs:label "Project Structure Definition" ;
+    rdfs:comment "Define and document the project structure and organization" ;
+    session:hasStatus session:Completed ;
+    session:hasPriority 1 ;
+    session:dependsOn :FileAnalysisTask ;
+    session:requiredSteps [
+        rdf:_1 "Define directory structure" ;
+        rdf:_2 "Document file organization" ;
+        rdf:_3 "Specify naming conventions" ;
+        rdf:_4 "Create project README"
+    ] ;
+    session:blockingIssues [] ;
+    session:requiresPromptUpdate false ;
+    session:completedSteps [
+        rdf:_1 "Define directory structure" ;
+        rdf:_2 "Document file organization" ;
+        rdf:_3 "Specify naming conventions" ;
+        rdf:_4 "Create project README"
+    ] ;
+    session:completionDate "2024-03-20"^^xsd:date .
+
+# Project Structure Definition
+:RootStructure a session:DirectoryStructure ;
+    rdfs:label "Root Project Structure" ;
+    session:hasDirectory [
+        rdf:_1 [
+            rdfs:label "teams-bot" ;
+            rdfs:comment "Core Teams bot implementation" ;
+            session:contains [
+                rdf:_1 "bot/" ;
+                rdf:_2 "tests/" ;
+                rdf:_3 "config/" ;
+                rdf:_4 "deployment/"
+            ] ;
+            session:purpose "Contains all Teams bot related code and configuration"
+        ] ;
+        rdf:_2 [
+            rdfs:label "ontology" ;
+            rdfs:comment "Core ontology files" ;
+            session:contains [
+                rdf:_1 "meta.ttl" ;
+                rdf:_2 "metameta.ttl" ;
+                rdf:_3 "problem.ttl" ;
+                rdf:_4 "solution.ttl" ;
+                rdf:_5 "conversation.ttl" ;
+                rdf:_6 "guidance.ttl"
+            ] ;
+            session:purpose "Defines core ontological concepts and relationships"
+        ] ;
+        rdf:_3 [
+            rdfs:label "tools" ;
+            rdfs:comment "Development and utility tools" ;
+            session:contains [
+                rdf:_1 "get_checkpoint.py" ;
+                rdf:_2 "debug_python_env.py" ;
+                rdf:_3 "validate_ontology.py"
+            ] ;
+            session:purpose "Contains development utilities and helper scripts"
+        ] ;
+        rdf:_4 [
+            rdfs:label "docs" ;
+            rdfs:comment "Project documentation" ;
+            session:contains [
+                rdf:_1 "README.md" ;
+                rdf:_2 "CONTRIBUTING.md" ;
+                rdf:_3 "architecture/" ;
+                rdf:_4 "api/"
+            ] ;
+            session:purpose "Project documentation and guides"
+        ]
+    ] .
+
+:TeamsSubStructure a session:DirectoryStructure ;
+    rdfs:label "Teams Bot Substructure" ;
+    session:parentDirectory "teams-bot" ;
+    session:hasDirectory [
+        rdf:_1 [
+            rdfs:label "bot" ;
+            rdfs:comment "Core bot implementation" ;
+            session:contains [
+                rdf:_1 "teams_bot.py" ;
+                rdf:_2 "message_handler.py" ;
+                rdf:_3 "state_manager.py" ;
+                rdf:_4 "cortex_client.py"
+            ]
+        ] ;
+        rdf:_2 [
+            rdfs:label "tests" ;
+            rdfs:comment "Test suite" ;
+            session:contains [
+                rdf:_1 "unit/" ;
+                rdf:_2 "integration/" ;
+                rdf:_3 "fixtures/"
+            ]
+        ] ;
+        rdf:_3 [
+            rdfs:label "config" ;
+            rdfs:comment "Configuration files" ;
+            session:contains [
+                rdf:_1 "settings.py" ;
+                rdf:_2 "logging.conf" ;
+                rdf:_3 ".env.template"
+            ]
+        ] ;
+        rdf:_4 [
+            rdfs:label "deployment" ;
+            rdfs:comment "Deployment configuration" ;
+            session:contains [
+                rdf:_1 "deployment_instance.ttl" ;
+                rdf:_2 "azure_function.json" ;
+                rdf:_3 "requirements.txt"
+            ]
+        ]
+    ] .
+
+# Naming Conventions
+:NamingConventions a session:ConventionSet ;
+    rdfs:label "Project Naming Conventions" ;
+    session:hasConvention [
+        rdf:_1 [
+            rdfs:label "Python Files" ;
+            session:pattern "snake_case.py" ;
+            session:example "teams_bot.py" ;
+            session:applies "*.py"
+        ] ;
+        rdf:_2 [
+            rdfs:label "Ontology Files" ;
+            session:pattern "lowercase.ttl" ;
+            session:example "chatbot.ttl" ;
+            session:applies "*.ttl"
+        ] ;
+        rdf:_3 [
+            rdfs:label "Test Files" ;
+            session:pattern "test_*.py" ;
+            session:example "test_teams_bot.py" ;
+            session:applies "tests/**/*.py"
+        ] ;
+        rdf:_4 [
+            rdfs:label "Configuration Files" ;
+            session:pattern "lowercase.*" ;
+            session:example "settings.py" ;
+            session:applies "config/*"
+        ] ;
+        rdf:_5 [
+            rdfs:label "Documentation Files" ;
+            session:pattern "UPPERCASE.md" ;
+            session:example "README.md" ;
+            session:applies "docs/*.md"
+        ]
+    ] .
+
+# Checkpoint Prompt Management
+session:CheckpointPrompt a owl:Class ;
+    rdfs:label "Checkpoint Prompt" ;
+    rdfs:comment "Manages and validates checkpoint prompts" .
+
+session:PromptState a owl:Class ;
+    rdfs:label "Prompt State" ;
+    rdfs:comment "Tracks the state of a checkpoint prompt" .
+
+session:hasPromptState a owl:ObjectProperty ;
+    rdfs:domain session:CheckpointProjection ;
+    rdfs:range session:PromptState ;
+    rdfs:comment "Links a checkpoint to its prompt state" .
+
+session:requiresPromptUpdate a owl:DatatypeProperty ;
+    rdfs:domain session:Task ;
+    rdfs:range xsd:boolean ;
+    rdfs:comment "Indicates if a task requires a prompt update" .
+
+# Prompt Validation Shape
+session:CheckpointPromptShape a sh:NodeShape ;
+    sh:targetClass session:CheckpointPrompt ;
+    sh:property [
+        sh:path session:taskReference ;
+        sh:minCount 1 ;
+        sh:message "Prompt must reference current task"
+    ] ;
+    sh:property [
+        sh:path session:taskProgress ;
+        sh:minCount 1 ;
+        sh:message "Prompt must include task progress"
+    ] ;
+    sh:property [
+        sh:path session:responseFormat ;
+        sh:minCount 1 ;
+        sh:message "Prompt must specify response format"
+    ] .
+
+# Task-Prompt Linkage
+:ProjectStructureTask 
+    session:requiresPromptUpdate false ;
+    session:promptRequirements [
+        rdf:_1 "Current task status" ;
+        rdf:_2 "Progress indicators" ;
+        rdf:_3 "Next steps" ;
+        rdf:_4 "Response format"
+    ] .
+
+# Add prompt update trigger
+session:PromptUpdateTrigger a owl:Class ;
+    rdfs:label "Prompt Update Trigger" ;
+    rdfs:comment "Defines conditions that require prompt updates" .
+
+:TaskStateChange a session:PromptUpdateTrigger ;
+    rdfs:label "Task State Change" ;
+    session:triggers session:promptUpdate ;
+    session:updateRequirements [
+        rdf:_1 "Update task reference" ;
+        rdf:_2 "Update progress status" ;
+        rdf:_3 "Update next steps" ;
+        rdf:_4 "Validate format"
+    ] .
+
+# Environment Management
+session:Environment a owl:Class ;
+    rdfs:label "Development Environment" ;
+    rdfs:comment "Represents a conda environment used in the project" .
+
+session:EnvironmentStatus a owl:Class ;
+    rdfs:label "Environment Status" ;
+    rdfs:comment "Status of a development environment" .
+
+session:Active a session:EnvironmentStatus ;
+    rdfs:label "Active" ;
+    rdfs:comment "Environment is currently in use" .
+
+session:Deprecated a session:EnvironmentStatus ;
+    rdfs:label "Deprecated" ;
+    rdfs:comment "Environment should not be used for new development" .
+
+session:hasEnvironmentStatus a owl:ObjectProperty ;
+    rdfs:domain session:Environment ;
+    rdfs:range session:EnvironmentStatus ;
+    rdfs:comment "Current status of the environment" .
+
+session:environmentFile a owl:DatatypeProperty ;
+    rdfs:domain session:Environment ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Path to environment.yml file" .
+
+session:pythonVersion a owl:DatatypeProperty ;
+    rdfs:domain session:Environment ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Python version used in environment" .
+
+session:createdDate a owl:DatatypeProperty ;
+    rdfs:domain session:Environment ;
+    rdfs:range xsd:date ;
+    rdfs:comment "Date environment was created" .
+
+session:purpose a owl:DatatypeProperty ;
+    rdfs:domain session:Environment ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Purpose and scope of the environment" .
+
+# Project Environment Instance
+session:chatbotLLMEnv a session:Environment ;
+    rdfs:label "chatbot-llm" ;
+    rdfs:comment "Main development environment for Snowflake Cortex Teams Bot" ;
+    session:hasEnvironmentStatus session:Active ;
+    session:environmentFile "environment.yml" ;
+    session:pythonVersion ">=3.10,<3.12" ;
+    session:createdDate "2024-03-20"^^xsd:date ;
+    session:purpose "Primary development environment for Teams bot with Snowflake integration" .
+
+# Environment Validation Shape
+session:EnvironmentShape a sh:NodeShape ;
+    sh:targetClass session:Environment ;
+    sh:property [
+        sh:path session:hasEnvironmentStatus ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:message "Environment must have exactly one status"
+    ] ;
+    sh:property [
+        sh:path session:environmentFile ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:message "Environment must reference an environment.yml file"
+    ] ;
+    sh:property [
+        sh:path session:pythonVersion ;
+        sh:minCount 1 ;
+        sh:message "Environment must specify Python version"
+    ] ;
+    sh:property [
+        sh:path session:purpose ;
+        sh:minCount 1 ;
+        sh:message "Environment must document its purpose"
+    ] .
+
+# Link environment to project phases
+session:phase1
+    session:requiresEnvironment session:chatbotLLMEnv.
+
+session:phase2
+    session:requiresEnvironment session:chatbotLLMEnv.
+
+session:phase3
+    session:requiresEnvironment session:chatbotLLMEnv.
+
+session:phase4
+    session:requiresEnvironment session:chatbotLLMEnv.
+
+# Environment State Management
+session:EnvironmentState a owl:Class ;
+    rdfs:label "Environment State" ;
+    rdfs:comment "Tracks the state of development environments" .
+
+session:hasEnvironmentState a owl:ObjectProperty ;
+    rdfs:domain session:CurrentContext ;
+    rdfs:range session:EnvironmentState ;
+    rdfs:comment "Links to current environment state" .
+
+session:hasWorkingConfig a owl:DatatypeProperty ;
+    rdfs:domain session:EnvironmentState ;
+    rdfs:range xsd:boolean ;
+    rdfs:comment "Indicates if environment has a working configuration" .
+
+session:lastTestedDate a owl:DatatypeProperty ;
+    rdfs:domain session:EnvironmentState ;
+    rdfs:range xsd:dateTime ;
+    rdfs:comment "When environment was last successfully tested" .
+
+session:configurationFiles a owl:ObjectProperty ;
+    rdfs:domain session:EnvironmentState ;
+    rdfs:range rdf:List ;
+    rdfs:comment "List of configuration files managing the environment" .
+
+# Current Environment State
+:currentEnvironment a session:EnvironmentState ;
+    rdfs:label "Current Environment State" ;
+    session:hasWorkingConfig true ;
+    session:lastTestedDate "2024-02-07T18:15:00Z"^^xsd:dateTime ;
+    session:configurationFiles (
+        "environment.yml"
+        ".env.template"
+        "teams_bot/config/settings.py"
+    ) ;
+    session:recentChanges [
+        rdf:_1 "Reorganized directory structure" ;
+        rdf:_2 "Implemented state management" ;
+        rdf:_3 "Added local development configuration"
+    ] ;
+    session:pendingTasks [
+        rdf:_1 "Complete Teams bot authentication" ;
+        rdf:_2 "Implement message handling" ;
+        rdf:_3 "Add error handling middleware"
+    ] .
+
+# Update current context to link environment state
+session:currentContext
+    session:hasEnvironmentState :currentEnvironment .
+
+# Checkpoint Management
+session:Checkpoint a owl:Class ;
+    rdfs:label "Checkpoint" ;
+    rdfs:comment "Represents a checkpoint in the conversation flow" .
+
+session:Component a owl:Class ;
+    rdfs:label "Component" ;
+    rdfs:comment "A component of a checkpoint with specific functionality" .
+
+session:PromptState a owl:Class ;
+    rdfs:label "Prompt State" ;
+    rdfs:comment "The state of the current prompt in the conversation" .
+
+session:hasComponent a owl:ObjectProperty ;
+    rdfs:domain session:Checkpoint ;
+    rdfs:range session:Component ;
+    rdfs:comment "Links a checkpoint to its components" .
+
+session:hasPromptState a owl:ObjectProperty ;
+    rdfs:domain session:Checkpoint ;
+    rdfs:range session:PromptState ;
+    rdfs:comment "Links a checkpoint to its prompt state" .
+
+session:resumptionPrompt a owl:DatatypeProperty ;
+    rdfs:domain session:Checkpoint ;
+    rdfs:range xsd:string ;
+    rdfs:comment "The prompt to resume the conversation from this checkpoint" .
+
+session:componentPriority a owl:DatatypeProperty ;
+    rdfs:domain session:Component ;
+    rdfs:range xsd:integer ;
+    rdfs:comment "Priority order of the component (1-5)" .
+
+session:lastUpdated a owl:DatatypeProperty ;
+    rdfs:domain session:PromptState ;
+    rdfs:range xsd:dateTime ;
+    rdfs:comment "Timestamp of last prompt state update" .
+
+session:linkedTask a owl:ObjectProperty ;
+    rdfs:domain session:PromptState ;
+    rdfs:range session:Task ;
+    rdfs:comment "Links a prompt state to its associated task" .
+
+# Current Checkpoint Instance
+session:currentCheckpoint a session:Checkpoint ;
+    session:resumptionPrompt "How can I help you with the Teams Bot development?" ;
+    session:hasPromptState session:currentPromptState ;
+    session:hasComponent session:contextComponent ;
+    session:hasComponent session:taskComponent ;
+    session:hasComponent session:validationComponent .
+
+session:currentPromptState a session:PromptState ;
+    session:lastUpdated "2024-02-07T06:10:00Z"^^xsd:dateTime ;
+    session:linkedTask session:currentTask .
+
+session:currentTask a session:Task ;
+    rdfs:label "Teams Bot Development" ;
+    session:requiresPromptUpdate true ;
+    session:hasStatus session:InProgress ;
+    session:hasPriority 1 ;
+    session:implementations (
+        :stateManagerImpl
+        :teamsBotImpl
+        :securityImpl
+    ) ;
+    session:validationRequirements [
+        rdf:_1 "All security measures implemented" ;
+        rdf:_2 "State management fully tested" ;
+        rdf:_3 "Local development verified"
+    ] .
+
+# Checkpoint Components
+session:contextComponent a session:Component ;
+    rdfs:label "Context Manager" ;
+    session:componentPriority 1 ;
+    session:requiredFiles "tools/validate_session_state.py" ;
+    session:branch "feature/context-management" ;
+    session:issue "42" ;
+    session:issueTitle "Implement Context Management" .
+
+session:taskComponent a session:Component ;
+    rdfs:label "Task Tracker" ;
+    session:componentPriority 2 ;
+    session:requiredFiles "tools/get_checkpoint.py" ;
+    session:branch "feature/task-tracking" ;
+    session:issue "43" ;
+    session:issueTitle "Implement Task Tracking" .
+
+session:validationComponent a session:Component ;
+    rdfs:label "Validation Handler" ;
+    session:componentPriority 3 ;
+    session:requiredFiles "tools/validate_local_env.py" ;
+    session:branch "feature/validation" ;
+    session:issue "44" ;
+    session:issueTitle "Implement Validation System" .
+
+# Add new validation rules
+session:DirectoryStructureShape a sh:NodeShape ;
+    sh:targetClass session:Project ;
+    sh:property [
+        sh:path session:hasDirectory ;
+        sh:minCount 1 ;
+        sh:message "Project must have at least one directory defined"
+    ] ;
+    sh:property [
+        sh:path session:hasValidation ;
+        sh:minCount 1 ;
+        sh:message "Project must have validation rules defined"
+    ] .
+
+# Security Context Definition
+session:SecurityContext a owl:Class ;
+    rdfs:label "Security Context" ;
+    rdfs:comment "Defines security requirements and validation state" ;
+    rdfs:subClassOf session:ContextState .
+
+session:securityLevel a owl:DatatypeProperty ;
+    rdfs:domain session:SecurityContext ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Security level requirement (Low, Medium, High)" .
+
+session:requiresValidation a owl:DatatypeProperty ;
+    rdfs:domain session:SecurityContext ;
+    rdfs:range xsd:boolean ;
+    rdfs:comment "Whether security validation is required" .
+
+# Directory Structure Properties
+session:hasDirectory a owl:ObjectProperty ;
+    rdfs:domain session:Project ;
+    rdfs:range session:Directory ;
+    rdfs:comment "Links a project to its directory structure" .
+
+session:Directory a owl:Class ;
+    rdfs:label "Directory" ;
+    rdfs:comment "Represents a directory in the project structure" .
+
+session:contains a owl:ObjectProperty ;
+    rdfs:domain session:Directory ;
+    rdfs:range session:Directory ;
+    rdfs:comment "Indicates directory containment relationships" .
+
+# State Definitions
+session:initialState a session:ContextState ;
+    rdfs:label "Initial Context State" ;
+    rdfs:comment "Starting state for new sessions" ;
+    session:lastUpdated "2024-02-07T18:15:00Z"^^xsd:dateTime .
+
+# Implementation Tracing
+session:ImplementationArtifact a owl:Class ;
+    rdfs:label "Implementation Artifact" ;
+    rdfs:comment "Represents a concrete implementation of requirements" .
+
+session:implements a owl:ObjectProperty ;
+    rdfs:domain session:ImplementationArtifact ;
+    rdfs:range session:Task ;
+    rdfs:comment "Links implementation to its requirements" .
+
+# Trace state manager implementation
+:stateManagerImpl a session:ImplementationArtifact ;
+    rdfs:label "State Manager Implementation" ;
+    session:implements session:task2 ;
+    session:sourceFile "teams_bot/bot/state_manager.py" ;
+    session:requirements [
+        rdf:_1 "Memory storage for development" ;
+        rdf:_2 "Conversation state persistence" ;
+        rdf:_3 "User profile management"
+    ] ;
+    session:validationStatus "Partial" ;
+    session:lastValidated "2024-02-07T18:15:00Z"^^xsd:dateTime .
+
+# Trace Teams bot implementation
+:teamsBotImpl a session:ImplementationArtifact ;
+    rdfs:label "Teams Bot Implementation" ;
+    session:implements session:task1 ;
+    session:sourceFile "teams_bot/bot/teams_bot.py" ;
+    session:requirements [
+        rdf:_1 "Basic message handling" ;
+        rdf:_2 "State management integration" ;
+        rdf:_3 "Local development support"
+    ] ;
+    session:validationStatus "InProgress" ;
+    session:lastValidated "2024-02-07T18:15:00Z"^^xsd:dateTime .
+
+# Security Implementation Tracing
+:securityImpl a session:ImplementationArtifact ;
+    rdfs:label "Security Implementation" ;
+    session:implements session:task3 ;
+    session:sourceFiles (
+        ".env.template"
+        "teams_bot/config/settings.py"
+    ) ;
+    session:requirements [
+        rdf:_1 "Secure credential management" ;
+        rdf:_2 "Environment configuration" ;
+        rdf:_3 "Access control"
+    ] ;
+    session:validationStatus "Pending" ;
+    session:blockers [
+        rdf:_1 "Need security audit" ;
+        rdf:_2 "Pending Azure Key Vault integration"
+    ] .
+
+# Update current task status
+:TeamsDeploymentTask a session:Task ;
+    rdfs:label "Teams Bot Deployment Structure" ;
+    rdfs:comment "Consolidate and optimize Teams bot deployment structure" ;
+    session:hasStatus session:Completed ;
+    session:hasPriority 1 ;
+    session:completedSteps [
+        rdf:_1 "Consolidated to Azure Functions structure" ;
+        rdf:_2 "Removed redundant local development files" ;
+        rdf:_3 "Moved function code to messages/ directory" ;
+        rdf:_4 "Updated start-local.sh for Azure Functions Core Tools" ;
+        rdf:_5 "Updated .gitignore for deployment artifacts"
+    ] ;
+    session:completionDate "2024-02-08"^^xsd:date .
+
+# Update current context state
+session:currentContext 
+    session:hasActiveTask :TeamsDeploymentTask ;
+    session:lastUpdated "2024-02-08T03:30:00Z"^^xsd:dateTime ;
+    session:deploymentState [
+        a session:DeploymentState ;
+        session:deploymentType "Azure Functions" ;
+        session:localDevelopment true ;
+        session:cloudDeployment true ;
+        session:deploymentStructure [
+            rdf:_1 "messages/ - Function code" ;
+            rdf:_2 "host.json - Function configuration" ;
+            rdf:_3 "start-local.sh - Local development script"
+        ] ;
+        session:validationStatus "Completed"
+    ] .
+
+# Add deployment validation requirements
+:DeploymentValidation a session:ValidationRequirement ;
+    rdfs:label "Deployment Structure Validation" ;
+    session:validationSteps [
+        rdf:_1 "Verify Azure Functions structure" ;
+        rdf:_2 "Test local development setup" ;
+        rdf:_3 "Validate cloud deployment" ;
+        rdf:_4 "Check environment configurations"
+    ] ;
+    session:completionStatus "Validated" ;
+    session:lastValidated "2024-02-08T03:30:00Z"^^xsd:dateTime .
+
+# Update next steps
+:NextSteps a session:PlanningPhase ;
+    rdfs:label "Next Steps After Deployment Structure" ;
+    session:hasStep [
+        rdf:_1 [
+            a session:Step ;
+            rdfs:label "Test Local Development" ;
+            session:priority 1 ;
+            session:requirements [
+                rdf:_1 "Run bot with Azure Functions Core Tools" ;
+                rdf:_2 "Test with Bot Framework Emulator" ;
+                rdf:_3 "Verify state management"
+            ]
+        ] ;
+        rdf:_2 [
+            a session:Step ;
+            rdfs:label "Complete Cloud Deployment" ;
+            session:priority 2 ;
+            session:requirements [
+                rdf:_1 "Deploy to Azure Functions" ;
+                rdf:_2 "Configure production settings" ;
+                rdf:_3 "Verify Teams integration"
+            ]
+        ] ;
+        rdf:_3 [
+            a session:Step ;
+            rdfs:label "Security Review" ;
+            session:priority 3 ;
+            session:requirements [
+                rdf:_1 "Review environment configurations" ;
+                rdf:_2 "Validate secret management" ;
+                rdf:_3 "Check deployment artifacts handling"
+            ]
+        ]
+    ] .
+
+# Update file mapping
+:DeploymentFileMapping a session:FileMapping ;
+    rdfs:label "Deployment Structure Files" ;
+    session:hasPrimaryPhase session:phase1 ;
+    session:files [
+        rdf:_1 [
+            rdfs:label "messages/__init__.py" ;
+            session:purpose "Main function code" ;
+            session:status "Active"
+        ] ;
+        rdf:_2 [
+            rdfs:label "messages/function.json" ;
+            session:purpose "Function configuration" ;
+            session:status "Active"
+        ] ;
+        rdf:_3 [
+            rdfs:label "host.json" ;
+            session:purpose "Function app configuration" ;
+            session:status "Active"
+        ] ;
+        rdf:_4 [
+            rdfs:label "start-local.sh" ;
+            session:purpose "Local development script" ;
+            session:status "Active"
+        ]
+    ] ;
+    session:removedFiles [
+        rdf:_1 "app.py" ;
+        rdf:_2 "function_app.py" ;
+        rdf:_3 "run_local.py"
+    ] ;
+    session:lastUpdated "2024-02-08T03:30:00Z"^^xsd:dateTime .
+
+# Deployment Tracking
+session:Deployment a owl:Class ;
+    rdfs:label "Deployment" ;
+    rdfs:comment "Represents a deployment environment and configuration" .
+
+session:DeploymentType a owl:Class ;
+    rdfs:label "Deployment Type" ;
+    rdfs:comment "Type of deployment (local, development, production)" .
+
+session:DeploymentStatus a owl:Class ;
+    rdfs:label "Deployment Status" ;
+    rdfs:comment "Status of a deployment" .
+
+# Deployment Types
+session:LocalDevelopment a session:DeploymentType ;
+    rdfs:label "Local Development" ;
+    rdfs:comment "Local development environment using Azure Functions Core Tools" .
+
+session:AzureFunctions a session:DeploymentType ;
+    rdfs:label "Azure Functions" ;
+    rdfs:comment "Cloud deployment on Azure Functions" .
+
+# Deployment Statuses
+session:Active a session:DeploymentStatus ;
+    rdfs:label "Active" ;
+    rdfs:comment "Deployment is currently active and in use" .
+
+session:Configuring a session:DeploymentStatus ;
+    rdfs:label "Configuring" ;
+    rdfs:comment "Deployment is being configured" .
+
+# Current Deployments
+:LocalFunctionApp a session:Deployment ;
+    rdfs:label "Local Function App" ;
+    session:deploymentType session:LocalDevelopment ;
+    session:status session:Active ;
+    session:endpoint "http://localhost:7071" ;
+    session:configuration [
+        session:coreTools "Azure Functions Core Tools v4.0.6821" ;
+        session:pythonRuntime "3.11" ;
+        session:storageEmulator "Azurite" ;
+        session:authType "Anonymous" ;
+        session:configFiles [
+            rdf:_1 "local.settings.json" ;
+            rdf:_2 "host.json" ;
+            rdf:_3 ".env"
+        ]
+    ] ;
+    session:features [
+        rdf:_1 "Local debugging" ;
+        rdf:_2 "Hot reload" ;
+        rdf:_3 "Bot Framework Emulator support"
+    ] ;
+    session:lastTested "2024-02-08T03:30:00Z"^^xsd:dateTime .
+
+:AzureDevDeployment a session:Deployment ;
+    rdfs:label "Azure Development Function App" ;
+    session:deploymentType session:AzureFunctions ;
+    session:status session:Active ;
+    session:endpoint "https://echo-bot-func-test-lou.azurewebsites.net" ;
+    session:configuration [
+        session:subscription "Development Subscription" ;
+        session:resourceGroup "echo-bot-func-test-lou" ;
+        session:runtime "Python 3.11" ;
+        session:region "West US" ;
+        session:authType "Azure AD" ;
+        session:configFiles [
+            rdf:_1 "host.json" ;
+            rdf:_2 "function.json" ;
+            rdf:_3 "requirements.txt"
+        ]
+    ] ;
+    session:features [
+        rdf:_1 "Teams integration" ;
+        rdf:_2 "Application Insights" ;
+        rdf:_3 "Azure Key Vault integration (pending)"
+    ] ;
+    session:lastDeployed "2024-02-08T03:30:00Z"^^xsd:dateTime .
+
+# Deployment Requirements
+:DeploymentRequirements a session:ValidationRequirement ;
+    rdfs:label "Deployment Requirements" ;
+    session:localRequirements [
+        rdf:_1 "Azure Functions Core Tools v4+" ;
+        rdf:_2 "Python 3.11" ;
+        rdf:_3 "Bot Framework Emulator" ;
+        rdf:_4 "Azurite Storage Emulator"
+    ] ;
+    session:azureRequirements [
+        rdf:_1 "Azure Subscription" ;
+        rdf:_2 "Azure Functions service" ;
+        rdf:_3 "Azure AD App Registration" ;
+        rdf:_4 "Azure Key Vault (planned)"
+    ] ;
+    session:validationStatus "InProgress" .
+
+# Deployment Pipeline
+:DeploymentPipeline a session:Process ;
+    rdfs:label "Deployment Pipeline" ;
+    session:stages [
+        rdf:_1 [
+            rdfs:label "Local Development" ;
+            session:command "./start-local.sh" ;
+            session:validation "Bot Framework Emulator" ;
+            session:status "Active"
+        ] ;
+        rdf:_2 [
+            rdfs:label "Azure Development" ;
+            session:command "func azure functionapp publish echo-bot-func-test-lou" ;
+            session:validation "Teams Integration" ;
+            session:status "Active"
+        ] ;
+        rdf:_3 [
+            rdfs:label "Production" ;
+            session:command "TBD" ;
+            session:validation "TBD" ;
+            session:status "Pending"
+        ]
+    ] ;
+    session:currentStage "Azure Development" ;
+    session:lastUpdated "2024-02-08T03:30:00Z"^^xsd:dateTime .
+
+# Deployment View Management
+session:DeploymentView a owl:Class ;
+    rdfs:label "Deployment View" ;
+    rdfs:comment "Represents a deployment architecture view" .
+
+session:DeploymentComponent a owl:Class ;
+    rdfs:label "Deployment Component" ;
+    rdfs:comment "A component in a deployment view" .
+
+session:ComponentRelation a owl:Class ;
+    rdfs:label "Component Relation" ;
+    rdfs:comment "Represents a relationship between components" .
+
+session:hasComponent a owl:ObjectProperty ;
+    rdfs:domain session:DeploymentView ;
+    rdfs:range session:DeploymentComponent ;
+    rdfs:comment "Links a deployment view to its components" .
+
+session:hasRelation a owl:ObjectProperty ;
+    rdfs:domain session:DeploymentComponent ;
+    rdfs:range session:ComponentRelation ;
+    rdfs:comment "Links components to their relationships" .
+
+session:isSharedComponent a owl:DatatypeProperty ;
+    rdfs:domain session:DeploymentComponent ;
+    rdfs:range xsd:boolean ;
+    rdfs:comment "Indicates if a component is shared between deployments" .
+
+session:deploymentEnvironment a owl:DatatypeProperty ;
+    rdfs:domain session:DeploymentComponent ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Specifies which deployment environment(s) use this component" .
+
+# Current Deployment View
+:CurrentDeploymentView a session:DeploymentView ;
+    rdfs:label "Current Teams Bot Deployment View" ;
+    session:lastUpdated "2024-03-20T18:30:00Z"^^xsd:dateTime ;
+    session:version "1.0" ;
+    session:status "Active" ;
+    session:documentation "Combined view of local and Azure deployments showing commonality" .
+
+# Add new validation patterns
+session:CursorRuleValidation a sh:NodeShape ;
+    sh:targetClass session:CursorRule ;
+    sh:property [
+        sh:path session:filePattern ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "Cursor rule must specify file patterns"
+    ] ;
+    sh:property [
+        sh:path session:implementationStatus ;
+        sh:in ("Implemented" "Pending" "Deprecated") ;
+        sh:message "Implementation status must be valid"
+    ] .
+
+# Add rule relationships
+session:hasRule a owl:ObjectProperty ;
+    rdfs:domain session:CurrentContext ;
+    rdfs:range session:CursorRule ;
+    rdfs:comment "Links the current context to active Cursor rules" .
+
+session:requiresGuidance a owl:ObjectProperty ;
+    rdfs:domain session:CursorRule ;
+    rdfs:range guidance:Pattern ;
+    rdfs:comment "Links a Cursor rule to its required guidance patterns" .
+
+:ProcessViolationIncident rdf:type :Incident ;
+    rdfs:label "Branch Protection Bypass Incident" ;
+    rdfs:comment "Claude learned the hard way about branch protection rules" ;
+    :timestamp "2024-02-09T17:00:00Z" ;
+    :severity "Medium" ;
+    :impact "Bypassed branch protection on develop" ;
+    :resolution "Configured local git to prevent direct pushes to develop" ;
+    :lessonLearned """
+        1. Don't try to 'fix' working code just because the process was wrong
+        2. Branch protection exists for a reason
+        3. Simple local git config is better than complex permission schemes
+        4. Claude needs that 'Are you really sure?' moment
+        5. Sometimes public humiliation is the best teacher
+    """ ;
+    :mitigationAction [
+        rdf:type :Action ;
+        rdfs:label "Configure Branch Protection" ;
+        :command "git config branch.develop.pushRemote \"no_push\"" ;
+        :timestamp "2024-02-09T17:30:00Z" ;
+        :status "Completed" ;
+        :validator "git config --local --list | grep branch.develop"
+    ] .
+
+:NextSteps rdf:type :TaskList ;
+    rdfs:label "Next Development Tasks" ;
+    :status "Pending" ;
+    :blockedUntil "2024-02-10" ;
+    :reason "Developer needs sleep, Claude needs timeout to think about what they did" . 

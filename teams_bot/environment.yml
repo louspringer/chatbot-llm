@@ -1,0 +1,15 @@
+name: teams-bot
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.11
+  - pip
+  - pip:
+    - azure-functions
+    - botbuilder-core
+    - botbuilder-schema
+    - botframework-connector
+    - opencensus-ext-azure
+    - azure-identity
+    - azure-keyvault-secrets 

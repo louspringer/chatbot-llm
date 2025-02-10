@@ -1,0 +1,162 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix meta: <./meta#> .
+@prefix metameta: <./metameta#> .
+@prefix problem: <./problem#> .
+@prefix solution: <./solution#> .
+@prefix conversation: <./conversation#> .
+@prefix guidance: <./guidance#> .
+@prefix config: <./config_management#> .
+@prefix secrets: <./secrets_management#> .
+@prefix deploy: <./deployment_config#> .
+@prefix ca: <./cortex_analyst#> .
+
+# Ontology Definition
+deploy:DeploymentConfigOntology rdf:type owl:Ontology ;
+    rdfs:label "Deployment Configuration Ontology" ;
+    rdfs:comment "Ontology for managing deployment configuration artifacts and their relationships" ;
+    owl:versionInfo "1.0.0" ;
+    owl:imports <./config_management>, <./secrets_management>, <./cortex_analyst> .
+
+# Core Classes
+deploy:DeploymentArtifact rdf:type owl:Class ;
+    rdfs:label "Deployment Artifact" ;
+    rdfs:comment "A file or resource used in the deployment process" .
+
+deploy:ScriptArtifact rdf:type owl:Class ;
+    rdfs:subClassOf deploy:DeploymentArtifact ;
+    rdfs:label "Script Artifact" ;
+    rdfs:comment "A script file used in deployment" .
+
+deploy:ConfigurationArtifact rdf:type owl:Class ;
+    rdfs:subClassOf deploy:DeploymentArtifact ;
+    rdfs:label "Configuration Artifact" ;
+    rdfs:comment "A configuration file used in deployment" .
+
+deploy:EnvironmentVariable rdf:type owl:Class ;
+    rdfs:subClassOf config:ConfigurationItem ;
+    rdfs:label "Environment Variable" ;
+    rdfs:comment "An environment variable used in deployment" .
+
+# Properties
+deploy:hasScript rdf:type owl:ObjectProperty ;
+    rdfs:label "has script" ;
+    rdfs:domain deploy:DeploymentArtifact ;
+    rdfs:range deploy:ScriptArtifact ;
+    rdfs:comment "Links a deployment artifact to its associated script" .
+
+deploy:hasConfig rdf:type owl:ObjectProperty ;
+    rdfs:label "has configuration" ;
+    rdfs:domain deploy:DeploymentArtifact ;
+    rdfs:range deploy:ConfigurationArtifact ;
+    rdfs:comment "Links a deployment artifact to its configuration" .
+
+deploy:requiresVariable rdf:type owl:ObjectProperty ;
+    rdfs:label "requires variable" ;
+    rdfs:domain deploy:DeploymentArtifact ;
+    rdfs:range deploy:EnvironmentVariable ;
+    rdfs:comment "Specifies required environment variables" .
+
+deploy:hasDefaultValue rdf:type owl:DatatypeProperty ;
+    rdfs:label "has default value" ;
+    rdfs:domain deploy:EnvironmentVariable ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Default value for an environment variable" .
+
+# Instances - Scripts
+deploy:DeployScript rdf:type deploy:ScriptArtifact ;
+    rdfs:label "deploy.sh" ;
+    rdfs:comment "Main deployment script" ;
+    deploy:hasConfig deploy:EnvConfig .
+
+deploy:SnowflakeScript rdf:type deploy:ScriptArtifact ;
+    rdfs:label "deploy_snowflake.sql" ;
+    rdfs:comment "Snowflake deployment SQL script" ;
+    deploy:hasConfig deploy:EnvConfig .
+
+deploy:OnePasswordScript rdf:type deploy:ScriptArtifact ;
+    rdfs:label "manage_1password.sh" ;
+    rdfs:comment "1Password secrets management script" ;
+    deploy:hasConfig deploy:EnvConfig .
+
+# Instances - Configurations
+deploy:EnvConfig rdf:type deploy:ConfigurationArtifact ;
+    rdfs:label ".env" ;
+    rdfs:comment "Environment configuration file" .
+
+deploy:EnvTemplate rdf:type deploy:ConfigurationArtifact ;
+    rdfs:label ".env.template" ;
+    rdfs:comment "Environment configuration template" .
+
+# Instances - Environment Variables
+deploy:RoleVar rdf:type deploy:EnvironmentVariable ;
+    rdfs:label "SNOWFLAKE_ROLE" ;
+    rdfs:comment "Snowflake role for deployment" ;
+    deploy:hasDefaultValue "cortex_user_role" .
+
+deploy:DatabaseVar rdf:type deploy:EnvironmentVariable ;
+    rdfs:label "SNOWFLAKE_DATABASE" ;
+    rdfs:comment "Snowflake database name" ;
+    deploy:hasDefaultValue "cortex_analyst_demo" .
+
+deploy:SchemaVar rdf:type deploy:EnvironmentVariable ;
+    rdfs:label "SNOWFLAKE_SCHEMA" ;
+    rdfs:comment "Snowflake schema name" ;
+    deploy:hasDefaultValue "revenue_timeseries" .
+
+deploy:WarehouseVar rdf:type deploy:EnvironmentVariable ;
+    rdfs:label "SNOWFLAKE_WAREHOUSE" ;
+    rdfs:comment "Snowflake warehouse name" ;
+    deploy:hasDefaultValue "COMPUTE_WH" .
+
+deploy:WarehouseSizeVar rdf:type deploy:EnvironmentVariable ;
+    rdfs:label "SNOWFLAKE_WAREHOUSE_SIZE" ;
+    rdfs:comment "Snowflake warehouse size" ;
+    deploy:hasDefaultValue "xsmall" .
+
+deploy:AutoSuspendVar rdf:type deploy:EnvironmentVariable ;
+    rdfs:label "SNOWFLAKE_WAREHOUSE_AUTO_SUSPEND" ;
+    rdfs:comment "Snowflake warehouse auto-suspend timeout" ;
+    deploy:hasDefaultValue "60" .
+
+deploy:CreditQuotaVar rdf:type deploy:EnvironmentVariable ;
+    rdfs:label "SNOWFLAKE_CREDIT_QUOTA" ;
+    rdfs:comment "Snowflake credit quota" ;
+    deploy:hasDefaultValue "100" .
+
+deploy:AlertThresholdVar rdf:type deploy:EnvironmentVariable ;
+    rdfs:label "SNOWFLAKE_ALERT_THRESHOLD" ;
+    rdfs:comment "Snowflake alert threshold percentage" ;
+    deploy:hasDefaultValue "75" .
+
+deploy:StageNameVar rdf:type deploy:EnvironmentVariable ;
+    rdfs:label "SNOWFLAKE_STAGE_NAME" ;
+    rdfs:comment "Snowflake stage name" ;
+    deploy:hasDefaultValue "raw_data" .
+
+# SHACL Shapes
+deploy:EnvironmentVariableShape a sh:NodeShape ;
+    sh:targetClass deploy:EnvironmentVariable ;
+    sh:property [
+        sh:path rdfs:label ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+    ] ;
+    sh:property [
+        sh:path deploy:hasDefaultValue ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+    ] .
+
+# TODO Section
+###
+# Future Enhancements:
+# 1. Add validation rules for environment variable values
+# 2. Add support for different deployment environments (dev, staging, prod)
+# 3. Add dependency tracking between deployment artifacts
+# 4. Add versioning support for deployment artifacts
+# 5. Add rollback procedures and validation
+### 

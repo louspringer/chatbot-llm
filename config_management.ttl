@@ -1,0 +1,117 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix meta: <./meta#> .
+@prefix problem: <./problem#> .
+@prefix solution: <./solution#> .
+@prefix conversation: <./conversation#> .
+@prefix guidance: <./guidance#> .
+@prefix metameta: <./metameta#> .
+@prefix config: <./config_management#> .
+@prefix deploy: <./deployment_config#> .
+@prefix ca: <./cortex_analyst#> .
+@prefix dc: <http://purl.org/dc/elements/1.1/> .
+
+# Ontology Definition
+config:ConfigManagementOntology rdf:type owl:Ontology ;
+    dc:title "Configuration Management Ontology" ;
+    dc:version "1.2.0" ;
+    rdfs:label "Configuration Management Ontology" ;
+    rdfs:comment "Ontology for managing configuration artifacts with impact analysis and drift detection" ;
+    owl:imports <./meta>, <./problem>, <./solution>, <./guidance>, <./deployment_config> .
+
+# Core Classes
+config:ConfigurationArtifact rdf:type owl:Class ;
+    rdfs:label "Configuration Artifact" ;
+    rdfs:comment "A configuration artifact in the system (e.g., .env files, templates)" ;
+    rdfs:subClassOf meta:AbstractionDimension .
+
+config:ConfigurationItem rdf:type owl:Class ;
+    rdfs:label "Configuration Item" ;
+    rdfs:comment "A configuration item that requires a value" .
+
+config:EnvironmentVariable rdf:type owl:Class ;
+    rdfs:subClassOf config:ConfigurationItem ;
+    rdfs:label "Environment Variable" ;
+    rdfs:comment "An environment variable used for configuration" .
+
+config:ConfigurationGroup rdf:type owl:Class ;
+    rdfs:label "Configuration Group" ;
+    rdfs:comment "A logical grouping of configuration items" .
+
+# Properties
+config:hasDefaultValue rdf:type owl:DatatypeProperty ;
+    rdfs:domain config:ConfigurationItem ;
+    rdfs:range xsd:string ;
+    rdfs:comment "The default value for a configuration item" .
+
+config:isRequired rdf:type owl:DatatypeProperty ;
+    rdfs:domain config:ConfigurationItem ;
+    rdfs:range xsd:boolean ;
+    rdfs:comment "Whether the configuration item is required" .
+
+config:belongsToGroup rdf:type owl:ObjectProperty ;
+    rdfs:domain config:ConfigurationItem ;
+    rdfs:range config:ConfigurationGroup ;
+    rdfs:comment "Groups related configuration items" .
+
+# Configuration Groups
+config:DatabaseConfig rdf:type config:ConfigurationGroup ;
+    rdfs:label "Database Configuration" ;
+    rdfs:comment "Database-related configuration items" .
+
+config:SecurityConfig rdf:type config:ConfigurationGroup ;
+    rdfs:label "Security Configuration" ;
+    rdfs:comment "Security-related configuration items" .
+
+# Environment Variables
+config:SNOWFLAKE_ROLE rdf:type config:EnvironmentVariable ;
+    rdfs:label "Snowflake Role" ;
+    config:isRequired true ;
+    config:belongsToGroup config:SecurityConfig ;
+    owl:sameAs deploy:RoleVar .
+
+config:SNOWFLAKE_DATABASE rdf:type config:EnvironmentVariable ;
+    rdfs:label "Snowflake Database" ;
+    config:isRequired true ;
+    config:belongsToGroup config:DatabaseConfig ;
+    owl:sameAs deploy:DatabaseVar .
+
+config:SNOWFLAKE_SCHEMA rdf:type config:EnvironmentVariable ;
+    rdfs:label "Snowflake Schema" ;
+    config:isRequired true ;
+    config:belongsToGroup config:DatabaseConfig ;
+    owl:sameAs deploy:SchemaVar .
+
+# SHACL Shapes
+config:EnvironmentVariableShape rdf:type sh:NodeShape ;
+    sh:targetClass config:EnvironmentVariable ;
+    sh:property [
+        sh:path config:isRequired ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:boolean ;
+    ] ;
+    sh:property [
+        sh:path config:belongsToGroup ;
+        sh:minCount 1 ;
+        sh:class config:ConfigurationGroup ;
+    ] .
+
+# Link to Cortex Analyst Ontology
+config:cortexAnalystConfig rdf:type config:ConfigurationGroup ;
+    rdfs:label "Cortex Analyst Configuration" ;
+    rdfs:comment "Configuration for Cortex Analyst deployment" ;
+    owl:imports ca: .
+
+# TODO Section
+###
+# Future Enhancements:
+# 1. Add support for configuration versioning
+# 2. Add configuration drift detection
+# 3. Add impact analysis for configuration changes
+# 4. Add configuration validation rules
+# 5. Add configuration documentation generation
+### 

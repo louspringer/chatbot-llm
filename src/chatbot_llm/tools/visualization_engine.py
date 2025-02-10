@@ -124,7 +124,7 @@ class MatplotlibVisualizer(Visualizer):
             df = data
 
         plt.figure(figsize=options.get('figsize', (10, 6)))
-        
+
         if plot_type == 'line':
             self._generate_line_plot(df, options)
         elif plot_type == 'bar':
@@ -138,7 +138,7 @@ class MatplotlibVisualizer(Visualizer):
         buffer = BytesIO()
         plt.savefig(buffer, format='png')
         plt.close()
-        
+
         return base64.b64encode(buffer.getvalue()).decode()
 
     def _generate_line_plot(
@@ -173,10 +173,10 @@ class MatplotlibVisualizer(Visualizer):
         plt.title(options.get('title', ''))
         plt.xlabel(options.get('xlabel', ''))
         plt.ylabel(options.get('ylabel', ''))
-        
+
         if options.get('grid', True):
             plt.grid(True, alpha=0.3)
-            
+
         if options.get('theme'):
             plt.style.use(options['theme'])
 
@@ -223,4 +223,4 @@ class VisualizationEngine:
             if svg_path:
                 result['svg_path'] = svg_path
 
-        return result 
+        return result

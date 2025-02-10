@@ -1,0 +1,26 @@
+{
+  "tools": {
+    "run_sparql_query": {
+      "module": "tools.sparql_query",
+      "function": "run_sparql_query",
+      "description": "Execute SPARQL queries against ontology files",
+      "parameters": {
+        "ttl_file": {
+          "type": "string",
+          "description": "Path to the Turtle file to query"
+        },
+        "query": {
+          "type": "string",
+          "description": "SPARQL query to execute"
+        }
+      },
+      "returns": {
+        "type": "array",
+        "items": {
+          "type": "object"
+        },
+        "description": "Query results as a list of dictionaries"
+      }
+    }
+  }
+} 
