@@ -75,7 +75,11 @@ jobs:
 
     - name: Validate environment.yml
       run: |
-        conda env create --dry-run -f environment.yml
+        # First try to update existing environment
+        conda env update --file environment.yml --prune || \
+        # If update fails, try to remove and create new
+        (conda env remove -n chatbot-llm && \
+         conda env create --dry-run -f environment.yml)
 
     - name: Validate .env.template
       run: |
