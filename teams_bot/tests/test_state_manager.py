@@ -362,11 +362,15 @@ async def test_cosmos_storage():
         # Test read operation
         result = await storage.read(["test_id"])
         assert result == {"test_id": test_data}
-        mock_container.read_item.assert_called_with(item="test_id", partition_key="test_id")
+        mock_container.read_item.assert_called_with(
+            item="test_id", partition_key="test_id"
+        )
 
         # Test delete operation
         await storage.delete(["test_id"])
-        mock_container.delete_item.assert_called_with(item="test_id", partition_key="test_id")
+        mock_container.delete_item.assert_called_with(
+            item="test_id", partition_key="test_id"
+        )
     finally:
         # Clean up
         await storage.close()

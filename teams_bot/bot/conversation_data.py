@@ -194,7 +194,9 @@ class ConversationData:
         self.checkpoint_data = {
             "current_state": self.current_state.value,
             "conversation_references": (
-                self.conversation_references.copy() if self.conversation_references else {}
+                self.conversation_references.copy()
+                if self.conversation_references
+                else {}
             ),
             "active_query": self.active_query,
             "last_response": self.last_response,

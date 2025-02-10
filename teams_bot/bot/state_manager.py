@@ -142,11 +142,15 @@ class StateManager:
         logger.error(f"Error in state manager: {str(error)}")
 
         if self._error_count >= MAX_ERROR_COUNT:
-            logger.warning(f"Max error count ({MAX_ERROR_COUNT}) reached, resetting state")
+            logger.warning(
+                f"Max error count ({MAX_ERROR_COUNT}) reached, resetting state"
+            )
             await self.clear_state(context)
             self._error_count = 0
 
-    async def save_parameters(self, parameters: Optional[Sequence[Dict[str, Any]]] = None) -> None:
+    async def save_parameters(
+        self, parameters: Optional[Sequence[Dict[str, Any]]] = None
+    ) -> None:
         """Save conversation parameters."""
         if not parameters:
             return
@@ -201,7 +205,9 @@ class StateManager:
             # Create new on error
             return ConversationData(conversation_id=conversation_id)
 
-    async def save_conversation_data(self, context: TurnContext, data: ConversationData) -> None:
+    async def save_conversation_data(
+        self, context: TurnContext, data: ConversationData
+    ) -> None:
         """Save conversation data to storage."""
         if not context.activity or not context.activity.conversation:
             raise ValueError("No conversation context available")
@@ -239,7 +245,9 @@ class StateManager:
 
         return UserProfile()
 
-    async def save_user_profile(self, context: TurnContext, profile: UserProfile) -> None:
+    async def save_user_profile(
+        self, context: TurnContext, profile: UserProfile
+    ) -> None:
         """Save user profile to storage."""
         if not context.activity or not context.activity.from_property:
             raise ValueError("No user context available")
@@ -296,7 +304,9 @@ class StateManager:
                 await conversation_data._machine.trigger(transition, data)
                 await self.save_conversation_data(context, conversation_data)
 
-            logger.info(f"Triggered transition {transition} for conversation {conversation_id}")
+            logger.info(
+                f"Triggered transition {transition} for conversation {conversation_id}"
+            )
         except Exception as e:
             logger.error(f"Failed to trigger transition: {str(e)}")
             raise

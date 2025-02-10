@@ -101,7 +101,9 @@ async def test_error_handling_with_state_transition(mock_storage, mock_context):
     next_mock = AsyncMock(side_effect=ValueError("Validation error"))
     await middleware.on_turn(mock_context, next_mock)
 
-    state_manager.trigger_transition.assert_called_once_with(mock_context, "error", None)
+    state_manager.trigger_transition.assert_called_once_with(
+        mock_context, "error", None
+    )
 
 
 if __name__ == "__main__":

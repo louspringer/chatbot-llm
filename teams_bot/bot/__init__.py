@@ -7,4 +7,9 @@ from .state_manager import StateManager
 from .error_middleware import ErrorHandlingMiddleware
 from .conversation_state import ConversationState
 
-__all__ = ["TeamsBot", "StateManager", "ErrorHandlingMiddleware", "ConversationState"]
+__all__ = [
+    "TeamsBot",
+    "StateManager",
+    "ErrorHandlingMiddleware",
+    "ConversationState"
+]

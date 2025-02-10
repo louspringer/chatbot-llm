@@ -27,7 +27,9 @@ class ErrorHandlingMiddleware(Middleware):
         """Initialize the middleware with state manager."""
         self._state_manager = state_manager
 
-    async def on_turn(self, context: TurnContext, next: Callable[[TurnContext], Awaitable]) -> None:
+    async def on_turn(
+        self, context: TurnContext, next: Callable[[TurnContext], Awaitable]
+    ) -> None:
         """Handle errors during turn processing."""
         try:
             await next(context)
@@ -75,7 +77,9 @@ class ErrorHandlingMiddleware(Middleware):
             "timestamp": timestamp,
         }
 
-        logger.error("Bot Error: %s\nDetails: %s", error_id, error_details, exc_info=error)
+        logger.error(
+            "Bot Error: %s\nDetails: %s", error_id, error_details, exc_info=error
+        )
 
         return error_id
 

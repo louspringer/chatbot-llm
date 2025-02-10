@@ -53,7 +53,9 @@ class CosmosStorage(Storage):
             result: Dict[str, Any] = {}
             for key in keys:
                 try:
-                    response = await self.container.read_item(item=key, partition_key=key)
+                    response = await self.container.read_item(
+                        item=key, partition_key=key
+                    )
                     if response:
                         result[key] = response
                 except Exception as e:

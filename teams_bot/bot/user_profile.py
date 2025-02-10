@@ -40,7 +40,11 @@ class UserProfile(StoreItem):
 
             # Validate query history
             for query in self.query_history:
-                if not isinstance(query, dict) or "query" not in query or "timestamp" not in query:
+                if (
+                    not isinstance(query, dict)
+                    or "query" not in query
+                    or "timestamp" not in query
+                ):
                     return False
                 datetime.fromisoformat(query["timestamp"])
 
