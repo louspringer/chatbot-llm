@@ -42,5 +42,7 @@ include = '\.pyi?$'
 testpaths = ["teams_bot/tests"]
 python_files = ["test_*.py"]
 addopts = "-ra -q"
+# Add project root to PYTHONPATH to allow tests to import from the root directory
+# This ensures imports like 'from teams_bot.bot.teams_bot import TeamsBot' work correctly
 pythonpath = ["."]
 asyncio_mode = "strict" 
