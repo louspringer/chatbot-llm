@@ -169,3 +169,54 @@ g.parse("teams-bot/guidance.ttl", format="turtle")
 4. Check validation results
 5. Fix any violations
 6. Revalidate until clean 
+
+# Teams Bot Validation
+
+This document describes the validation processes and requirements for the Teams Bot project.
+
+## Development Workflow
+
+The development workflow is modeled in `development_workflow.ttl` and consists of three phases:
+
+1. **Initial Development** (Current Phase)
+   - Basic CI workflow with non-blocking checks
+   - Flexible branch protection on `develop`
+   - Focus on rapid iteration and feedback
+
+2. **Beta Phase**
+   - Enhanced CI workflow with required checks
+   - Stricter branch protection
+   - Test coverage requirements
+   - Basic security scanning
+
+3. **Production Phase**
+   - Full CI/CD pipeline
+   - Strict branch protection on `main`
+   - Comprehensive security scanning
+   - Performance testing
+
+### Current Validation Checks
+
+The following checks are implemented in our CI workflow:
+
+```yaml
+# From .github/workflows/dev-validation.yml
+- Code style (black, flake8)
+- Type checking (mypy)
+- Ontology validation
+```
+
+These checks are currently non-blocking to support rapid development. See `development_workflow.ttl` for the complete model of validation checks and their configurations.
+
+### Branch Protection
+
+Current branch protection rules for `develop`:
+- Requires pull request review (1 reviewer)
+- Allows force push for development flexibility
+- Status checks are informative only
+
+See `:DevelopBranchProtection` in `development_workflow.ttl` for the formal specification.
+
+## Ontology Validation
+
+// ... existing code ... 

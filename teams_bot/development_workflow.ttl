@@ -1,0 +1,155 @@
+@prefix : <./development_workflow#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix meta: <./meta#> .
+@prefix deployment: <./deployment#> .
+@prefix doc: <./documentation#> .
+@prefix dct: <http://purl.org/dc/terms/> .
+
+# Development Workflow Ontology
+:DevelopmentWorkflowOntology a owl:Ontology ;
+    rdfs:label "Development Workflow Ontology" ;
+    rdfs:comment "Ontology for Teams Bot development workflow and CI/CD process" ;
+    owl:imports <./deployment>, <./meta>, <./documentation> ;
+    owl:versionInfo "1.0" ;
+    dct:created "2024-03-19"^^xsd:date ;
+    dct:creator "Teams Bot Development Team" ;
+    dct:description "Models the development workflow, CI/CD processes, and validation stages for the Teams Bot project." .
+
+# Core Classes
+:DevelopmentPhase a owl:Class ;
+    rdfs:label "Development Phase" ;
+    rdfs:comment "A phase in the development lifecycle" .
+
+:WorkflowProcess a owl:Class ;
+    rdfs:label "Workflow Process" ;
+    rdfs:comment "A process within the development workflow" .
+
+:ValidationCheck a owl:Class ;
+    rdfs:label "Validation Check" ;
+    rdfs:comment "A validation check in the CI/CD pipeline" .
+
+:BranchProtection a owl:Class ;
+    rdfs:label "Branch Protection" ;
+    rdfs:comment "Branch protection rules and requirements" .
+
+# Development Phases
+:InitialDevelopment a :DevelopmentPhase ;
+    rdfs:label "Initial Development" ;
+    :hasWorkflowProcess :BasicCIWorkflow ;
+    :hasBranchProtection :DevelopBranchProtection ;
+    :hasValidationCheck :CodeStyleCheck, :TypeCheck, :OntologyValidation ;
+    :isCurrentPhase true ;
+    rdfs:comment "Initial development phase with basic checks and flexible rules" .
+
+:BetaPhase a :DevelopmentPhase ;
+    rdfs:label "Beta Phase" ;
+    :hasWorkflowProcess :EnhancedCIWorkflow ;
+    :hasBranchProtection :StrictDevelopProtection ;
+    :hasValidationCheck :TestCoverage, :SecurityScan ;
+    :isCurrentPhase false ;
+    rdfs:comment "Beta phase with enhanced validation and stricter rules" .
+
+:ProductionPhase a :DevelopmentPhase ;
+    rdfs:label "Production Phase" ;
+    :hasWorkflowProcess :FullCICDPipeline ;
+    :hasBranchProtection :MainBranchProtection ;
+    :hasValidationCheck :ComprehensiveSecurity, :PerformanceTest ;
+    :isCurrentPhase false ;
+    rdfs:comment "Production phase with complete pipeline and strict protections" .
+
+# Workflow Processes
+:BasicCIWorkflow a :WorkflowProcess ;
+    rdfs:label "Basic CI Workflow" ;
+    :workflowFile ".github/workflows/dev-validation.yml" ;
+    :hasValidationCheck :CodeStyleCheck, :TypeCheck, :OntologyValidation ;
+    :continueOnError true ;
+    rdfs:comment "Initial CI workflow with non-blocking checks" .
+
+:EnhancedCIWorkflow a :WorkflowProcess ;
+    rdfs:label "Enhanced CI Workflow" ;
+    :requiresApproval true ;
+    :hasValidationCheck :TestCoverage, :SecurityScan ;
+    :continueOnError false ;
+    rdfs:comment "Enhanced workflow with required checks" .
+
+# Validation Checks
+:CodeStyleCheck a :ValidationCheck ;
+    rdfs:label "Code Style Check" ;
+    :tool "black, flake8" ;
+    :isBlocking false ;
+    :configuration """
+    black --check teams-bot
+    flake8 teams-bot --max-line-length=100
+    """ .
+
+:TypeCheck a :ValidationCheck ;
+    rdfs:label "Type Check" ;
+    :tool "mypy" ;
+    :isBlocking false ;
+    :configuration """
+    mypy teams-bot --ignore-missing-imports
+    """ .
+
+:OntologyValidation a :ValidationCheck ;
+    rdfs:label "Ontology Validation" ;
+    :tool "validate_deployment.py" ;
+    :isBlocking false ;
+    :configuration """
+    python teams-bot/validate_deployment.py
+    """ .
+
+# Branch Protection Rules
+:DevelopBranchProtection a :BranchProtection ;
+    rdfs:label "Develop Branch Protection" ;
+    :requirePullRequest true ;
+    :requiredReviewers 1 ;
+    :allowForcePush true ;
+    :requireStatusChecks false ;
+    rdfs:comment "Initial flexible protection for develop branch" .
+
+:StrictDevelopProtection a :BranchProtection ;
+    rdfs:label "Strict Develop Protection" ;
+    :requirePullRequest true ;
+    :requiredReviewers 1 ;
+    :allowForcePush false ;
+    :requireStatusChecks true ;
+    rdfs:comment "Stricter protection for develop branch in beta phase" .
+
+# Properties
+:hasWorkflowProcess a owl:ObjectProperty ;
+    rdfs:domain :DevelopmentPhase ;
+    rdfs:range :WorkflowProcess .
+
+:hasValidationCheck a owl:ObjectProperty ;
+    rdfs:domain [:WorkflowProcess, :DevelopmentPhase] ;
+    rdfs:range :ValidationCheck .
+
+:hasBranchProtection a owl:ObjectProperty ;
+    rdfs:domain :DevelopmentPhase ;
+    rdfs:range :BranchProtection .
+
+:isCurrentPhase a owl:DatatypeProperty ;
+    rdfs:domain :DevelopmentPhase ;
+    rdfs:range xsd:boolean .
+
+:isBlocking a owl:DatatypeProperty ;
+    rdfs:domain :ValidationCheck ;
+    rdfs:range xsd:boolean .
+
+# SHACL Shapes
+:DevelopmentPhaseShape a sh:NodeShape ;
+    sh:targetClass :DevelopmentPhase ;
+    sh:property [
+        sh:path :hasWorkflowProcess ;
+        sh:minCount 1 ;
+        sh:message "Development phase must have at least one workflow process."
+    ] ;
+    sh:property [
+        sh:path :hasBranchProtection ;
+        sh:minCount 1 ;
+        sh:message "Development phase must have branch protection rules."
+    ] . 
