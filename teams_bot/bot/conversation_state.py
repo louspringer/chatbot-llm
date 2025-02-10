@@ -7,13 +7,15 @@
 from enum import Enum
 
 
-class ConversationState(str, Enum):
-    """Conversation states."""
+class ConversationState(Enum):
+    """Conversation states for the Teams bot."""
+
+    IDLE = "IDLE"
     INITIALIZED = "INITIALIZED"
     AUTHENTICATING = "AUTHENTICATING"
     AUTHENTICATED = "AUTHENTICATED"
     QUERYING = "QUERYING"
     PROCESSING = "PROCESSING"
     RESPONDING = "RESPONDING"
-    IDLE = "IDLE"
-    ERROR = "ERROR" 
+    ERROR = "ERROR"
+    COMPLETED = "COMPLETED" 
