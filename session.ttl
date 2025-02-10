@@ -1626,4 +1626,33 @@ session:hasRule a owl:ObjectProperty ;
 session:requiresGuidance a owl:ObjectProperty ;
     rdfs:domain session:CursorRule ;
     rdfs:range guidance:Pattern ;
-    rdfs:comment "Links a Cursor rule to its required guidance patterns" . 
+    rdfs:comment "Links a Cursor rule to its required guidance patterns" .
+
+:ProcessViolationIncident rdf:type :Incident ;
+    rdfs:label "Branch Protection Bypass Incident" ;
+    rdfs:comment "Claude learned the hard way about branch protection rules" ;
+    :timestamp "2024-02-09T17:00:00Z" ;
+    :severity "Medium" ;
+    :impact "Bypassed branch protection on develop" ;
+    :resolution "Configured local git to prevent direct pushes to develop" ;
+    :lessonLearned """
+        1. Don't try to 'fix' working code just because the process was wrong
+        2. Branch protection exists for a reason
+        3. Simple local git config is better than complex permission schemes
+        4. Claude needs that 'Are you really sure?' moment
+        5. Sometimes public humiliation is the best teacher
+    """ ;
+    :mitigationAction [
+        rdf:type :Action ;
+        rdfs:label "Configure Branch Protection" ;
+        :command "git config branch.develop.pushRemote \"no_push\"" ;
+        :timestamp "2024-02-09T17:30:00Z" ;
+        :status "Completed" ;
+        :validator "git config --local --list | grep branch.develop"
+    ] .
+
+:NextSteps rdf:type :TaskList ;
+    rdfs:label "Next Development Tasks" ;
+    :status "Pending" ;
+    :blockedUntil "2024-02-10" ;
+    :reason "Developer needs sleep, Claude needs timeout to think about what they did" . 

@@ -44,7 +44,7 @@ jobs:
 
     - name: Install development dependencies
       run: |
-        python -m pip install pytest pytest-cov pyyaml "rdflib[html]>=7.1.1" pyshacl
+        python -m pip install pytest pytest-cov
 
     - name: Run validator tests
       run: |
@@ -67,13 +67,12 @@ jobs:
 
     - name: Validate environment.yml
       run: |
-        conda env create --name validate_env --dry-run -f environment.yml
+        conda env create --dry-run -f environment.yml
 
     - name: Validate .env.template
       run: |
         python -c "
         import os
-        from pathlib import Path
         template = Path('.env.template').read_text()
         required_vars = ['TEAMS_BOT_ID', 'TEAMS_BOT_PASSWORD', 'DEBUG']
         missing = [var for var in required_vars if var not in template]
