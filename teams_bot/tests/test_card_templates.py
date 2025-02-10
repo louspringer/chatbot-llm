@@ -6,7 +6,7 @@
 # Description: Tests for Teams Adaptive Card templates
 """
 
-from bot.card_templates import (
+from teams_bot.bot.card_templates import (
     AdaptiveCardTemplate,
     WelcomeCard,
     QueryResultCard,

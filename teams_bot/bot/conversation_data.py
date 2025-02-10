@@ -76,39 +76,55 @@ class ConversationData:
                     "source": "initialized",
                     "dest": "authenticating",
                     "prepare": ["validate_transition"],
+                    "after": ["_update_state"],
                 },
                 {
                     "trigger": "auth_success",
                     "source": "authenticating",
                     "dest": "authenticated",
                     "prepare": ["validate_transition"],
+                    "after": ["_update_state"],
                 },
                 {
                     "trigger": "start_query",
                     "source": ["authenticated", "idle"],
                     "dest": "querying",
                     "prepare": ["validate_transition"],
+                    "after": ["_update_state"],
                 },
                 {
                     "trigger": "process_query",
                     "source": "querying",
                     "dest": "processing",
                     "prepare": ["validate_transition"],
+                    "after": ["_update_state"],
                 },
                 {
                     "trigger": "send_response",
                     "source": "processing",
                     "dest": "responding",
                     "prepare": ["validate_transition"],
+                    "after": ["_update_state"],
                 },
                 {
                     "trigger": "complete",
                     "source": "responding",
                     "dest": "idle",
                     "prepare": ["validate_transition"],
+                    "after": ["_update_state"],
                 },
-                {"trigger": "error", "source": "*", "dest": "error"},
-                {"trigger": "reset", "source": "*", "dest": "initialized"},
+                {
+                    "trigger": "error",
+                    "source": "*",
+                    "dest": "error",
+                    "after": ["_update_state"],
+                },
+                {
+                    "trigger": "reset",
+                    "source": "*",
+                    "dest": "initialized",
+                    "after": ["_update_state"],
+                },
             ]
 
             machine.add_transitions(transitions)
@@ -128,8 +144,15 @@ class ConversationData:
             target_state = event_data.transition.dest
             target_state_enum = ConversationState(target_state.upper())
 
+            # Skip validation for error and reset transitions
+            if target_state in ["error", "initialized"]:
+                return True
+
             # Validate state invariants
             if not await self.check_state_timeout():
+                self.error_count += 1
+                if self._machine is not None:
+                    await self._machine.dispatch("error")
                 return False
 
             # Record state transition in history
@@ -150,12 +173,12 @@ class ConversationData:
             if self._machine is not None:
                 try:
                     # Transition to error state
-                    await self._machine.trigger("error")
+                    await self._machine.dispatch("error")
 
                     # Reset if max errors reached
                     if self.error_count >= MAX_ERROR_COUNT:
                         self.error_count = 0
-                        await self._machine.trigger("reset")
+                        await self._machine.dispatch("reset")
                 except Exception as e2:
                     logger.error(f"Failed to handle error state: {e2}")
 
@@ -332,3 +355,17 @@ class ConversationData:
                     setattr(instance, field, None)
 
         return instance
+
+    async def _update_state(self, event_data: Any) -> None:
+        """Update current_state after a transition."""
+        try:
+            if event_data and hasattr(event_data, "transition"):
+                target_state = event_data.transition.dest
+                self.current_state = ConversationState(target_state.upper())
+                
+                # Reset error count when transitioning to initialized state
+                if target_state == "initialized":
+                    self.error_count = 0
+        except Exception as e:
+            logger.error(f"Failed to update state: {e}")
+            self.error_count += 1

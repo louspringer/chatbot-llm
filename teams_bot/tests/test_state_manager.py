@@ -17,6 +17,8 @@ from unittest.mock import MagicMock, AsyncMock, patch
 from datetime import datetime, timedelta
 from base64 import b64decode
 from cryptography.fernet import Fernet
+import os
+import base64
 
 from botbuilder.core import TurnContext, Storage, MemoryStorage
 from ..bot.state_manager import StateManager
@@ -24,6 +26,7 @@ from ..bot.conversation_state import ConversationState
 from ..bot.conversation_data import ConversationData, MAX_ERROR_COUNT
 from ..bot.user_profile import UserProfile
 from ..bot.cosmos_storage import CosmosStorage
+from botbuilder.schema import Activity, ConversationAccount, ChannelAccount
 
 
 @pytest.fixture
@@ -374,6 +377,335 @@ async def test_cosmos_storage():
     finally:
         # Clean up
         await storage.close()
+
+
+@pytest.mark.asyncio
+async def test_encryption_with_key():
+    """Test encryption with a valid encryption key."""
+    # Setup
+    mock_storage = MagicMock(spec=Storage)
+    test_key = base64.b64encode(os.urandom(32))
+    with patch.dict(os.environ, {'STATE_ENCRYPTION_KEY': test_key.decode()}):
+        manager = StateManager(mock_storage, "test_conversation")
+        
+        # Test string encryption
+        test_value = "sensitive data"
+        encrypted = manager.encrypt(test_value)
+        decrypted = manager.decrypt(encrypted)
+        assert decrypted == test_value
+        
+        # Test bytes encryption
+        test_bytes = b"sensitive bytes"
+        encrypted_bytes = manager.encrypt(test_bytes)
+        decrypted_bytes = manager.decrypt(encrypted_bytes)
+        assert decrypted_bytes == test_bytes.decode()
+
+
+@pytest.mark.asyncio
+async def test_encryption_without_key():
+    """Test behavior when no encryption key is provided."""
+    mock_storage = MagicMock(spec=Storage)
+    with patch.dict(os.environ, {'STATE_ENCRYPTION_KEY': ''}):
+        manager = StateManager(mock_storage, "test_conversation")
+        
+        # Test string passthrough
+        test_value = "test data"
+        result = manager.encrypt(test_value)
+        assert result == test_value
+        
+        # Test bytes passthrough
+        test_bytes = b"test bytes"
+        result_bytes = manager.encrypt(test_bytes)
+        assert result_bytes == test_bytes.decode()
+
+
+@pytest.mark.asyncio
+async def test_save_parameters():
+    """Test saving conversation parameters."""
+    mock_storage = AsyncMock(spec=Storage)
+    mock_storage.read.return_value = {"test_conversation": {}}
+    manager = StateManager(mock_storage, "test_conversation")
+    
+    test_params = [
+        {"name": "param1", "value": "value1"},
+        {"name": "param2", "value": "value2"}
+    ]
+    
+    await manager.save_parameters(test_params)
+    
+    # Verify storage interactions
+    mock_storage.read.assert_called_once_with(["test_conversation"])
+    mock_storage.write.assert_called_once()
+    write_args = mock_storage.write.call_args[0][0]
+    assert "test_conversation" in write_args
+    assert write_args["test_conversation"]["parameters"] == test_params
+
+
+@pytest.mark.asyncio
+async def test_save_parameters_with_error():
+    """Test error handling when saving parameters fails."""
+    mock_storage = AsyncMock(spec=Storage)
+    mock_storage.read.side_effect = Exception("Storage error")
+    manager = StateManager(mock_storage, "test_conversation")
+    
+    test_params = [{"name": "param1", "value": "value1"}]
+    await manager.save_parameters(test_params)
+    
+    # Verify error was handled gracefully
+    mock_storage.read.assert_called_once()
+    mock_storage.write.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_clear_state():
+    """Test clearing conversation state."""
+    mock_storage = MagicMock(spec=Storage)
+    manager = StateManager(mock_storage, "test_conversation")
+    
+    # Setup mock context
+    mock_context = MagicMock(spec=TurnContext)
+    mock_context.activity = Activity(id="test_activity")
+    mock_context.delete_activity = AsyncMock()
+    
+    # Test clearing with context
+    await manager.clear_state(mock_context)
+    mock_context.delete_activity.assert_called_once_with("test_activity")
+    assert manager._machine is None
+    
+    # Test clearing without context
+    await manager.clear_state()
+    assert manager._machine is None
+
+
+@pytest.mark.asyncio
+async def test_user_profile_management():
+    """Test user profile management."""
+    mock_storage = AsyncMock(spec=Storage)
+    manager = StateManager(mock_storage, "test_conversation")
+    
+    # Setup mock context with user info
+    mock_context = MagicMock(spec=TurnContext)
+    mock_context.activity = Activity(
+        from_property=ChannelAccount(id="test_user", name="Test User")
+    )
+    
+    # Test saving user profile
+    test_profile = UserProfile(name="Test User")
+    await manager.save_user_profile(mock_context, test_profile)
+    
+    # Verify storage write
+    mock_storage.write.assert_called_once()
+    write_args = mock_storage.write.call_args[0][0]
+    assert "user/test_user" in write_args
+    
+    # Test loading user profile with correct data structure
+    mock_storage.read.return_value = {
+        "test_conversation": {
+            "name": "Test User",
+            "preferred_language": "en-US",
+            "last_interaction": "",
+            "permissions": [],
+            "query_history": [],
+            "etag": "*"
+        }
+    }
+    loaded_profile = await manager.get_user_profile(mock_context)
+    assert isinstance(loaded_profile, UserProfile)
+    assert loaded_profile.name == "Test User"
+    assert loaded_profile.preferred_language == "en-US"
+    assert isinstance(loaded_profile.permissions, list)
+    assert isinstance(loaded_profile.query_history, list)
+
+
+@pytest.mark.asyncio
+async def test_handle_error():
+    """Test error handling and reset behavior."""
+    mock_storage = MagicMock(spec=Storage)
+    manager = StateManager(mock_storage, "test_conversation")
+    
+    # Setup mock context
+    mock_context = MagicMock(spec=TurnContext)
+    mock_context.activity = Activity(id="test_activity")
+    mock_context.delete_activity = AsyncMock()
+    
+    # Test error handling below threshold
+    test_error = Exception("Test error")
+    await manager.handle_error(mock_context, test_error)
+    assert manager._error_count == 1
+    mock_context.delete_activity.assert_not_called()
+    
+    # Test error handling at threshold
+    for _ in range(2):
+        await manager.handle_error(mock_context, test_error)
+    
+    assert manager._error_count == 0  # Should be reset
+    mock_context.delete_activity.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_conversation_data_management():
+    """Test conversation data management with encryption."""
+    mock_storage = AsyncMock(spec=Storage)
+    test_key = base64.b64encode(os.urandom(32))
+    
+    with patch.dict(os.environ, {'STATE_ENCRYPTION_KEY': test_key.decode()}):
+        manager = StateManager(mock_storage, "test_conversation")
+        
+        # Setup mock context
+        mock_context = MagicMock(spec=TurnContext)
+        mock_context.activity = Activity(
+            conversation=ConversationAccount(id="test_conversation")
+        )
+        
+        # Create test data with sensitive information
+        conv_data = ConversationData(conversation_id="test_conversation")
+        conv_data.active_query = "sensitive query"
+        conv_data.last_response = "sensitive response"
+        conv_data.state_manager = manager  # Set state manager for encryption
+        
+        # Test saving with encryption
+        await manager.save_conversation_data(mock_context, conv_data)
+        
+        # Verify storage write with encrypted data
+        mock_storage.write.assert_called_once()
+        write_args = mock_storage.write.call_args[0][0]
+        saved_data = write_args["test_conversation"]
+        
+        # Verify encrypted fields exist and are encrypted
+        assert "active_query" in saved_data
+        assert "last_response" in saved_data
+        assert saved_data["active_query"] != "sensitive query"
+        assert saved_data["last_response"] != "sensitive response"
+        
+        # Test loading with decryption
+        mock_storage.read.return_value = {"test_conversation": saved_data}
+        loaded_data = await manager.get_conversation_data(mock_context)
+        assert isinstance(loaded_data, ConversationData)
+        assert loaded_data.conversation_id == "test_conversation"
+        assert loaded_data.active_query == "sensitive query"
+        assert loaded_data.last_response == "sensitive response"
+
+
+@pytest.mark.asyncio
+async def test_user_profile_validation():
+    """Test user profile validation."""
+    mock_storage = AsyncMock(spec=Storage)
+    manager = StateManager(mock_storage, "test_conversation")
+    
+    # Setup mock context with user info
+    mock_context = MagicMock(spec=TurnContext)
+    mock_context.activity = Activity(
+        from_property=ChannelAccount(id="test_user", name="Test User")
+    )
+    
+    # Test profile with valid data
+    valid_profile = UserProfile(
+        name="Test User",
+        last_interaction=datetime.utcnow().isoformat(),
+        permissions=["read", "write"],
+        query_history=[{
+            "query": "test query",
+            "timestamp": datetime.utcnow().isoformat()
+        }]
+    )
+    assert valid_profile.validate()
+    
+    # Test profile with invalid last_interaction
+    invalid_timestamp = UserProfile(
+        name="Test User",
+        last_interaction="invalid_timestamp"
+    )
+    assert not invalid_timestamp.validate()
+    
+    # Test profile with invalid permissions
+    invalid_permissions = UserProfile(
+        name="Test User",
+        permissions="not_a_list"  # type: ignore
+    )
+    assert not invalid_permissions.validate()
+    
+    # Test profile with invalid query history
+    invalid_query = UserProfile(
+        name="Test User",
+        query_history=[{"missing_required_fields": True}]
+    )
+    assert not invalid_query.validate()
+
+
+@pytest.mark.asyncio
+async def test_user_profile_data_conversion():
+    """Test user profile data conversion."""
+    mock_storage = AsyncMock(spec=Storage)
+    manager = StateManager(mock_storage, "test_conversation")
+    
+    # Setup mock context with user info
+    mock_context = MagicMock(spec=TurnContext)
+    mock_context.activity = Activity(
+        from_property=ChannelAccount(id="test_user", name="Test User")
+    )
+    
+    # Create profile with all fields populated
+    timestamp = datetime.utcnow().isoformat()
+    profile = UserProfile(
+        name="Test User",
+        preferred_language="es-ES",
+        last_interaction=timestamp,
+        permissions=["read", "write"],
+        query_history=[{
+            "query": "test query",
+            "timestamp": timestamp
+        }],
+        etag="test_etag"
+    )
+    
+    # Convert to dict and verify all fields
+    data = profile.to_dict()
+    assert data["name"] == "Test User"
+    assert data["preferred_language"] == "es-ES"
+    assert data["last_interaction"] == timestamp
+    assert data["permissions"] == ["read", "write"]
+    assert len(data["query_history"]) == 1
+    assert data["query_history"][0]["query"] == "test query"
+    assert data["query_history"][0]["timestamp"] == timestamp
+    assert data["etag"] == "test_etag"
+    
+    # Save profile and verify storage
+    await manager.save_user_profile(mock_context, profile)
+    mock_storage.write.assert_called_once()
+    write_args = mock_storage.write.call_args[0][0]
+    saved_data = write_args[f"user/{mock_context.activity.from_property.id}"]
+    
+    # The saved data should include the ID field
+    expected_data = data.copy()
+    expected_data["id"] = f"user/{mock_context.activity.from_property.id}"
+    assert saved_data == expected_data
+
+
+@pytest.mark.asyncio
+async def test_user_profile_error_handling():
+    """Test user profile error handling."""
+    mock_storage = AsyncMock(spec=Storage)
+    mock_storage.read.side_effect = Exception("Storage error")
+    manager = StateManager(mock_storage, "test_conversation")
+    
+    # Setup mock context with user info
+    mock_context = MagicMock(spec=TurnContext)
+    mock_context.activity = Activity(
+        from_property=ChannelAccount(id="test_user", name="Test User")
+    )
+    
+    # Test loading with storage error
+    profile = await manager.get_user_profile(mock_context)
+    assert isinstance(profile, UserProfile)
+    assert profile.name == ""  # Should return empty profile on error
+    
+    # Test saving with storage error
+    mock_storage.write.side_effect = Exception("Storage error")
+    with pytest.raises(Exception):
+        await manager.save_user_profile(
+            mock_context,
+            UserProfile(name="Test User")
+        )
 
 
 if __name__ == "__main__":
