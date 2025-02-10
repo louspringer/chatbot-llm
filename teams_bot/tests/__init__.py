@@ -1,1 +1,1 @@
-"""Tests for the Teams bot implementation.""" 
+"""Test package for Teams bot."""
