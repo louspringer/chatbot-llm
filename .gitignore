@@ -17,3 +17,18 @@ local.settings.json
 
 # Azure Storage Emulator
 .azurite/
+
+# Coverage and test artifacts
+.coverage
+coverage_report.txt
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Test query files
+*.rq
+
+# Local test configuration
+conftest.py
+!teams_bot/tests/conftest.py  # Keep the main test configuration
