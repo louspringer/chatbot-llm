@@ -7,10 +7,6 @@ from botbuilder.core import Storage, MemoryStorage
 from ..bot.state_manager import StateManager
 
 
-# Enable async test functions
-pytest_plugins = ["pytest_asyncio"]
-
-
 # Configure asyncio to use auto mode
 @pytest.fixture(autouse=True)
 def event_loop():

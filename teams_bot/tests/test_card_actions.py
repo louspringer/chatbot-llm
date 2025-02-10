@@ -11,7 +11,7 @@ import pytest
 from botbuilder.core import TurnContext
 from botbuilder.schema import Activity
 
-from bot.card_actions import CardActionHandler
+from teams_bot.bot.card_actions import CardActionHandler
 
 
 @pytest.fixture

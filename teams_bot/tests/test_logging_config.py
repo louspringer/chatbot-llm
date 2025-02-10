@@ -14,7 +14,7 @@ import io
 
 import pytest
 
-from bot.logging_config import (
+from teams_bot.bot.logging_config import (
     configure_logging,
     get_logger,
     LogContext,
