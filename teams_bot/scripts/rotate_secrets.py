@@ -17,7 +17,12 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Optional
 
-from config.key_vault import KeyVaultConfig
+# Add project root to path
+project_root = str(Path(__file__).parent.parent.absolute())
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+
+from teams_bot.config.key_vault import KeyVaultConfig
 
 
 # Configure logging
@@ -26,12 +31,6 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
-
-
-# Add project root to path
-project_root = str(Path(__file__).parent.parent.absolute())
-if project_root not in sys.path:
-    sys.path.insert(0, project_root)
 
 
 class SecretRotator:
