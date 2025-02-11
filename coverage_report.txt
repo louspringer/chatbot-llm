@@ -1,0 +1,20 @@
+................................................                         [100%]
+
+--------- coverage: platform darwin, python 3.11.11-final-0 ----------
+Name                                  Stmts   Miss  Cover   Missing
+-------------------------------------------------------------------
+teams_bot/bot/__init__.py                 5      0   100%
+teams_bot/bot/card_actions.py            26      0   100%
+teams_bot/bot/card_templates.py          45      0   100%
+teams_bot/bot/conversation_data.py      165     92    44%   24, 53, 116-118, 122-162, 168, 176-177, 179-180, 182-183, 187-189, 193-208, 212-220, 224-253, 267-286, 296, 322-330
+teams_bot/bot/conversation_state.py      11      0   100%
+teams_bot/bot/cosmos_storage.py          73     30    59%   29, 31, 33, 35, 43-45, 50, 61-62, 64-66, 71, 77, 79, 81-85, 90, 96-100, 106-108
+teams_bot/bot/error_middleware.py        40      1    98%   99
+teams_bot/bot/logging_config.py          70      0   100%
+teams_bot/bot/state_manager.py          180     84    53%   104-106, 113-115, 121-124, 131-137, 156, 163, 172-173, 180, 185, 189, 203-206, 213, 217, 225-227, 231-246, 252-268, 272-285, 294-312
+teams_bot/bot/teams_bot.py               91     42    54%   47, 63, 74, 82-85, 95-96, 110-130, 134, 138-145, 155-157, 163, 170-179, 196-210
+teams_bot/bot/user_profile.py            27     13    52%   32-53, 57
+-------------------------------------------------------------------
+TOTAL                                   733    262    64%
+
+48 passed in 0.81s

@@ -1,0 +1,101 @@
+# Secret Rotation Configuration
+
+# Schedule configuration
+schedule:
+  snowflake_keys:
+    interval_days: 90  # Rotate every 90 days
+    grace_period_days: 7  # Warning period before expiration
+    retry_attempts: 3
+    retry_delay_minutes: 15
+
+  keyvault_secrets:
+    interval_days: 60
+    grace_period_days: 5
+    retry_attempts: 3
+    retry_delay_minutes: 15
+
+  bot_credentials:
+    interval_days: 30
+    grace_period_days: 3
+    retry_attempts: 3
+    retry_delay_minutes: 15
+
+  state_encryption:
+    interval_days: 180
+    grace_period_days: 14
+    retry_attempts: 3
+    retry_delay_minutes: 15
+
+# Notification configuration
+notifications:
+  teams_webhook: null  # Set in environment
+  email_recipients: []  # Set in environment
+  notification_levels:
+    - INFO
+    - WARNING
+    - ERROR
+    - CRITICAL
+
+# Monitoring configuration
+monitoring:
+  metrics:
+    - name: secret_age_days
+      threshold_warning: 75  # Percentage of rotation interval
+      threshold_critical: 90
+    - name: rotation_success_rate
+      threshold_warning: 90  # Percentage
+      threshold_critical: 80
+    - name: failed_rotation_attempts
+      threshold_warning: 2
+      threshold_critical: 3
+
+# Recovery procedures
+recovery:
+  backup_retention_days: 30
+  max_versions_retained: 5
+  recovery_procedures:
+    snowflake_keys:
+      - Restore previous key pair from backup
+      - Verify Snowflake connection
+      - Update application configuration
+      - Test database access
+    keyvault_secrets:
+      - Restore previous version from Key Vault
+      - Update application configuration
+      - Verify service connectivity
+    bot_credentials:
+      - Restore previous credential in Azure AD
+      - Update Key Vault secret
+      - Verify bot authentication
+    state_encryption:
+      - Restore previous encryption key
+      - Verify state decryption
+      - Update application configuration
+
+# Audit configuration
+audit:
+  log_retention_days: 90
+  required_fields:
+    - timestamp
+    - component
+    - action
+    - status
+    - operator
+    - source_ip
+  sensitive_fields:
+    - old_value
+    - new_value
+    - key_material
+
+# Compliance
+compliance:
+  key_requirements:
+    rsa_key_size: 2048
+    password_min_length: 32
+    password_complexity: true
+  rotation_requirements:
+    max_age_days: 180
+    min_unique_passwords: 5
+  audit_requirements:
+    retention_years: 1
+    encryption_required: true 
