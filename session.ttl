@@ -2066,4 +2066,39 @@ session:TeamsIntegrationComponent a session:Component ;
     rdfs:label "Active Ontologies"@en ;
     meta:includes meta:SecurityConcepts, guidance:SecurityPatterns ;
     meta:lastUpdated "2024-03-21T15:30:00Z"^^xsd:dateTime .
+
+session:task7 a session:Task ;
+    rdfs:label "Cortex Demo Schema Deployment" ;
+    rdfs:comment "Deploy Cortex Analyst Revenue Timeseries demo schema for development and testing" ;
+    session:hasStatus session:InProgress ;
+    session:hasPriority 1 ;
+    session:branch "feature/cortex-demo-schema" ;
+    session:issueNumber "13" ;
+    session:completedSteps [
+        rdf:_1 "Created branch feature/cortex-demo-schema" ;
+        rdf:_2 "Created issue #13 for schema deployment"
+    ] ;
+    session:lastUpdated "2024-02-09T16:25:00Z"^^xsd:dateTime .
+
+# Update Current Context State
+session:currentContext a session:ContextState ;
+    rdfs:label "Current Context" ;
+    session:activeTask session:task7 ;
+    session:activeOntologies (
+        chatbot:ChatbotLLMOntology
+        cortexteams:TeamsOntology
+        meta:MetaOntology
+        deploy:DeploymentOntology
+    ) ;
+    session:activeCursorRules (
+        session:SPARQLQueryRule
+        session:BlackFormatterRule
+        session:ArtifactTraceabilityRule
+    ) ;
+    session:securityContext [
+        a session:SecurityContext ;
+        session:requiresValidation true ;
+        session:securityLevel "High"
+    ] ;
+    session:hasEnvironmentState :currentEnvironment .
   

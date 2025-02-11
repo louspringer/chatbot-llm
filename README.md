@@ -2,6 +2,10 @@
 
 A Microsoft Teams bot integration for Snowflake Cortex, enabling seamless data analytics and collaboration within Teams channels.
 
+## Documentation
+
+📚 [View the full documentation index](docs/index.md) for comprehensive guides, references, and examples.
+
 ## Overview and Purpose
 
 The Snowflake Cortex Teams Bot is designed to bridge the gap between Microsoft Teams collaboration and Snowflake's data analytics capabilities. This integration allows teams to:
