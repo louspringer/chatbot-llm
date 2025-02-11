@@ -111,7 +111,9 @@ async def rotate_snowflake_keys() -> bool:
 
 async def main():
     """Main entry point."""
-    parser = argparse.ArgumentParser(description='Rotate secrets for Teams Bot')
+    parser = argparse.ArgumentParser(
+        description='Rotate secrets for Teams Bot'
+    )
     parser.add_argument(
         '--component', 
         choices=['snowflake', 'bot', 'all'],
