@@ -34,6 +34,27 @@ def run_command(cmd: str) -> tuple[int, str, str]:
     return process.returncode, process.stdout, process.stderr
 
 
+def backup_key_files(key_dir: Path, timestamp: str) -> None:
+    """Backup all key files with given timestamp."""
+    backup_dir = key_dir / "backup"
+    backup_dir.mkdir(parents=True, exist_ok=True)
+    
+    # Key file patterns to backup
+    patterns = ["*.pem", "*.p8", "*.der", "*.pub"]
+    
+    for pattern in patterns:
+        for key_file in key_dir.glob(pattern):
+            if key_file.is_file() and "new" not in key_file.name:
+                suffix = key_file.suffix
+                backup_name = f"snowflake_bot_key.{timestamp}{suffix}"
+                backup_path = backup_dir / backup_name
+                logger.info(
+                    f"Backing up {key_file.name} to {backup_path}"
+                )
+                if key_file.exists():
+                    key_file.rename(backup_path)
+
+
 async def rotate_snowflake_keys() -> bool:
     """Rotate Snowflake authentication keys."""
     try:
@@ -72,14 +93,9 @@ async def rotate_snowflake_keys() -> bool:
         if returncode != 0:
             raise Exception(f"Failed to update Snowflake key: {stderr}")
         
-        # Backup old key if it exists
-        if key_path.exists():
-            backup_dir = key_dir / "backup"
-            backup_dir.mkdir(parents=True, exist_ok=True)
-            timestamp = datetime.now().strftime("%Y%m%d")
-            backup_path = backup_dir / f"snowflake_bot_key.{timestamp}.pem"
-            logger.info(f"Backing up old key to {backup_path}")
-            key_path.rename(backup_path)
+        # Backup existing keys
+        timestamp = datetime.now().strftime("%Y%m%d")
+        backup_key_files(key_dir, timestamp)
         
         # Move new key into place
         logger.info(f"Installing new key at {key_path}")
