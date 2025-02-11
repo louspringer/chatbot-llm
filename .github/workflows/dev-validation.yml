@@ -21,25 +21,25 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r teams-bot/requirements.txt
+          pip install -e .
           pip install flake8 black mypy
       
       - name: Code style check
         run: |
-          black --check teams-bot
-          flake8 teams-bot --max-line-length=100
+          black --check teams_bot
+          flake8 teams_bot --max-line-length=100
         continue-on-error: true  # Development phase: informative only
       
       - name: Type check
         run: |
-          mypy teams-bot --ignore-missing-imports
+          mypy teams_bot --ignore-missing-imports
         continue-on-error: true  # Development phase: informative only
       
       - name: Validate ontology
         run: |
-          python teams-bot/validate_deployment.py
+          python teams_bot/validate_deployment.py
         continue-on-error: true  # Development phase: informative only
       
       # Tests will be added here once we have them
       # - name: Run tests
-      #   run: pytest teams-bot/tests/ 
+      #   run: pytest teams_bot/tests/ 
