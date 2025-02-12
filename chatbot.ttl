@@ -13,6 +13,37 @@
 @prefix guidance: <./guidance#> .
 @prefix cortexteams: <./cortexteams#> .
 
+### Ontology Clusters
+:OntologyCluster a owl:Class ;
+    rdfs:label "Ontology Cluster" ;
+    rdfs:comment "A group of related ontologies serving a common purpose" .
+
+:CoreFrameworkCluster a :OntologyCluster ;
+    rdfs:label "Core Framework Cluster" ;
+    rdfs:comment "Core ontologies that define the fundamental concepts and relationships" ;
+    :hasOntology meta:, metameta:, conversation:, problem:, solution:, guidance: .
+
+:DeploymentCluster a :OntologyCluster ;
+    rdfs:label "Deployment and Development Cluster" ;
+    rdfs:comment "Ontologies related to deployment, development workflow and validation" ;
+    :hasOntology :deployment_validation, :development_workflow, :deployment .
+
+:PackageManagementCluster a :OntologyCluster ;
+    rdfs:label "Package Management Cluster" ;
+    rdfs:comment "Ontologies related to package and dependency management" ;
+    :hasOntology :package_management .
+
+:RiskManagementCluster a :OntologyCluster ;
+    rdfs:label "Risk Management Cluster" ;
+    rdfs:comment "Ontologies related to risk assessment and management" ;
+    :hasOntology risks:, :cortexteamsrisks .
+
+:hasOntology a owl:ObjectProperty ;
+    rdfs:domain :OntologyCluster ;
+    rdfs:range owl:Ontology ;
+    rdfs:label "has ontology" ;
+    rdfs:comment "Relates a cluster to its member ontologies" .
+
 ### Ontology Metadata
 :ChatbotLLMOntology a owl:Ontology ;
     rdfs:label "Chatbot LLM Ontology" ;
@@ -392,12 +423,98 @@
 :PlantUMLVisualizer a owl:Class ;
     rdfs:subClassOf :Visualizer ;
     rdfs:label "PlantUML Visualizer" ;
-    rdfs:comment "Generates PlantUML diagrams" .
+    rdfs:comment "Generates PlantUML diagrams" ;
+    :hasLayoutPreferences [
+        a :LayoutPreferences ;
+        :preferredDirection "left to right" ;
+        :rankSeparation 22 ;
+        :nodeSeparation 13 ;
+        :lineType "curve" ;
+        :packageStyle "rectangle" ;
+        :arrowColor "#666666" ;
+        :arrowThickness 0.8 ;
+        :packageInnerMargin 6 ;
+        :padding 3 ;
+        :componentInnerMargin 4
+    ] .
 
-:MatplotlibVisualizer a owl:Class ;
-    rdfs:subClassOf :Visualizer ;
-    rdfs:label "Matplotlib Visualizer" ;
-    rdfs:comment "Generates Matplotlib plots" .
+:LayoutPreferences a owl:Class ;
+    rdfs:label "Layout Preferences" ;
+    rdfs:comment "Preferred layout settings for diagram generation" .
+
+:preferredDirection a owl:DatatypeProperty ;
+    rdfs:domain :LayoutPreferences ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Preferred direction for diagram layout" .
+
+:rankSeparation a owl:DatatypeProperty ;
+    rdfs:domain :LayoutPreferences ;
+    rdfs:range xsd:integer ;
+    rdfs:comment "Separation between ranks in diagram" .
+
+:nodeSeparation a owl:DatatypeProperty ;
+    rdfs:domain :LayoutPreferences ;
+    rdfs:range xsd:integer ;
+    rdfs:comment "Separation between nodes in diagram" .
+
+:lineType a owl:DatatypeProperty ;
+    rdfs:domain :LayoutPreferences ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Type of lines to use in diagram" .
+
+:packageStyle a owl:DatatypeProperty ;
+    rdfs:domain :LayoutPreferences ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Style to use for packages in diagram" .
+
+:arrowColor a owl:DatatypeProperty ;
+    rdfs:domain :LayoutPreferences ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Color to use for arrows in diagram" .
+
+:arrowThickness a owl:DatatypeProperty ;
+    rdfs:domain :LayoutPreferences ;
+    rdfs:range xsd:decimal ;
+    rdfs:comment "Thickness of arrows in diagram" .
+
+:packageInnerMargin a owl:DatatypeProperty ;
+    rdfs:domain :LayoutPreferences ;
+    rdfs:range xsd:integer ;
+    rdfs:comment "Inner margin for packages in diagram" .
+
+:padding a owl:DatatypeProperty ;
+    rdfs:domain :LayoutPreferences ;
+    rdfs:range xsd:integer ;
+    rdfs:comment "General padding in diagram" .
+
+:componentInnerMargin a owl:DatatypeProperty ;
+    rdfs:domain :LayoutPreferences ;
+    rdfs:range xsd:integer ;
+    rdfs:comment "Inner margin for components in diagram" .
+
+# Add validation shape
+:LayoutPreferencesShape a sh:NodeShape ;
+    sh:targetClass :LayoutPreferences ;
+    sh:property [
+        sh:path :preferredDirection ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:in ("left to right" "top to bottom") ;
+    ] ;
+    sh:property [
+        sh:path :rankSeparation ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:minInclusive 10 ;
+        sh:maxInclusive 100 ;
+    ] ;
+    sh:property [
+        sh:path :nodeSeparation ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:minInclusive 5 ;
+        sh:maxInclusive 50 ;
+    ] .
 
 ### Component Properties
 :formats a owl:ObjectProperty ;

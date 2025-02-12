@@ -1,0 +1,137 @@
+@startuml ontology_clusters
+
+' Layout settings
+left to right direction
+skinparam ranksep 22
+skinparam nodesep 13
+skinparam linetype curve
+skinparam packageStyle rectangle
+skinparam ArrowColor #666666
+skinparam ArrowThickness 0.8
+skinparam packageInnerMargin 6
+skinparam padding 3
+skinparam componentInnerMargin 4
+
+' Styling
+skinparam componentStyle rectangle
+skinparam backgroundColor white
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam packageBackgroundColor white
+skinparam packageBorderColor black
+
+' Implementation Clusters
+package "Teams Integration Cluster" {
+    [Cortex Teams Ontology] as cortexteams #lavender
+}
+
+package "Risk Management Cluster" {
+    [Risks Ontology] as risks #mistyrose
+    [Cortex Teams Risks Ontology] as cortexteamsrisks #mistyrose
+}
+
+' Build and Core Clusters
+package "Build and Deployment Cluster" {
+    [Deployment Validation Ontology] as deployment_validation #honeydew
+    [Development Workflow Ontology] as development_workflow #honeydew
+    [Deployment Ontology] as deployment #honeydew
+    [Package Management Ontology] as package_management #honeydew
+}
+
+package "Core Framework Cluster" {
+    [Meta Ontology] as meta #aliceblue
+    [Meta-Meta Ontology] as metameta #aliceblue
+    [Conversation Ontology] as conversation #aliceblue
+    [Problem Ontology] as problem #aliceblue
+    [Solution Ontology] as solution #aliceblue
+    [Guidance Ontology] as guidance #aliceblue
+}
+
+' Root Project Ontology
+[Chatbot Ontology] as chatbot #white
+
+' Implementation Dependencies
+cortexteamsrisks --> risks : depends on
+cortexteamsrisks --> cortexteams : extends
+risks --> conversation : depends on
+risks --> chatbot : depends on
+cortexteams --> chatbot : depends on
+
+' Build Dependencies
+deployment_validation --> deployment : depends on
+development_workflow --> meta : depends on
+development_workflow --> deployment : depends on
+package_management --> deployment : depends on
+deployment --> chatbot : depends on
+
+' Core Dependencies
+metameta --> meta : depends on
+conversation --> meta : depends on
+problem --> meta : depends on
+problem --> conversation : depends on
+solution --> meta : depends on
+solution --> problem : depends on
+guidance --> meta : depends on
+guidance --> conversation : depends on
+meta --> chatbot : depends on
+
+' Notes
+note right of chatbot
+  Project root ontology that defines:
+  - Core LLM integration concepts
+  - Component architecture
+  - Security framework
+  - Integration patterns
+  All other ontologies extend or
+  specialize these base concepts
+end note
+
+note right of meta
+  Foundational concepts and
+  relationships for all other
+  ontologies
+end note
+
+note right of metameta
+  Higher-level meta concepts
+  for ontology organization
+  and validation
+end note
+
+note right of conversation
+  Models conversation flows,
+  states, and context tracking
+end note
+
+note right of package_management
+  Manages Python package dependencies:
+  - Security vulnerability tracking
+  - Build/deployment requirements
+  - Conda/pip source management
+  - Version constraints
+end note
+
+note right of risks
+  Base risk assessment framework:
+  - Security risks
+  - Operational risks
+  - Risk mitigation strategies
+end note
+
+note right of cortexteams
+  Teams-specific integration:
+  - Bot interface
+  - Authentication flows
+  - Snowflake Cortex connector
+  - Query workflows
+end note
+
+note right of cortexteamsrisks
+  Teams-specific risk extensions:
+  - Authentication risks
+  - Data access controls
+  - ML model risks
+  - Integration vulnerabilities
+end note
+
+@enduml 
