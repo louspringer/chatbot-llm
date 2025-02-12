@@ -1,0 +1,176 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix meta: <./meta#> .
+@prefix pkg: <./package_management#> .
+@prefix cog: <./cognition_patterns#> .
+@prefix deploy: <./deployment#> .
+@prefix pdi: <#> .
+
+pdi:PolicyDrivenImplementationOntology a owl:Ontology ;
+    rdfs:label "Policy Driven Implementation Ontology" ;
+    rdfs:comment "Captures how policies and requirements drive implementation decisions in CLPM" ;
+    owl:versionInfo "1.0.0" ;
+    owl:imports pkg:, cog:, deploy: .
+
+# Core Classes
+pdi:Policy a owl:Class ;
+    rdfs:label "Policy" ;
+    rdfs:comment "A rule or guideline that drives implementation decisions" .
+
+pdi:Requirement a owl:Class ;
+    rdfs:label "Requirement" ;
+    rdfs:comment "A specific requirement derived from policies" .
+
+pdi:ImplementationDecision a owl:Class ;
+    rdfs:label "Implementation Decision" ;
+    rdfs:comment "A concrete implementation choice driven by policies and requirements" .
+
+pdi:EnforcementMechanism a owl:Class ;
+    rdfs:label "Enforcement Mechanism" ;
+    rdfs:comment "How a policy or requirement is enforced in the implementation" .
+
+# Properties
+pdi:drivesRequirement a owl:ObjectProperty ;
+    rdfs:domain pdi:Policy ;
+    rdfs:range pdi:Requirement ;
+    rdfs:comment "Links a policy to requirements it generates" .
+
+pdi:influencesDecision a owl:ObjectProperty ;
+    rdfs:domain pdi:Requirement ;
+    rdfs:range pdi:ImplementationDecision ;
+    rdfs:comment "Shows how requirements influence implementation decisions" .
+
+pdi:enforcedBy a owl:ObjectProperty ;
+    rdfs:domain pdi:ImplementationDecision ;
+    rdfs:range pdi:EnforcementMechanism ;
+    rdfs:comment "Links decisions to their enforcement mechanisms" .
+
+pdi:implementedIn a owl:ObjectProperty ;
+    rdfs:domain pdi:EnforcementMechanism ;
+    rdfs:range owl:Class ;
+    rdfs:comment "Points to the ontology class where enforcement is implemented" .
+
+# Example Instances for CLPM
+pdi:SecurePackagePolicy a pdi:Policy ;
+    rdfs:label "Secure Package Management" ;
+    rdfs:comment "All package operations must be secure and validated" ;
+    pdi:drivesRequirement pdi:SecurityValidationRequirement .
+
+pdi:SecurityValidationRequirement a pdi:Requirement ;
+    rdfs:label "Security Validation Requirement" ;
+    rdfs:comment "All packages must be security scanned before installation" ;
+    pdi:influencesDecision pdi:SecurityScannerDecision .
+
+pdi:SecurityScannerDecision a pdi:ImplementationDecision ;
+    rdfs:label "Security Scanner Integration" ;
+    rdfs:comment "Integrate multiple security scanners for package validation" ;
+    pdi:enforcedBy pdi:SecurityCheckerMechanism .
+
+pdi:SecurityCheckerMechanism a pdi:EnforcementMechanism ;
+    rdfs:label "Security Checker Implementation" ;
+    rdfs:comment "Implementation of security scanning in SecurityChecker class" ;
+    pdi:implementedIn pkg:SecurityChecker .
+
+# Ontology Accessibility Policy Chain
+pdi:OntologyAccessibilityPolicy a pdi:Policy ;
+    rdfs:label "Ontology Accessibility" ;
+    rdfs:comment "Ontologies and their contexts must be easily discoverable by both humans and LLMs" ;
+    pdi:drivesRequirement pdi:ContextDiscoveryRequirement,
+                         pdi:OntologyIndexingRequirement,
+                         pdi:CrossReferenceRequirement .
+
+pdi:ContextDiscoveryRequirement a pdi:Requirement ;
+    rdfs:label "Context Discovery" ;
+    rdfs:comment "Must be able to quickly find the relevant ontological context for any artifact" ;
+    pdi:influencesDecision pdi:OntologyMapperDecision .
+
+pdi:OntologyIndexingRequirement a pdi:Requirement ;
+    rdfs:label "Ontology Indexing" ;
+    rdfs:comment "Ontologies must be indexed with clear entry points and navigation paths" ;
+    pdi:influencesDecision pdi:IndexStructureDecision .
+
+pdi:CrossReferenceRequirement a pdi:Requirement ;
+    rdfs:label "Cross-Reference Management" ;
+    rdfs:comment "Related concepts across ontologies must be explicitly linked" ;
+    pdi:influencesDecision pdi:CrossRefTrackerDecision .
+
+pdi:OntologyMapperDecision a pdi:ImplementationDecision ;
+    rdfs:label "Ontology Mapper Implementation" ;
+    rdfs:comment "Implement a mapper to find ontology contexts from artifacts" ;
+    pdi:enforcedBy pdi:OntologyMapperMechanism .
+
+pdi:IndexStructureDecision a pdi:ImplementationDecision ;
+    rdfs:label "Index Structure Implementation" ;
+    rdfs:comment "Implement hierarchical index of ontology concepts" ;
+    pdi:enforcedBy pdi:OntologyIndexerMechanism .
+
+pdi:CrossRefTrackerDecision a pdi:ImplementationDecision ;
+    rdfs:label "Cross-Reference Tracker Implementation" ;
+    rdfs:comment "Implement system to track and validate cross-references" ;
+    pdi:enforcedBy pdi:CrossRefTrackerMechanism .
+
+pdi:OntologyMapperMechanism a pdi:EnforcementMechanism ;
+    rdfs:label "Ontology Mapper" ;
+    rdfs:comment "Maps artifacts to their ontological contexts using semantic matching" ;
+    pdi:implementedIn cog:PatternMatcher ;
+    pdi:usesPattern cog:RecurrentPattern .
+
+pdi:OntologyIndexerMechanism a pdi:EnforcementMechanism ;
+    rdfs:label "Ontology Indexer" ;
+    rdfs:comment "Maintains searchable index of ontology concepts and relationships" ;
+    pdi:implementedIn meta:OntologyIndex ;
+    pdi:usesPattern cog:MetaPattern .
+
+pdi:CrossRefTrackerMechanism a pdi:EnforcementMechanism ;
+    rdfs:label "Cross-Reference Tracker" ;
+    rdfs:comment "Tracks and validates cross-references between ontologies" ;
+    pdi:implementedIn meta:CrossReferenceValidator ;
+    pdi:usesPattern cog:EmergentPattern .
+
+# Add property for pattern usage
+pdi:usesPattern a owl:ObjectProperty ;
+    rdfs:domain pdi:EnforcementMechanism ;
+    rdfs:range cog:Pattern ;
+    rdfs:comment "Links enforcement mechanisms to cognitive patterns they use" .
+
+# Enhanced SHACL validation
+pdi:EnforcementMechanismShape a sh:NodeShape ;
+    sh:targetClass pdi:EnforcementMechanism ;
+    sh:property [
+        sh:path pdi:implementedIn ;
+        sh:minCount 1 ;
+        sh:message "Every enforcement mechanism must be implemented in a concrete class" ;
+    ] ,
+    [
+        sh:path pdi:usesPattern ;
+        sh:minCount 1 ;
+        sh:message "Every enforcement mechanism must use at least one cognitive pattern" ;
+    ] .
+
+# SHACL Validation
+pdi:PolicyShape a sh:NodeShape ;
+    sh:targetClass pdi:Policy ;
+    sh:property [
+        sh:path pdi:drivesRequirement ;
+        sh:minCount 1 ;
+        sh:message "Every policy must drive at least one requirement" ;
+    ] .
+
+pdi:RequirementShape a sh:NodeShape ;
+    sh:targetClass pdi:Requirement ;
+    sh:property [
+        sh:path pdi:influencesDecision ;
+        sh:minCount 1 ;
+        sh:message "Every requirement must influence at least one implementation decision" ;
+    ] .
+
+pdi:DecisionShape a sh:NodeShape ;
+    sh:targetClass pdi:ImplementationDecision ;
+    sh:property [
+        sh:path pdi:enforcedBy ;
+        sh:minCount 1 ;
+        sh:message "Every decision must have an enforcement mechanism" ;
+    ] . 
