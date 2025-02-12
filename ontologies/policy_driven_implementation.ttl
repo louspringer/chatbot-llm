@@ -72,7 +72,8 @@ pdi:SecurityScannerDecision a pdi:ImplementationDecision ;
 pdi:SecurityCheckerMechanism a pdi:EnforcementMechanism ;
     rdfs:label "Security Checker Implementation" ;
     rdfs:comment "Implementation of security scanning in SecurityChecker class" ;
-    pdi:implementedIn pkg:SecurityChecker .
+    pdi:implementedIn pkg:SecurityChecker ;
+    pdi:usesPattern cog:RecurrentPattern .
 
 # Ontology Accessibility Policy Chain
 pdi:OntologyAccessibilityPolicy a pdi:Policy ;
@@ -173,4 +174,4 @@ pdi:DecisionShape a sh:NodeShape ;
         sh:path pdi:enforcedBy ;
         sh:minCount 1 ;
         sh:message "Every decision must have an enforcement mechanism" ;
-    ] . 
+    ] .

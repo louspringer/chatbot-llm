@@ -70,7 +70,8 @@ cog:HierarchicalIndexing a cog:MetaPattern ;
     cog:hasContext [
         a cog:OntologyContext ;
         rdfs:label "Ontology Organization" ;
-    ] .
+    ] ;
+    cog:relatesTo cog:SemanticMatching .
 
 cog:SemanticMatching a cog:RecurrentPattern ;
     rdfs:label "Semantic Matching" ;
@@ -85,6 +86,10 @@ cog:CrossReferenceTracking a cog:EmergentPattern ;
     rdfs:label "Cross-Reference Tracking" ;
     rdfs:comment "Pattern for managing relationships between ontologies" ;
     cog:hasComplexity 4 ;
+    cog:hasContext [
+        a cog:OntologyContext ;
+        rdfs:label "Cross-Reference Management" ;
+    ] ;
     cog:relatesTo cog:HierarchicalIndexing .
 
 # SHACL Validation
@@ -110,4 +115,4 @@ cog:MetaPatternShape a sh:NodeShape ;
         sh:path cog:relatesTo ;
         sh:minCount 1 ;
         sh:message "Meta patterns must relate to at least one other pattern" ;
-    ] . 
+    ] .
