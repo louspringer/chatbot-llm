@@ -70,11 +70,19 @@ class LocalEnvValidator:
         """Initialize validator with workspace root."""
         self.workspace_root = workspace_root
         self.state_cache: Dict[str, StateInfo] = {}
-        self.required_files = {
+        # Drift thresholds for each file type
+        self.drift_thresholds = {
             "environment.yml": 0.1,
             "pyproject.toml": 0.2,
             ".env.template": 0.1,
             ".gitignore": 0.3,
+        }
+        # Expected owners for each file type
+        self.required_files = {
+            "environment.yml": "meta:CoreOntology",
+            "pyproject.toml": "meta:CoreOntology",
+            ".env.template": "meta:EnvironmentConfigOntology",
+            ".gitignore": "meta:CoreOntology",
         }
         self.graph: Optional[Graph] = None
 
@@ -314,7 +322,7 @@ class LocalEnvValidator:
     def validate_required_files(self) -> List[ValidationResult]:
         """Validate required files and their ownership information."""
         results = []
-        for fname, threshold in self.required_files.items():
+        for fname, expected_owner in self.required_files.items():
             fpath = self.workspace_root / fname
             if not fpath.exists():
                 msg = f"❌ Missing required file: {fname}"
@@ -331,20 +339,30 @@ class LocalEnvValidator:
                 )
                 continue
 
+            # Check ownership matches expected
+            if ownership.owner != expected_owner:
+                msg = f"❌ Invalid owner in {fname}"
+                details = (
+                    f"Expected: {expected_owner}, Found: {ownership.owner}"
+                )
+                results.append(
+                    ValidationResult(
+                        False, msg, details=details, impact_level="HIGH"
+                    )
+                )
+                continue
+
+            # Check for configuration drift
+            threshold = self.drift_thresholds[fname]
             has_drifted, drift_pct = self.detect_configuration_drift(
                 fpath, threshold
             )
             if has_drifted:
-                msg_parts = [
-                    "❌ Configuration drift detected in",
-                    fname,
-                    f"({drift_pct:.1%})",
-                ]
-                drift_msg = " ".join(msg_parts)
+                msg = f"❌ Configuration drift detected in {fname} ({drift_pct:.1%})"
                 results.append(
                     ValidationResult(
                         success=False,
-                        message=drift_msg,
+                        message=msg,
                         impact_level="HIGH",
                         requires_revalidation=True,
                     )

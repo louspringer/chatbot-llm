@@ -222,11 +222,11 @@ def test_validate_git_config_invalid(validator):
 def test_validate_required_files_all_present(validator, tmp_path):
     """Test required files validation when all files exist"""
     # Create test files with ownership info
-    for filename in validator.required_files.keys():
+    for filename, owner in validator.required_files.items():
         file_path = tmp_path / filename
         file_path.write_text(
-            """
-# Owned by: meta:CoreOntology
+            f"""
+# Owned by: {owner}
 # Version: 1.0.0
 # Purpose: Test file
 """
@@ -418,8 +418,11 @@ def test_run_validation_with_revalidation(validator):
         validate_git_config=MagicMock(return_value=success_result),
         validate_required_files=MagicMock(return_value=[failure_result]),
     ):
-        result = validator.run_validation()
-        assert not result  # Should be False since there are failures
+        results = validator.run_validation()
+        # Check that we have at least one failure
+        assert any(not r.success for r in results)
+        # Check that we have at least one result requiring revalidation
+        assert any(r.requires_revalidation for r in results)
 
 
 def test_extract_ownership_info_valid(validator, mock_env_file):
