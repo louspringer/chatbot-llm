@@ -18,7 +18,7 @@ email = "lou@louspringer.com"
 file = "LICENSE"
 
 [project.optional-dependencies]
-dev = [ "pytest==8.3.4", "pytest-asyncio==0.25.3", "pytest-timeout==2.3.1", "pytest-mock==3.14.0", "pytest-cov==6.0.0", "pytest-env==1.0.1", "pytest-xdist==3.6.1",]
+dev = [ "pytest==8.3.4", "pytest-asyncio==0.25.3", "pytest-timeout==2.3.1", "pytest-mock==3.14.0", "pytest-cov==6.0.0", "pytest-env==1.1.5", "pytest-xdist==3.6.1",]
 
 [tool.black]
 line-length = 88
