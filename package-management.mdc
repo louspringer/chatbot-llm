@@ -1,0 +1,31 @@
+---
+description: Python Package Management
+globs:
+---
+# Package Management Rule
+
+This project uses conda and pyproject.toml for package management. Follow these rules:
+
+1. Always use conda first over pip
+2. All package updates must be consistent across:
+   - pyproject.toml
+   - environment.yml
+   - Any related ontologies
+
+3. Use clpm tool to maintain consistency between model and configurations
+4. Any package update must:
+   - Be guided by guidance.ttl
+   - Update the ontology with required relationships
+   - Maintain clear traceability from need to implementation
+   - Follow artifact-traceability.mdc rules
+
+5. Never create or use requirements.txt
+6. Document package dependencies in both:
+   - pyproject.toml for build/development
+   - environment.yml for conda environment
+
+7. Before suggesting package changes:
+   - Check guidance.ttl for existing patterns
+   - Verify package compatibility
+   - Update relevant ontologies
+   - Use clpm to validate changes

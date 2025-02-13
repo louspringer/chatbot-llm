@@ -1,0 +1,22 @@
+@prefix : <./session#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix session: <./session#> .
+
+session:currentContext a session:ContextState ;
+    session:activeTask session:task6 ;
+    session:activeOntologies (
+        chatbot:ChatbotLLMOntology
+        cortexteams:TeamsOntology
+    ) ;
+    session:activeCursorRules (
+        session:SPARQLQueryRule
+        session:BlackFormatterRule
+    ) ;
+    session:securityContext [
+        a session:SecurityContext ;
+        session:requiresValidation true ;
+        session:securityLevel "High"
+    ] ;
+    session:lastUpdated "2024-03-20T18:30:00Z"^^xsd:dateTime .

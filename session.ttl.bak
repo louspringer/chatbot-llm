@@ -1,69 +1,33 @@
-@prefix : <file:///Users/lou/Documents/chatbot-llm/tools/session_log#> .
-@prefix guidance: <file:///Users/lou/Documents/chatbot-llm/tools/guidance#> .
-@prefix ns1: <http://example.org/> .
+@base <./session#> .
+@prefix : <./session#> .
+@prefix meta: <./meta#> .
+@prefix metameta: <./metameta#> .
+@prefix problem: <./problem#> .
+@prefix solution: <./solution#> .
+@prefix conversation: <./conversation#> .
+@prefix guidance: <./guidance#> .
+@prefix chatbot: <./chatbot#> .
+@prefix cortexteams: <./cortexteams#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix session: <file:///Users/lou/Documents/chatbot-llm/tools/session#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
-<<<<<<< Updated upstream
 @prefix session: <./session#> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix dc: <http://purl.org/dc/elements/1.1/> .
 @prefix dct: <http://purl.org/dc/terms/> .
-@prefix test: <./test#> .
-@prefix viz: <./visualization#> .
-=======
->>>>>>> Stashed changes
 
-:entry_2024_03_20_001 a guidance:SessionLogEntry ;
-    rdfs:label "Initial Session Log Entry" ;
-    guidance:hasActor :ClaudeAI ;
-    guidance:hasChangeReason "Initial state" ;
-    guidance:hasTimestamp "2024-03-20T18:30:00+00:00"^^xsd:dateTime .
+# Session Metadata
+session:SessionOntology rdf:type owl:Ontology ;
+    dc:title "Teams Bot Session Ontology" ;
+    dc:version "1.4" ;
+    dct:created "2024-02-07"^^xsd:date ;
+    dct:modified "2024-02-09"^^xsd:date ;
+    dct:publisher "Ontology Framework Project" ;
+    dct:license <http://opensource.org/licenses/MIT> ;
+    dct:description "Ontology for managing Teams bot development session state" ;
+    owl:imports guidance: .
 
-:entry_2024_03_20_002 a guidance:SessionLogEntry ;
-    rdfs:label "Context Update" ;
-    guidance:hasActor :ClaudeAI ;
-    guidance:hasChangeReason "Updated context with complete state information" ;
-    guidance:hasPriorState [ a session:ContextState ;
-            session:activeTask session:task6 ;
-            session:lastUpdated "2024-03-20T18:30:00+00:00"^^xsd:dateTime ] ;
-    guidance:hasTimestamp "2024-03-20T18:45:00+00:00"^^xsd:dateTime .
-
-ns1:entry_2025_02_13_213029 a ns1:LogEntry ;
-    ns1:activeCursorRules "session:ArtifactTraceabilityRule",
-        "session:BlackFormatterRule",
-        "session:SPARQLQueryRule" ;
-    ns1:activeOntologies "chatbot:ChatbotLLMOntology",
-        "cortexteams:TeamsOntology" ;
-    ns1:activeTask session:task6 ;
-    ns1:actor "ClaudeAI" ;
-    ns1:configurationFiles ".env.template",
-        "environment.yml",
-        "tools/chatbot_llm/session_context_manager.py" ;
-    ns1:hasWorkingConfig true ;
-    ns1:lastTestedDate "2024-03-20T18:30:00+00:00"^^xsd:dateTime ;
-    ns1:lastUpdateTimestamp "2024-03-20T18:30:00+00:00"^^xsd:dateTime ;
-    ns1:requiresValidation true ;
-    ns1:securityLevel "High" ;
-    ns1:timestamp "2025-02-13T21:30:29.331389+00:00"^^xsd:dateTime .
-
-ns1:entry_2025_02_13_214519 a ns1:LogEntry ;
-    ns1:activeCursorRules "session:ArtifactTraceabilityRule",
-        "session:BlackFormatterRule",
-        "session:SPARQLQueryRule" ;
-    ns1:activeOntologies "chatbot:ChatbotLLMOntology",
-        "cortexteams:TeamsOntology" ;
-    ns1:activeTask session:task6 ;
-    ns1:actor "ClaudeAI" ;
-    ns1:configurationFiles ".env.template",
-        "environment.yml",
-        "tools/chatbot_llm/session_context_manager.py" ;
-    ns1:requiresValidation true ;
-    ns1:securityLevel "High" ;
-    ns1:timestamp "2025-02-13T21:45:19.993493+00:00"^^xsd:dateTime ;
-    ns1:workingConfig true .
-
-<<<<<<< Updated upstream
 # Development Tools
 session:DevelopmentTool a owl:Class ;
     rdfs:label "Development Tool" ;
@@ -209,13 +173,8 @@ session:task2 a session:Task ;
 session:task3 a session:Task ;
     rdfs:label "Security Validation" ;
     rdfs:comment "Validate security requirements and implementations" ;
-    session:hasStatus session:InProgress ;
-    session:hasPriority 1 ;
-    session:completedSteps [
-        rdf:_1 "Started security validation process" ;
-        rdf:_2 "Running test suite"
-    ] ;
-    session:lastUpdated "2024-03-19T10:00:00Z"^^xsd:dateTime .
+    session:hasStatus session:Pending ;
+    session:hasPriority 1 .
 
 session:task4 a session:Task ;
     rdfs:label "Ontology Semantic Versioning" ;
@@ -277,7 +236,9 @@ session:currentContext a session:ContextState ;
         session:requiresValidation true ;
         session:securityLevel "High"
     ] ;
-    session:hasEnvironmentState :currentEnvironment .
+    session:hasEnvironmentState :currentEnvironment ;
+    session:lastUpdated "2024-03-20T18:30:00Z"^^xsd:dateTime ;
+    session:hasLogReference <./session_log#entry_2024_03_20_001> .
 
 # SHACL Validation
 session:TaskShape a sh:NodeShape ;
@@ -1698,500 +1659,27 @@ session:requiresGuidance a owl:ObjectProperty ;
     :blockedUntil "2024-02-10" ;
     :reason "Developer needs sleep, Claude needs timeout to think about what they did" .
 
-# Session Status
-session:CurrentSession a session:Session ;
-    rdfs:label "Current Development Session"@en ;
-    session:hasIssue session:Issue3 ;
-    session:hasStatus "in_progress" .
-
-# Issue 3: Test Coverage
-session:Issue3 a session:Issue ;
-    rdfs:label "Improve Test Coverage"@en ;
-    rdfs:comment "Implement comprehensive test coverage improvements"@en ;
-    session:issueNumber "3"^^xsd:integer ;
-    session:hasStatus "in_progress" ;
-    session:hasPriority "high" ;
-    session:hasTask session:Task3_1, session:Task3_2, session:Task3_3, session:Task3_4 .
-
-session:Task3_1 a session:Task ;
-    rdfs:label "Add New Test Files"@en ;
-    session:hasStatus "completed" ;
-    session:hasArtifact "teams_bot/tests/test_conversation_data.py" .
-
-session:Task3_2 a session:Task ;
-    rdfs:label "Enhance Existing Tests"@en ;
-    session:hasStatus "completed" ;
-    session:hasArtifact "teams_bot/tests/test_card_templates.py",
-                       "teams_bot/tests/test_card_actions.py",
-                       "teams_bot/tests/test_logging_config.py" .
-
-session:Task3_3 a session:Task ;
-    rdfs:label "Update Test Configuration"@en ;
-    session:hasStatus "completed" ;
-    session:hasArtifact "pyproject.toml",
-                       ".gitignore" .
-
-session:Task3_4 a session:Task ;
-    rdfs:label "Improve Coverage Metrics"@en ;
-    session:hasStatus "in_progress" ;
-    session:hasMetric [
-        a test:CoverageMetric ;
-        test:coveragePercentage "64.0"^^xsd:decimal ;
-        rdfs:comment "Overall coverage increased to 64%"
-    ] .
-
-# Relationships
-session:Issue3 session:dependsOn test:TestCoverage ;
-session:Issue3 session:implements guidance:TestingPatterns .
-
-# Session Ontology
-session:CurrentSession a owl:Class ;
-    rdfs:label "Current Session"@en ;
-    rdfs:comment "Represents the current development session" .
-
-session:AuthenticationState a owl:Class ;
-    rdfs:label "Authentication State"@en ;
-    rdfs:comment "State of authentication configuration" .
-
-session:SnowflakeConfig a owl:Class ;
-    rdfs:label "Snowflake Configuration"@en ;
-    rdfs:comment "Snowflake connection and authentication settings" .
-
-session:KeyManagement a owl:Class ;
-    rdfs:label "Key Management"@en ;
-    rdfs:comment "RSA key pair management for Snowflake" .
-
-# Properties
-session:hasAuthState a owl:ObjectProperty ;
-    rdfs:domain session:CurrentSession ;
-    rdfs:range session:AuthenticationState .
-
-session:hasSnowflakeConfig a owl:ObjectProperty ;
-    rdfs:domain session:CurrentSession ;
-    rdfs:range session:SnowflakeConfig .
-
-session:hasKeyManagement a owl:ObjectProperty ;
-    rdfs:domain session:CurrentSession ;
-    rdfs:range session:KeyManagement .
-
-session:timestamp a owl:DatatypeProperty ;
-    rdfs:domain session:CurrentSession ;
-    rdfs:range xsd:dateTime .
-
-# Current Session Instance
-session:currentSession a session:CurrentSession ;
-    rdfs:label "Current Development Session"@en ;
-    session:timestamp "2024-02-10T15:52:54-0800"^^xsd:dateTime ;
-    session:hasAuthState session:snowflakeAuth ;
-    session:hasSnowflakeConfig session:snowflakeConfig ;
-    session:hasKeyManagement session:keyConfig .
-
-session:snowflakeAuth a session:AuthenticationState ;
-    rdfs:label "Snowflake Authentication"@en ;
-    session:status "Configured"^^xsd:string ;
-    session:authMethod "RSA Key Pair"^^xsd:string ;
-    session:lastUpdated "2024-02-10T15:52:54-0800"^^xsd:dateTime .
-
-session:snowflakeConfig a session:SnowflakeConfig ;
-    rdfs:label "Snowflake Settings"@en ;
-    session:account "CFCLGQP-HQB93436"^^xsd:string ;
-    session:username "TEAMS_BOT_USER"^^xsd:string ;
-    session:database "TEAMS_BOT_DB"^^xsd:string ;
-    session:schema "PUBLIC"^^xsd:string ;
-    session:warehouse "COMPUTE_WH"^^xsd:string .
-
-session:keyConfig a session:KeyManagement ;
-    rdfs:label "Key Configuration"@en ;
-    session:privateKeyPath "/Users/lou/Documents/chatbot-llm/teams_bot/config/keys/snowflake_bot_key.p8"^^xsd:string ;
-    session:publicKeyPath "/Users/lou/Documents/chatbot-llm/teams_bot/config/keys/snowflake_bot_key.pub"^^xsd:string ;
-    session:keyFormat "PKCS#8"^^xsd:string ;
-    session:keyType "RSA"^^xsd:string ;
-    session:keyBits "2048"^^xsd:integer .
-
-# Test Coverage
-:TestCoverage a test:TestCoverage ;
-    rdfs:label "Current Test Coverage" ;
-    :hasModule [
-        a test:Module ;
-        rdfs:label "teams_bot.py" ;
-        :coveragePercentage "90.0"^^xsd:decimal
-    ] ;
-    :hasModule [
-        a test:Module ;
-        rdfs:label "card_templates.py" ;
-        :coveragePercentage "100.0"^^xsd:decimal
-    ] ;
-    :hasModule [
-        a test:Module ;
-        rdfs:label "card_actions.py" ;
-        :coveragePercentage "100.0"^^xsd:decimal
-    ] ;
-    :hasModule [
-        a test:Module ;
-        rdfs:label "logging_config.py" ;
-        :coveragePercentage "100.0"^^xsd:decimal
-    ] .
-
-# Security Status
-:SecurityStatus a :Status ;
-    rdfs:label "Security Implementation Status" ;
-    :hasComponent [
-        a :SecurityComponent ;
-        rdfs:label "Key Vault Integration" ;
-        :status "Completed" ;
-        :priority "High" ;
-        :implementation [
-            a :Implementation ;
-            rdfs:label "Azure Key Vault Implementation" ;
-            :hasFeature "Soft Delete" ;
-            :hasFeature "Purge Protection" ;
-            :hasFeature "RBAC Authorization" ;
-            :hasFeature "Diagnostic Logging" ;
-            :lastUpdated "2024-03-21T10:00:00Z"^^xsd:dateTime
-        ]
-    ] ;
-    :hasComponent [
-        a :SecurityComponent ;
-        rdfs:label "Audit Logging" ;
-        :status "Completed" ;
-        :priority "High" ;
-        :implementation [
-            a :Implementation ;
-            rdfs:label "Azure Monitor Integration" ;
-            :hasFeature "AuditEvent Logging" ;
-            :hasFeature "Metrics Collection" ;
-            :hasFeature "Log Analytics Integration" ;
-            :lastUpdated "2024-03-21T10:00:00Z"^^xsd:dateTime
-        ]
-    ] ;
-    :hasComponent [
-        a :SecurityComponent ;
-        rdfs:label "Key Rotation" ;
-        :status "Completed" ;
-        :priority "Medium" ;
-        :implementation [
-            a :Implementation ;
-            rdfs:label "Automated Key Rotation" ;
-            :hasFeature "Snowflake Keys (90 days)" ;
-            :hasFeature "Key Vault Secrets (60 days)" ;
-            :hasFeature "Bot Credentials (30 days)" ;
-            :hasFeature "State Encryption (180 days)" ;
-            :lastUpdated "2024-03-21T10:00:00Z"^^xsd:dateTime
-        ]
-    ] ;
-    :hasComponent [
-        a :SecurityComponent ;
-        rdfs:label "Authentication" ;
-        :status "Completed" ;
-        :priority "High" ;
-        :implementation [
-            a :Implementation ;
-            rdfs:label "Teams Bot Authentication" ;
-            :hasFeature "Service-to-Service Auth" ;
-            :hasFeature "Automatic Token Refresh" ;
-            :hasFeature "Teams Client MFA Integration" ;
-            :lastUpdated "2024-03-21T10:00:00Z"^^xsd:dateTime
-        ]
-    ] .
-
-# Current Task
-:CurrentTask a :Task ;
-    rdfs:label "Security Implementation Completion" ;
-    :status "Completed" ;
-    :description "Completed implementation of security features including Key Vault, audit logging, and key rotation" ;
-    :relatedIssue "3" ;
-    :completedComponents (
-        "Key Vault Integration"
-        "Audit Logging"
-        "Key Rotation"
-        "Authentication"
-    ) .
-
-# Next Steps
-:NextSteps a :TaskList ;
-    rdfs:label "Next Development Tasks" ;
-    :hasTask [
-        a :Task ;
-        rdfs:label "Implement Azure Key Vault Integration" ;
-        :priority "High" ;
-        :status "Pending"
-    ] ;
-    :hasTask [
-        a :Task ;
-        rdfs:label "Set up Audit Logging" ;
-        :priority "High" ;
-        :status "Pending"
-    ] ;
-    :hasTask [
-        a :Task ;
-        rdfs:label "Implement Data Encryption" ;
-        :priority "Medium" ;
-        :status "Pending"
-    ] .
-
-# TODO: Future Enhancements
-# - Add deployment configuration tracking
-# - Add performance metrics
-# - Add error rate monitoring
-# - Add user interaction patterns
-
-# New Tasks
-session:task7 a session:Task ;
-    rdfs:label "State Management Implementation" ;
-    rdfs:comment "Implement robust state management with FSM" ;
-    session:hasStatus session:Completed ;
-    session:hasPriority 1 ;
-    session:completedSteps [
-        rdf:_1 "Implemented ConversationData class" ;
-        rdf:_2 "Added state transitions" ;
-        rdf:_3 "Implemented error handling" ;
-        rdf:_4 "Added state history tracking" ;
-        rdf:_5 "Added checkpoint functionality"
-    ] ;
-    session:lastUpdated "2024-03-21T16:25:00Z"^^xsd:dateTime .
-
-session:task8 a session:Task ;
-    rdfs:label "Secret Rotation Implementation" ;
-    rdfs:comment "Implement secure secret rotation system" ;
-    session:hasStatus session:Completed ;
-    session:hasPriority 1 ;
-    session:completedSteps [
-        rdf:_1 "Created rotation configuration" ;
-        rdf:_2 "Implemented key rotation logic" ;
-        rdf:_3 "Added expiry checks" ;
-        rdf:_4 "Implemented notification system" ;
-        rdf:_5 "Added Azure Key Vault integration"
-    ] ;
-    session:lastUpdated "2024-03-21T16:25:00Z"^^xsd:dateTime .
-
-session:task9 a session:Task ;
-    rdfs:label "Teams Integration Completion" ;
-    rdfs:comment "Complete Teams bot integration with all components" ;
-    session:hasStatus session:Completed ;
-    session:hasPriority 1 ;
-    session:completedSteps [
-        rdf:_1 "Implemented Adaptive Cards" ;
-        rdf:_2 "Added card actions" ;
-        rdf:_3 "Implemented error handling" ;
-        rdf:_4 "Added logging configuration" ;
-        rdf:_5 "Completed deployment setup"
-    ] ;
-    session:lastUpdated "2024-03-21T16:25:00Z"^^xsd:dateTime .
-
-# Update current context
-session:currentContext
-    session:activeTask session:task9 ;
-    session:activeOntologies (
-        chatbot:ChatbotLLMOntology
-        cortexteams:TeamsOntology
-        meta:MetaOntology
-        deploy:DeploymentOntology
-    ) ;
-    session:securityContext [
-        a session:SecurityContext ;
-        session:requiresValidation true ;
-        session:securityLevel "High" ;
-        session:lastSecurityAudit "2024-03-21T16:25:00Z"^^xsd:dateTime
-    ] .
-
-# Add new components
-session:StateManagementComponent a session:Component ;
-    rdfs:label "State Management" ;
-    session:hasStatus session:Completed ;
-    session:implementsPattern guidance:StateManagementPattern ;
-    session:testCoverage "95"^^xsd:decimal ;
-    session:securityValidated true .
-
-session:SecretRotationComponent a session:Component ;
-    rdfs:label "Secret Rotation" ;
-    session:hasStatus session:Completed ;
-    session:implementsPattern guidance:SecretManagementPattern ;
-    session:testCoverage "100"^^xsd:decimal ;
-    session:securityValidated true .
-
-session:TeamsIntegrationComponent a session:Component ;
-    rdfs:label "Teams Integration" ;
-    session:hasStatus session:Completed ;
-    session:implementsPattern guidance:TeamsIntegrationPattern ;
-    session:testCoverage "98"^^xsd:decimal ;
-    session:securityValidated true .
-
-# Security Implementation Components
-:SecurityImplementation a meta:Component ;
-    rdfs:label "Security Implementation"@en ;
-    rdfs:comment "Security features and components implemented in the Teams bot" ;
-    meta:status "Completed"@en ;
-    meta:lastUpdated "2024-03-21T15:30:00Z"^^xsd:dateTime ;
-    meta:hasPattern guidance:SecurityPatterns ;
-    meta:hasRequirement "REQ-SEC-001" ;
-    meta:hasComponent :KeyVaultIntegration, :AuditLogging, :KeyRotation, :Authentication .
-
-:KeyVaultIntegration a meta:Component ;
-    rdfs:label "Key Vault Integration"@en ;
-    rdfs:comment "Azure Key Vault integration for secure secret management" ;
-    meta:status "Completed"@en ;
-    meta:lastUpdated "2024-03-21T15:30:00Z"^^xsd:dateTime ;
-    meta:implementedPatterns guidance:SecretManagement ;
-    meta:testCoverage "100"^^xsd:decimal ;
-    meta:securityValidated "true"^^xsd:boolean ;
-    meta:hasArtifact "teams_bot/config/key_vault.py",
-                     "teams_bot/deployment/azure/key_vault.bicep",
-                     "teams_bot/scripts/deploy_keyvault.sh",
-                     "teams_bot/scripts/sync_keyvault_secrets.sh" .
-
-:AuditLogging a meta:Component ;
-    rdfs:label "Audit Logging"@en ;
-    rdfs:comment "Comprehensive audit logging system" ;
-    meta:status "Completed"@en ;
-    meta:lastUpdated "2024-03-21T15:30:00Z"^^xsd:dateTime ;
-    meta:implementedPatterns guidance:LoggingPatterns ;
-    meta:testCoverage "100"^^xsd:decimal ;
-    meta:securityValidated "true"^^xsd:boolean ;
-    meta:hasArtifact "teams_bot/bot/logging_config.py" .
-
-:KeyRotation a meta:Component ;
-    rdfs:label "Key Rotation"@en ;
-    rdfs:comment "Automated key rotation system" ;
-    meta:status "Completed"@en ;
-    meta:lastUpdated "2024-03-21T15:30:00Z"^^xsd:dateTime ;
-    meta:implementedPatterns guidance:KeyRotation ;
-    meta:testCoverage "100"^^xsd:decimal ;
-    meta:securityValidated "true"^^xsd:boolean ;
-    meta:hasArtifact "teams_bot/scripts/rotate_secrets.py",
-                     "teams_bot/scripts/check_secret_expiry.py",
-                     "teams_bot/config/rotation_config.yaml",
-                     "teams_bot/deployment/cron/secret-rotation" .
-
-:Authentication a meta:Component ;
-    rdfs:label "Authentication"@en ;
-    rdfs:comment "Service-to-service authentication with Azure AD" ;
-    meta:status "Completed"@en ;
-    meta:lastUpdated "2024-03-21T15:30:00Z"^^xsd:dateTime ;
-    meta:implementedPatterns guidance:AuthenticationPatterns ;
-    meta:testCoverage "100"^^xsd:decimal ;
-    meta:securityValidated "true"^^xsd:boolean ;
-    meta:hasArtifact "teams_bot/config/settings.py" .
-
-# Current Task
-:CurrentTask a meta:Task ;
-    rdfs:label "Security Implementation Complete"@en ;
-    rdfs:comment "All security components implemented and validated" ;
-    meta:status "Completed"@en ;
-    meta:lastUpdated "2024-03-21T15:30:00Z"^^xsd:dateTime ;
-    meta:hasComponent :SecurityImplementation ;
-    meta:completedSteps [
-        a meta:Step ;
-        rdfs:label "Key Vault Integration"@en ;
-        meta:status "Completed"@en ;
-        meta:order 1
-    ], [
-        a meta:Step ;
-        rdfs:label "Audit Logging"@en ;
-        meta:status "Completed"@en ;
-        meta:order 2
-    ], [
-        a meta:Step ;
-        rdfs:label "Key Rotation"@en ;
-        meta:status "Completed"@en ;
-        meta:order 3
-    ], [
-        a meta:Step ;
-        rdfs:label "Authentication"@en ;
-        meta:status "Completed"@en ;
-        meta:order 4
-    ] .
-
-# Active Ontologies
-:ActiveOntologies a meta:Context ;
-    rdfs:label "Active Ontologies"@en ;
-    meta:includes meta:SecurityConcepts, guidance:SecurityPatterns ;
-    meta:lastUpdated "2024-03-21T15:30:00Z"^^xsd:dateTime .
-
-session:task7 a session:Task ;
-    rdfs:label "Cortex Demo Schema Deployment" ;
-    rdfs:comment "Deploy Cortex Analyst Revenue Timeseries demo schema for development and testing" ;
+# Add new task for ontology logging implementation
+session:OntologyLoggingTask a session:Task ;
+    rdfs:label "Implement Ontology Logging" ;
+    rdfs:comment "Implementation of session logging system with history tracking" ;
     session:hasStatus session:InProgress ;
     session:hasPriority 1 ;
-    session:branch "feature/cortex-demo-schema" ;
-    session:issueNumber "13" ;
     session:completedSteps [
-        rdf:_1 "Created branch feature/cortex-demo-schema" ;
-        rdf:_2 "Created issue #13 for schema deployment"
+        rdf:_1 "Update guidance.ttl with logging patterns" ;
+        rdf:_2 "Create session_log.ttl" ;
+        rdf:_3 "Preserve prior session state"
     ] ;
-    session:lastUpdated "2024-02-09T16:25:00Z"^^xsd:dateTime .
-
-# Update Current Context State
-session:currentContext a session:ContextState ;
-    rdfs:label "Current Context" ;
-    session:activeTask session:task7 ;
-    session:activeOntologies (
-        chatbot:ChatbotLLMOntology
-        cortexteams:TeamsOntology
-        meta:MetaOntology
-        deploy:DeploymentOntology
-    ) ;
-    session:activeCursorRules (
-        session:SPARQLQueryRule
-        session:BlackFormatterRule
-        session:ArtifactTraceabilityRule
-    ) ;
-    session:securityContext [
-        a session:SecurityContext ;
-        session:requiresValidation true ;
-        session:securityLevel "High"
+    session:pendingSteps [
+        rdf:_1 "Implement log rotation" ;
+        rdf:_2 "Add SPARQL query examples" ;
+        rdf:_3 "Create log validation tools"
     ] ;
-    session:hasEnvironmentState :currentEnvironment .
+    session:startDate "2024-03-20"^^xsd:date .
 
-session:task7 a session:Task ;
-    rdfs:label "Test Suite Execution" ;
-    rdfs:comment "Run and validate all project tests" ;
-    session:hasStatus session:InProgress ;
-    session:hasPriority 1 ;
-    session:dependsOn session:task3 ;
-    session:lastUpdated "2024-03-19T10:00:00Z"^^xsd:dateTime .
-
-# Session Information
-session:CurrentSession a session:DevelopmentSession ;
-    rdfs:label "Visualization Engine Implementation" ;
-    session:startTime "2024-03-21T10:00:00Z"^^xsd:dateTime ;
-    session:developer "Claude" ;
-    session:implementedComponent viz:VisualizationEngine ;
-    session:hasChange session:VizEngineImplementation .
-
-# Changes
-session:VizEngineImplementation a session:CodeChange ;
-    rdfs:label "Visualization Engine Implementation" ;
-    session:changedFile "src/chatbot_llm/tools/visualization_engine.py" ;
-    session:implementsRequirement "REQ-VIZ-001" ;
-    session:hasArtifact viz:VisualizationEngine ;
-    session:hasStatus session:Completed ;
-    session:description """
-    Implemented visualization engine with:
-    - Abstract Visualizer base class
-    - PlantUML visualizer for diagrams
-    - Matplotlib visualizer for plots
-    - Main VisualizationEngine class
-    """ .
-
-# Ontology Updates
-session:VizOntologyCreation a session:OntologyChange ;
-    rdfs:label "Visualization Ontology Creation" ;
-    session:changedFile "ontologies/visualization.ttl" ;
-    session:hasStatus session:Completed ;
-    session:description """
-    Created visualization ontology defining:
-    - Visualizer classes and hierarchy
-    - Visualization types and formats
-    - Properties and relationships
-    - SHACL validation rules
-    """ .
-
-# Requirements
-session:REQ-VIZ-001 a session:Requirement ;
-    rdfs:label "Dynamic Visualization Generation" ;
-    session:requirementID "REQ-VIZ-001" ;
-    session:description "System must support dynamic generation of visualizations through multiple backends" ;
-    session:status "Implemented" ;
-    session:implementedBy viz:VisualizationEngine .
-=======
->>>>>>> Stashed changes
+# Add logging properties
+session:hasLogReference a owl:ObjectProperty ;
+    rdfs:label "Has Log Reference" ;
+    rdfs:domain session:CurrentContext ;
+    rdfs:range guidance:SessionLogEntry ;
+    rdfs:comment "References the session log entry containing prior state" .

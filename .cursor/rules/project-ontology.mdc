@@ -1,0 +1,11 @@
+---
+description: The project ontology for this repo
+globs: *.ttl
+---
+
+# Validate In Contect Ontology
+
+- The project ontology for this project is [chatbot.ttl](mdc:chatbot.ttl)
+- Any ontology referenced must be directly or transitively related to [chatbot.ttl](mdc:chatbot.ttl), if you can't traverse from the ontology, you are developing or refining an orphaned ontology, and must verify that is the intent of the user.
+- Always update [session.ttl](mdc:session.ttl) when changing any ontology or update to the *.ttl files in this conversation.
+- leaving atifacts, especally ontologie, in an inconsistent state will result in confusion and conflicts when resuming work.

@@ -1,0 +1,10 @@
+@prefix : <./session_log#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix session: <./session#> .
+
+:entry_2024_03_20_001 a guidance:SessionLogEntry ;
+    rdfs:label "Initial Session Log Entry" ;
+    guidance:hasActor :ClaudeAI ;
+    guidance:hasTimestamp "2024-03-20T18:30:00Z"^^xsd:dateTime ;
+    guidance:hasChangeReason "Initial state" .

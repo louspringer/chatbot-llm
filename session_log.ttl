@@ -1,0 +1,55 @@
+@prefix : <file:///Users/lou/Documents/chatbot-llm/tools/session_log#> .
+@prefix guidance: <file:///Users/lou/Documents/chatbot-llm/tools/guidance#> .
+@prefix ns1: <http://example.org/> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix session: <file:///Users/lou/Documents/chatbot-llm/tools/session#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+:entry_2024_03_20_001 a guidance:SessionLogEntry ;
+    rdfs:label "Initial Session Log Entry" ;
+    guidance:hasActor :ClaudeAI ;
+    guidance:hasChangeReason "Initial state" ;
+    guidance:hasTimestamp "2024-03-20T18:30:00+00:00"^^xsd:dateTime .
+
+:entry_2024_03_20_002 a guidance:SessionLogEntry ;
+    rdfs:label "Context Update" ;
+    guidance:hasActor :ClaudeAI ;
+    guidance:hasChangeReason "Updated context with complete state information" ;
+    guidance:hasPriorState [ a session:ContextState ;
+            session:activeTask session:task6 ;
+            session:lastUpdated "2024-03-20T18:30:00+00:00"^^xsd:dateTime ] ;
+    guidance:hasTimestamp "2024-03-20T18:45:00+00:00"^^xsd:dateTime .
+
+ns1:entry_2025_02_13_213029 a ns1:LogEntry ;
+    ns1:activeCursorRules "session:ArtifactTraceabilityRule",
+        "session:BlackFormatterRule",
+        "session:SPARQLQueryRule" ;
+    ns1:activeOntologies "chatbot:ChatbotLLMOntology",
+        "cortexteams:TeamsOntology" ;
+    ns1:activeTask "session:task6" ;
+    ns1:actor "ClaudeAI" ;
+    ns1:configurationFiles ".env.template",
+        "environment.yml",
+        "tools/chatbot_llm/session_context_manager.py" ;
+    ns1:hasWorkingConfig true ;
+    ns1:lastTestedDate "2024-03-20T18:30:00+00:00"^^xsd:dateTime ;
+    ns1:lastUpdateTimestamp "2024-03-20T18:30:00+00:00"^^xsd:dateTime ;
+    ns1:requiresValidation true ;
+    ns1:securityLevel "High" ;
+    ns1:timestamp "2025-02-13T21:30:29.331389+00:00"^^xsd:dateTime .
+
+ns1:entry_2025_02_13_214519 a ns1:LogEntry ;
+    ns1:activeCursorRules "session:ArtifactTraceabilityRule",
+        "session:BlackFormatterRule",
+        "session:SPARQLQueryRule" ;
+    ns1:activeOntologies "chatbot:ChatbotLLMOntology",
+        "cortexteams:TeamsOntology" ;
+    ns1:activeTask "session:task6" ;
+    ns1:actor "ClaudeAI" ;
+    ns1:configurationFiles ".env.template",
+        "environment.yml",
+        "tools/chatbot_llm/session_context_manager.py" ;
+    ns1:requiresValidation true ;
+    ns1:securityLevel "High" ;
+    ns1:timestamp "2025-02-13T21:45:19.993493+00:00"^^xsd:dateTime ;
+    ns1:workingConfig true .
