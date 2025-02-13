@@ -18,11 +18,9 @@ from tools.validate_local_env import (
 
 
 @pytest.fixture
-def validator():
+def validator(tmp_path):
     with patch("logging.getLogger"):
-        validator = LocalEnvValidator()
-        # Ensure logger is a mock for assertions
-        validator.logger = MagicMock()
+        validator = LocalEnvValidator(workspace_root=tmp_path)
         yield validator
 
 
@@ -273,7 +271,8 @@ def test_run_validation_with_failures(validator):
         validate_git_config=MagicMock(return_value=success_result),
         validate_required_files=MagicMock(return_value=[failure_result]),
     ):
-        assert not validator.run_validation()
+        results = validator.run_validation()
+        assert any(not r.success for r in results)
 
 
 def test_detect_configuration_drift_no_baseline(validator, tmp_path):
@@ -282,9 +281,8 @@ def test_detect_configuration_drift_no_baseline(validator, tmp_path):
     test_file.write_text("test: value")
 
     with patch.object(validator, "workspace_root", tmp_path):
-        has_drifted, drift_pct = validator.detect_configuration_drift(
-            test_file, 0.1
-        )
+        drift_result = validator.detect_configuration_drift(test_file, 0.1)
+        has_drifted, drift_pct = drift_result
         assert not has_drifted
         assert drift_pct == 0.0
 
@@ -306,9 +304,8 @@ def test_detect_configuration_drift_with_changes(validator, tmp_path):
         # Modify file
         test_file.write_text("test: value2")
 
-        has_drifted, drift_pct = validator.detect_configuration_drift(
-            test_file, 0.1
-        )
+        drift_result = validator.detect_configuration_drift(test_file, 0.1)
+        has_drifted, drift_pct = drift_result
         assert has_drifted
         assert drift_pct == 1.0
 
@@ -322,10 +319,10 @@ def test_analyze_impact_from_ontology(validator):
             (None, None, "artifact2"),
         ]
 
-        impact = validator.analyze_impact("test_artifact", "version_change")
-        assert len(impact.affected_artifacts) == 2
-        assert "artifact1" in impact.affected_artifacts
-        assert "artifact2" in impact.affected_artifacts
+        impacted = validator.analyze_impact("test_artifact")
+        assert len(impacted) == 2
+        assert "artifact1" in impacted
+        assert "artifact2" in impacted
 
 
 def test_validate_ownership_valid(validator, mock_env_file):
@@ -360,17 +357,21 @@ name: test-env
     with patch.object(validator, "workspace_root", tmp_path):
         # First validation establishes baseline
         results = validator.validate_required_files()
-        assert any(
+        success_condition = (
             r.success and "environment.yml" in r.message for r in results
         )
+        assert any(success_condition)
 
         # Modify file to trigger drift
         test_file.write_text("name: modified-env")
         results = validator.validate_required_files()
-        assert any(
-            not r.success and "drift detected" in r.message.lower()
-            for r in results
-        )
+
+        def is_drift_detected(result):
+            has_failed = not result.success
+            has_drift = "drift detected" in result.message.lower()
+            return has_failed and has_drift
+
+        assert any(is_drift_detected(r) for r in results)
 
 
 def test_run_validation_with_revalidation(validator):
@@ -439,7 +440,5 @@ def test_file_specific_drift_thresholds(
 
         # Verify correct threshold was used
         state_key = file_type
-        assert (
-            validator.state_cache[state_key].drift_threshold
-            == drift_threshold
-        )
+        threshold = validator.state_cache[state_key].drift_threshold
+        assert threshold == drift_threshold
