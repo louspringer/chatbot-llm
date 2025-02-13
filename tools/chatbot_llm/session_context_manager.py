@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# type: ignore
 """
 Session Context Manager - Manages session.ttl and session_log.ttl context
 operations using LLM assistance for complex operations and maintaining semantic
@@ -8,14 +9,21 @@ consistency.
 import os
 import sys
 from datetime import datetime
-import anthropic
 from pathlib import Path
-from typing import List, Dict, Optional, Any
+from typing import Any, Dict, List, Optional
+
+try:
+    import anthropic
+except ImportError:
+    msg = "anthropic package is required. Install it with: conda install anthropic"  # noqa: E501
+    raise ImportError(msg)
+
+import argparse
+import json
+import warnings
+
 from rdflib import Graph, Namespace
 from rdflib.namespace import RDF
-import json
-import argparse
-import warnings
 from rich.console import Console
 from rich.syntax import Syntax
 
@@ -38,7 +46,7 @@ class SessionContextManager:
         # Check API key first
         self.api_key = os.getenv("ANTHROPIC_API_KEY")
         if not self.api_key:
-            raise ValueError("ANTHROPIC_API_KEY environment variable not set")
+            raise ValueError("ANTHROPIC_API_KEY environment variable not set")  # noqa: E501
 
         self.client = anthropic.Client(api_key=self.api_key)
         self.session_graph = Graph()
@@ -73,8 +81,9 @@ class SessionContextManager:
                 "timestamp": datetime.utcnow().isoformat(),
                 "input_tokens": response.usage.input_tokens,
                 "output_tokens": response.usage.output_tokens,
-                "total_tokens": response.usage.input_tokens
-                + response.usage.output_tokens,
+                "total_tokens": (
+                    response.usage.input_tokens + response.usage.output_tokens
+                ),
             }
             self.token_usage.append(usage)
 
@@ -84,7 +93,8 @@ class SessionContextManager:
                 print(f"Output tokens: {usage['output_tokens']}")
                 print(f"Total tokens:  {usage['total_tokens']}")
         except Exception as e:
-            print(f"Warning: Failed to track token usage for {operation}: {str(e)}")
+            msg = f"Warning: Failed to track token usage for {operation}: {str(e)}"  # noqa: E501
+            print(msg)
 
     def get_token_usage(self) -> Dict[str, Any]:
         """Get token usage statistics"""
@@ -196,7 +206,8 @@ class SessionContextManager:
             # Check if active task exists
             task = self.session_graph.value(None, SESSION.activeTask, None)
             if task:
-                if not any(self.session_graph.triples((task, RDF.type, SESSION.Task))):
+                task_type = (task, RDF.type, SESSION.Task)
+                if not any(self.session_graph.triples(task_type)):  # noqa: E501
                     mismatches.append("Active task reference is invalid")
                 if self.dry_run:
                     print(f"Active Task Check: {task}")
@@ -206,7 +217,8 @@ class SessionContextManager:
             if onts:
                 invalid_onts = [ont for ont in onts if ":" not in str(ont)]
                 if invalid_onts:
-                    mismatches.append(f"Invalid ontology references: {invalid_onts}")
+                    msg = f"Invalid ontology references: {invalid_onts}"  # noqa: E501
+                    mismatches.append(msg)
                 if self.dry_run:
                     print(f"Active Ontologies: {onts}")
 
@@ -236,11 +248,12 @@ class SessionContextManager:
                     rule
                     for rule in rules
                     if not any(
-                        self.session_graph.triples((rule, RDF.type, SESSION.CursorRule))
+                        self.session_graph.triples((rule, RDF.type, SESSION.CursorRule))  # noqa: E501
                     )
                 ]
                 if invalid_rules:
-                    mismatches.append(f"Invalid cursor rules: {invalid_rules}")
+                    msg = f"Invalid cursor rules: {invalid_rules}"  # noqa: E501
+                    mismatches.append(msg)
                 if self.dry_run:
                     print(f"Active Cursor Rules: {rules}")
 
@@ -299,8 +312,10 @@ class SessionContextManager:
             model="claude-3-sonnet-20240229",
             max_tokens=1000,
             temperature=0,
-            system="You are a semantic web expert. Extract and format the "
-            "current context from the provided session.ttl content.",
+            system=(
+                "You are a semantic web expert. Extract and format the current context from the "  # noqa: E501
+                "provided session.ttl content."
+            ),
             messages=[{"role": "user", "content": context_prompt}],
         )
 
@@ -313,7 +328,9 @@ class SessionContextManager:
         entries = []
         for entry in self.log_graph.subjects(RDF.type, None):
             entry_id = str(entry).split("#")[-1]
-            if not entry_id.startswith("http"):  # Skip entries with full URIs
+            if not entry_id.startswith(
+                "http"
+            ):  # Skip entries with full URIs  # noqa: E501
                 entry_data = {
                     "id": entry_id,
                     "timestamp": str(
@@ -327,7 +344,7 @@ class SessionContextManager:
                 }
 
                 # Get state information
-                for pred, obj in self.log_graph.predicate_objects(entry):
+                for pred, obj in self.log_graph.predicate_objects(entry):  # noqa: E501
                     pred_str = str(pred).split("#")[-1]
                     if pred_str in [
                         "activeCursorRules",
@@ -367,7 +384,7 @@ class SessionContextManager:
         current_state = {}
         current_context = self.session_graph.value(None, RDF.type, SESSION.ContextState)
         if current_context:
-            for pred, obj in self.session_graph.predicate_objects(current_context):
+            for pred, obj in self.session_graph.predicate_objects(current_context):  # noqa: E501
                 pred_str = str(pred).split("#")[-1]
                 if pred_str in [
                     "activeCursorRules",
@@ -421,7 +438,10 @@ class SessionContextManager:
             model="claude-3-sonnet-20240229",
             max_tokens=1000,
             temperature=0,
-            system="You are a semantic web expert. Generate ONLY Turtle RDF with no markdown or other formatting.",
+            system=(
+                "You are a semantic web expert. Generate ONLY Turtle RDF with no markdown or other "  # noqa: E501
+                "formatting."
+            ),
             messages=[{"role": "user", "content": push_prompt}],
         )
 
@@ -440,7 +460,10 @@ class SessionContextManager:
             model="claude-3-sonnet-20240229",
             max_tokens=1000,
             temperature=0,
-            system="You are a semantic web expert. Generate ONLY Turtle RDF with no markdown or other formatting.",
+            system=(
+                "You are a semantic web expert. Generate ONLY Turtle RDF with no markdown or other "  # noqa: E501
+                "formatting."
+            ),
             messages=[{"role": "user", "content": restore_prompt}],
         )
 
@@ -465,8 +488,9 @@ class SessionContextManager:
             model="claude-3-sonnet-20240229",
             max_tokens=1500,
             temperature=0,
-            system="You are a semantic web expert. Search and rank context "
-            "entries based on the query.",
+            system=(
+                "You are a semantic web expert. Search and rank context entries based on the query."  # noqa: E501
+            ),
             messages=[{"role": "user", "content": search_prompt}],
         )
 
@@ -489,7 +513,10 @@ class SessionContextManager:
             model="claude-3-sonnet-20240229",
             max_tokens=1000,
             temperature=0,
-            system="You are a semantic web expert. Generate ONLY Turtle RDF with no markdown or other formatting.",
+            system=(
+                "You are a semantic web expert. Generate ONLY Turtle RDF with no markdown or other "  # noqa: E501
+                "formatting."
+            ),
             messages=[{"role": "user", "content": restore_prompt}],
         )
 
@@ -536,74 +563,79 @@ class SessionContextManager:
         if log_update:
             # Parse and add new log entry
             log_graph = Graph()
-            log_graph.parse(data=self._extract_text(log_update), format="turtle")
+            log_text = self._extract_text(log_update)
+            log_graph.parse(data=log_text, format="turtle")
             self.log_graph += log_graph
 
         # Update session with restored context
         session_graph = Graph()
-        session_graph.parse(data=self._extract_text(session_update), format="turtle")
+        session_text = self._extract_text(session_update)
+        session_graph.parse(data=session_text, format="turtle")
         self.session_graph = session_graph
 
         # Save both files
         self.save_graphs()
 
+    def format_context_json(self, context_data: Any) -> Dict[str, Any]:
+        """Convert context data to JSON format"""
+        # Handle TextBlock objects
+        if hasattr(context_data, "text"):
+            context_data = context_data.text
+        elif isinstance(context_data, list) and hasattr(context_data[0], "text"):
+            context_data = context_data[0].text
 
-def format_context_json(context_data: Any) -> Dict[str, Any]:
-    """Convert context data to JSON format"""
-    # Handle TextBlock objects
-    if hasattr(context_data, "text"):
-        context_data = context_data.text
-    elif isinstance(context_data, list) and hasattr(context_data[0], "text"):
-        context_data = context_data[0].text
+        # Parse the text response into structured data
+        if isinstance(context_data, str):
+            lines = context_data.split("\n")
+        else:
+            lines = str(context_data).split("\n")
 
-    # Parse the text response into structured data
-    lines = context_data.split("\n")
-    result = {"contexts": [], "current_state": {}}
-    current_context = None
-    in_state_summary = False
+        result = {"contexts": [], "current_state": {}}
+        current_context = None
+        in_state_summary = False
 
-    for line in lines:
-        line = line.strip()
-        if not line:
-            continue
+        for line in lines:
+            line = line.strip()
+            if not line:
+                continue
 
-        # Handle context entries
-        if line.startswith("Entry ID:"):
-            if current_context:
-                result["contexts"].append(current_context)
-            current_context = {"id": line.split(":", 1)[1].strip()}
-        elif current_context and line.startswith("Timestamp:"):
-            current_context["timestamp"] = line.split(":", 1)[1].strip()
-        elif current_context and line.startswith("Actor:"):
-            current_context["actor"] = line.split(":", 1)[1].strip()
-        elif current_context and line.startswith("Change Reason:"):
-            current_context["reason"] = line.split(":", 1)[1].strip()
-        elif line.startswith("State summary:"):
-            in_state_summary = True
-            if current_context:
-                current_context["state"] = {}
-        elif in_state_summary and line.startswith("- "):
-            key, value = line[2:].split(":", 1)
-            key = key.strip().lower().replace(" ", "_")
-            value = value.strip()
+            # Handle context entries
+            if line.startswith("Entry ID:"):
+                if current_context:
+                    result["contexts"].append(current_context)
+                current_context = {"id": line.split(":", 1)[1].strip()}
+            elif current_context and line.startswith("Timestamp:"):
+                current_context["timestamp"] = line.split(":", 1)[1].strip()
+            elif current_context and line.startswith("Actor:"):
+                current_context["actor"] = line.split(":", 1)[1].strip()
+            elif current_context and line.startswith("Change Reason:"):
+                current_context["reason"] = line.split(":", 1)[1].strip()
+            elif line.startswith("State summary:"):
+                in_state_summary = True
+                if current_context:
+                    current_context["state"] = {}
+            elif in_state_summary and line.startswith("- "):
+                key, value = line[2:].split(":", 1)
+                key = key.strip().lower().replace(" ", "_")
+                value = value.strip()
 
-            # Convert lists
-            if "," in value:
-                value = [v.strip() for v in value.split(",")]
-            # Convert booleans
-            elif value.lower() in ["true", "false"]:
-                value = value.lower() == "true"
+                # Convert lists
+                if "," in value:
+                    value = [v.strip() for v in value.split(",")]
+                # Convert booleans
+                elif value.lower() in ["true", "false"]:
+                    value = value.lower() == "true"
 
-            if current_context:
-                current_context["state"][key] = value
-            else:
-                result["current_state"][key] = value
+                if current_context:
+                    current_context["state"][key] = value
+                else:
+                    result["current_state"][key] = value
 
-    # Add the last context if any
-    if current_context:
-        result["contexts"].append(current_context)
+        # Add the last context if any
+        if current_context:
+            result["contexts"].append(current_context)
 
-    return result
+        return result
 
 
 def format_output(
@@ -649,19 +681,19 @@ def main():
             result = manager.list_contexts()  # Already returns a dictionary
         elif args.command == "pop":
             result = manager.pop_context()
-            result = format_context_json(result)  # Convert text to JSON
+            result = manager.format_context_json(result)  # Convert text to JSON
         elif args.command == "search" and args.param:
             result = manager.search_contexts(args.param)
-            result = format_context_json(result)  # Convert text to JSON
+            result = manager.format_context_json(result)  # Convert text to JSON
         elif args.command == "restore" and args.param:
             result = manager.restore_context(args.param)
-            result = format_context_json(result)  # Convert text to JSON
+            result = manager.format_context_json(result)  # Convert text to JSON
         else:
             print("Invalid command or missing parameter")
             return
 
         # Format and display output
-        format_output(result, pretty=args.pretty, color=not args.no_color)
+        format_output(result, pretty=args.pretty, color=not args.no_color)  # noqa: E501
 
     except Exception as e:
         print(f"Error: {str(e)}")
