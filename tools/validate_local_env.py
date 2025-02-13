@@ -398,8 +398,8 @@ class LocalEnvValidator:
             impact_level="HIGH",
         )
 
-    def run_validation(self) -> bool:
-        """Run all validation checks and return overall success status."""
+    def run_validation(self) -> List[ValidationResult]:
+        """Run all validation checks and return validation results."""
         results = []
 
         # Validate tools
@@ -415,5 +415,4 @@ class LocalEnvValidator:
         # Validate required files
         results.extend(self.validate_required_files())
 
-        # Return True only if all validations passed
-        return all(result.success for result in results)
+        return results

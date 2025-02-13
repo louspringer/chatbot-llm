@@ -351,11 +351,18 @@ def test_validate_ownership_missing(validator, tmp_path):
 
 def test_validate_required_files_with_drift(validator, tmp_path):
     """Test required files validation with drift detection"""
+    # Update required files with string values
+    validator.required_files = {
+        "environment.yml": "meta:CoreOntology",
+        "pyproject.toml": "meta:CoreOntology",
+    }
+
     test_file = tmp_path / "environment.yml"
     test_file.write_text(
         """
 # Owned by: meta:CoreOntology
 # Version: 1.0.0
+# Purpose: Test environment file
 name: test-env
 dependencies:
   - python=3.11
@@ -375,6 +382,7 @@ dependencies:
             """
 # Owned by: meta:CoreOntology
 # Version: 1.0.0
+# Purpose: Test environment file
 name: modified-env
 dependencies:
   - python=3.12
