@@ -255,6 +255,7 @@ class LocalEnvValidator:
     def detect_configuration_drift(
         self, file_path: Path, drift_threshold: float
     ) -> Tuple[bool, float]:
+        """Detect configuration drift by comparing with baseline."""
         content = file_path.read_text()
         state_key = file_path.name
 
@@ -264,9 +265,11 @@ class LocalEnvValidator:
 
         baseline = self.state_cache[state_key].baseline
         if baseline != content:
-            # Simple diff calculation - can be enhanced
-            changes = sum(1 for a, b in zip(baseline, content) if a != b)
-            total = max(len(baseline), len(content))
+            # Calculate diff percentage
+            baseline_words = set(baseline.split())
+            current_words = set(content.split())
+            changes = len(baseline_words.symmetric_difference(current_words))
+            total = len(baseline_words.union(current_words))
             drift_pct = changes / total if total > 0 else 0
             return drift_pct > drift_threshold, drift_pct
         return False, 0.0
@@ -367,11 +370,12 @@ class LocalEnvValidator:
         # Validate against required files if applicable
         fname = file_path.name
         if fname in self.required_files:
-            expected = self.required_files[fname]
+            # Convert owner to string for comparison
+            expected = str(self.required_files[fname])
             if ownership.owner != expected:
                 msg_parts = [
                     "Expected owner:",
-                    expected,
+                    str(expected),
                     "Found:",
                     ownership.owner,
                 ]
@@ -394,8 +398,8 @@ class LocalEnvValidator:
             impact_level="HIGH",
         )
 
-    def run_validation(self) -> List[ValidationResult]:
-        """Run all validation checks."""
+    def run_validation(self) -> bool:
+        """Run all validation checks and return overall success status."""
         results = []
 
         # Validate tools
@@ -411,4 +415,5 @@ class LocalEnvValidator:
         # Validate required files
         results.extend(self.validate_required_files())
 
-        return results
+        # Return True only if all validations passed
+        return all(result.success for result in results)
