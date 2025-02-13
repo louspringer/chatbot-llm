@@ -49,4 +49,4 @@ See [Contributing Guide](../../CONTRIBUTING.md) for guidelines on:
 - Adding new endpoints
 - Updating documentation
 - Running tests
-- Submitting changes 
+- Submitting changes

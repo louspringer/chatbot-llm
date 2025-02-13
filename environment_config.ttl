@@ -274,4 +274,4 @@ envconfig:TemplateValidationRule a envconfig:ValidationRule ;
         rdf:_2 "Validate ownership metadata" ;
         rdf:_3 "Verify format consistency" ;
         rdf:_4 "Check security requirements"
-    ] . 
+    ] .

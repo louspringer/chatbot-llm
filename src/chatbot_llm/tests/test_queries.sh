@@ -13,4 +13,4 @@ echo -e "\nTesting Interpretations Query..."
 arq --base=file://$(pwd)/ --data chatbot.ttl --data cortexteams.ttl --query $QUERY_DIR/interpretations.rq
 
 echo -e "\nTesting Core Integration Query..."
-arq --base=file://$(pwd)/ --data chatbot.ttl --data cortexteams.ttl --query $QUERY_DIR/get_core_integration.rq 
+arq --base=file://$(pwd)/ --data chatbot.ttl --data cortexteams.ttl --query $QUERY_DIR/get_core_integration.rq

@@ -1,0 +1,221 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix meta: <./meta#> .
+@prefix metameta: <./metameta#> .
+@prefix problem: <./problem#> .
+@prefix solution: <./solution#> .
+@prefix conversation: <./conversation#> .
+@prefix guidance: <./guidance#> .
+@prefix debug: <#> .
+
+debug:PackageDebugOntology a owl:Ontology ;
+    rdfs:label "Package Debugging Ontology" ;
+    rdfs:comment "Ontology for tracking package management debugging activities" ;
+    owl:versionInfo "1.0.0" .
+
+# Core Classes
+debug:DebugSession a owl:Class ;
+    rdfs:label "Debug Session" ;
+    rdfs:comment "A package management debugging session" .
+
+debug:DebugStep a owl:Class ;
+    rdfs:label "Debug Step" ;
+    rdfs:comment "A step in the debugging process" .
+
+debug:DebugAction a owl:Class ;
+    rdfs:label "Debug Action" ;
+    rdfs:comment "An action taken during debugging" .
+
+debug:DebugOutcome a owl:Class ;
+    rdfs:label "Debug Outcome" ;
+    rdfs:comment "The result of a debug action" .
+
+debug:PackageIssue a owl:Class ;
+    rdfs:label "Package Issue" ;
+    rdfs:comment "A package management issue being debugged" .
+
+# Properties
+debug:hasStep a owl:ObjectProperty ;
+    rdfs:domain debug:DebugSession ;
+    rdfs:range debug:DebugStep .
+
+debug:hasAction a owl:ObjectProperty ;
+    rdfs:domain debug:DebugStep ;
+    rdfs:range debug:DebugAction .
+
+debug:hasOutcome a owl:ObjectProperty ;
+    rdfs:domain debug:DebugAction ;
+    rdfs:range debug:DebugOutcome .
+
+debug:nextStep a owl:ObjectProperty ;
+    rdfs:domain debug:DebugStep ;
+    rdfs:range debug:DebugStep .
+
+debug:timestamp a owl:DatatypeProperty ;
+    rdfs:domain debug:DebugStep ;
+    rdfs:range xsd:dateTime .
+
+debug:errorMessage a owl:DatatypeProperty ;
+    rdfs:domain debug:DebugOutcome ;
+    rdfs:range xsd:string .
+
+# Action Types
+debug:VerifyEnvironment a debug:DebugAction ;
+    rdfs:label "Verify Environment" .
+
+debug:CheckDependencies a debug:DebugAction ;
+    rdfs:label "Check Dependencies" .
+
+debug:ValidateVersions a debug:DebugAction ;
+    rdfs:label "Validate Versions" .
+
+debug:UpdatePackage a debug:DebugAction ;
+    rdfs:label "Update Package" .
+
+debug:TestInstallation a debug:DebugAction ;
+    rdfs:label "Test Installation" .
+
+# Outcome Types
+debug:Success a debug:DebugOutcome ;
+    rdfs:label "Success" .
+
+debug:Failure a debug:DebugOutcome ;
+    rdfs:label "Failure" .
+
+debug:PartialSuccess a debug:DebugOutcome ;
+    rdfs:label "Partial Success" .
+
+# Current Session
+debug:CurrentSession a debug:DebugSession ;
+    rdfs:label "Environment.yml Restoration Session" ;
+    debug:timestamp "2024-03-21T00:00:00Z"^^xsd:dateTime .
+
+# Current Session Steps
+debug:Step1 a debug:DebugStep ;
+    rdfs:label "Initial Environment Analysis" ;
+    debug:hasAction debug:VerifyEnvironment ;
+    debug:timestamp "2024-03-21T00:01:00Z"^^xsd:dateTime ;
+    debug:nextStep debug:Step2 .
+
+debug:Step2 a debug:DebugStep ;
+    rdfs:label "Dependency Organization" ;
+    debug:hasAction debug:CheckDependencies ;
+    debug:timestamp "2024-03-21T00:02:00Z"^^xsd:dateTime ;
+    debug:nextStep debug:Step3 .
+
+debug:Step3 a debug:DebugStep ;
+    rdfs:label "Version Compatibility Check" ;
+    debug:hasAction debug:ValidateVersions ;
+    debug:timestamp "2024-03-21T00:03:00Z"^^xsd:dateTime .
+
+# Link steps to session
+debug:CurrentSession debug:hasStep debug:Step1, debug:Step2, debug:Step3 .
+
+# Issues Found
+debug:BotBuilderConstraint a debug:PackageIssue ;
+    rdfs:label "Bot Builder Version Constraints" ;
+    rdfs:comment "botbuilder-ai requires specific versions of aiohttp and jsonpickle" .
+
+debug:DependencyCategories a debug:PackageIssue ;
+    rdfs:label "Dependency Categorization" ;
+    rdfs:comment "Dependencies need logical grouping and documentation" .
+
+# Outcomes
+debug:ConstraintOutcome a debug:DebugOutcome ;
+    rdfs:label "Version Constraint Analysis" ;
+    debug:errorMessage "Must maintain aiohttp==3.10.5 and jsonpickle==1.4.2 for compatibility" .
+
+# ClPM Bootstrap Classes (Cl = Claude, lowercase 'l')
+debug:BootstrapPackage a owl:Class ;
+    rdfs:label "Bootstrap Package" ;
+    rdfs:comment "A package required for Claude's Package Manager (ClPM - with lowercase 'l') core functionality" .
+
+debug:PackageRole a owl:Class ;
+    rdfs:label "Package Role" ;
+    rdfs:comment "The role a package plays in the system" .
+
+# Package Roles
+debug:VersionManagement a debug:PackageRole ;
+    rdfs:label "Version Management" .
+
+debug:ConfigurationManagement a debug:PackageRole ;
+    rdfs:label "Configuration Management" .
+
+debug:SecurityManagement a debug:PackageRole ;
+    rdfs:label "Security Management" .
+
+debug:UserInterface a debug:PackageRole ;
+    rdfs:label "User Interface" .
+
+debug:ExternalIntegration a debug:PackageRole ;
+    rdfs:label "External Integration" .
+
+# Bootstrap Package Properties
+debug:hasRole a owl:ObjectProperty ;
+    rdfs:domain debug:BootstrapPackage ;
+    rdfs:range debug:PackageRole .
+
+debug:minVersion a owl:DatatypeProperty ;
+    rdfs:domain debug:BootstrapPackage ;
+    rdfs:range xsd:string .
+
+debug:purpose a owl:DatatypeProperty ;
+    rdfs:domain debug:BootstrapPackage ;
+    rdfs:range xsd:string .
+
+# Bootstrap Package Instances
+debug:PackagingPackage a debug:BootstrapPackage ;
+    rdfs:label "packaging" ;
+    debug:minVersion "23.2.0" ;
+    debug:hasRole debug:VersionManagement ;
+    debug:purpose "Version parsing and comparison functionality" .
+
+debug:TomlPackage a debug:BootstrapPackage ;
+    rdfs:label "toml" ;
+    debug:minVersion "0.10.2" ;
+    debug:hasRole debug:ConfigurationManagement ;
+    debug:purpose "pyproject.toml file handling" .
+
+debug:YamlPackage a debug:BootstrapPackage ;
+    rdfs:label "pyyaml" ;
+    debug:minVersion "6.0.0" ;
+    debug:hasRole debug:ConfigurationManagement ;
+    debug:purpose "environment.yml file handling" .
+
+debug:RdflibPackage a debug:BootstrapPackage ;
+    rdfs:label "rdflib" ;
+    debug:minVersion "6.0.0" ;
+    debug:hasRole debug:ConfigurationManagement ;
+    debug:purpose "Ontology management and querying" .
+
+debug:SafetyPackage a debug:BootstrapPackage ;
+    rdfs:label "safety" ;
+    debug:minVersion "3.0.0" ;
+    debug:hasRole debug:SecurityManagement ;
+    debug:purpose "Security vulnerability checking" .
+
+debug:RequestsPackage a debug:BootstrapPackage ;
+    rdfs:label "requests" ;
+    debug:minVersion "2.31.0" ;
+    debug:hasRole debug:ExternalIntegration ;
+    debug:purpose "HTTP client for external API calls" .
+
+debug:ClickPackage a debug:BootstrapPackage ;
+    rdfs:label "click" ;
+    debug:minVersion "8.1.7" ;
+    debug:hasRole debug:UserInterface ;
+    debug:purpose "Command-line interface framework" .
+
+debug:RichPackage a debug:BootstrapPackage ;
+    rdfs:label "rich" ;
+    debug:minVersion "13.7.0" ;
+    debug:hasRole debug:UserInterface ;
+    debug:purpose "Rich terminal output formatting" .
+
+debug:PyGithubPackage a debug:BootstrapPackage ;
+    rdfs:label "pygithub" ;
+    debug:minVersion "2.1.1" ;
+    debug:hasRole debug:ExternalIntegration ;
+    debug:purpose "GitHub API integration" . 

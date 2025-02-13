@@ -48,7 +48,7 @@ SET DATABASE_NAME = '${c}';
 SET SCHEMA_NAME = '${SNOWFLAKE_SCHEMA}';
 
 -- Log variable values for debugging
-SELECT 
+SELECT
     \$ROLE_NAME as ROLE_NAME,
     \$DATABASE_NAME as DATABASE_NAME,
     \$SCHEMA_NAME as SCHEMA_NAME;
@@ -65,18 +65,18 @@ echo -e "${GREEN}Snowflake resources deployed successfully${NC}"
 # Main deployment process
 main() {
     echo "Starting Cortex Analyst deployment..."
-    
+
     # Check requirements
     check_requirements
-    
+
     # Validate environment
     validate_env
-    
+
     # Deploy Snowflake resources
     deploy_snowflake
-    
+
     echo -e "${GREEN}Deployment completed successfully${NC}"
 }
 
 # Run main function
-main 
+main

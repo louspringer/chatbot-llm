@@ -80,4 +80,4 @@ resource diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-pr
 }
 
 // Output the Key Vault URI
-output keyVaultUri string = keyVault.properties.vaultUri 
+output keyVaultUri string = keyVault.properties.vaultUri

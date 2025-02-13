@@ -47,4 +47,4 @@ At least we've mastered managing our state!
 (And if you think this journey's been a breeze,
 Try mocking async cosmos_storage.py's
 Concurrent calls - that nightmare gives me chills...
-At least the monthly cost is fifty bills!) 
+At least the monthly cost is fifty bills!)

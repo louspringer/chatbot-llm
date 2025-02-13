@@ -286,8 +286,8 @@ Completing the Teams Bot integration implementation with remaining tasks and req
 - Priority: High
 - Next focus: Azure Key Vault Integration
 - Security audit completed: 2024-02-10
-- Critical findings: 
+- Critical findings:
   - Need to implement MFA
   - Missing audit logging system
   - Need to migrate secrets to Key Vault
-  - Need to implement encryption at rest for logs 
+  - Need to implement encryption at rest for logs

@@ -194,4 +194,4 @@ pytest --cov=src tests/
 1. Check existing issues
 2. Gather relevant logs
 3. Create detailed report
-4. Submit via GitHub issues 
+4. Submit via GitHub issues

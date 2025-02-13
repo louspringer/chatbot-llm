@@ -15,7 +15,7 @@
 **Example:**
 ```text
 System Event: User "alice@company.com" added to "Cortex-Analytics" Teams group
-Action: 
+Action:
 1. Map to Snowflake role "ANALYST_ROLE"
 2. Generate OAuth tokens
 3. Create user context in StateManager
@@ -50,7 +50,7 @@ Action:
 User: "Show me top 10 customers by revenue for last quarter"
 
 System Translation:
-SELECT 
+SELECT
     c.customer_name,
     SUM(o.order_amount) as revenue
 FROM customers c
@@ -230,4 +230,4 @@ Bot: [Understands context, shows orders for previously listed customers]
 2. Size Violations:
    - Result pagination
    - Truncation with notification
-   - Export suggestion 
+   - Export suggestion

@@ -68,4 +68,4 @@ Deploy the revenue timeseries demo schema from [Snowflake's Cortex Analyst Quick
 - cortex
 - schema
 - snowflake
-- high-priority 
+- high-priority

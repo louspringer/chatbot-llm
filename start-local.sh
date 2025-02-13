@@ -15,4 +15,4 @@ mkdir -p logs
 
 # Start the function app with environment variables
 echo "Starting Teams Bot Function App..."
-func start --verbose | tee logs/bot.log 
+func start --verbose | tee logs/bot.log

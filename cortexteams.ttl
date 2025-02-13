@@ -110,4 +110,4 @@
 
 :deploymentDiagram a :Documentation ;
     rdfs:label "Deployment Diagram" ;
-    :path "assets/diagrams/generated/cortex_teams_deployment.svg" . 
+    :path "assets/diagrams/generated/cortex_teams_deployment.svg" .

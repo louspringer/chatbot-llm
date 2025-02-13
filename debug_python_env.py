@@ -1,6 +1,6 @@
-import sys
-import site
 import os
+import site
+import sys
 
 # Print current working directory
 print("CWD:", os.getcwd())
@@ -24,7 +24,10 @@ for path in sys.path:
 try:
     import botbuilder.core
 
-    print("\nBotbuilder.core location:", os.path.dirname(botbuilder.core.__file__))
+    print(
+        "\nBotbuilder.core location:",
+        os.path.dirname(botbuilder.core.__file__),
+    )
 except ImportError as e:
     print("\nFailed to import botbuilder.core:", e)
 

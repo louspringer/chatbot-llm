@@ -40,4 +40,4 @@ echo
 echo "To connect to Snowflake, use:"
 echo "  User: TEAMS_BOT_USER"
 echo "  Auth: Private Key"
-echo "  Key Path: $KEYS_DIR/snowflake_bot_key.pem" 
+echo "  Key Path: $KEYS_DIR/snowflake_bot_key.pem"

@@ -60,7 +60,7 @@ The following are handled by Azure Entra ID platform:
 - PR #10: Security improvements for key management
 - Issue #11: Key Vault and Access Control Implementation
 - GitGuardian Alert: 15565986
-- Commits: 
+- Commits:
   - dc926ed7 (Key files removal)
   - e50efd7 (Security alert closure)
   - 82fe918 (Security checklist)
@@ -118,4 +118,4 @@ Try explaining why MFA's not in our domain.
 Platform controls - we're not the ones to blame!)
 
 ## Status: CLOSED ✅
-Critical security components complete. Remaining items moved to Issue #11. 
+Critical security components complete. Remaining items moved to Issue #11.

@@ -1,0 +1,42 @@
+@startuml
+skinparam monochrome true
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam roundCorner 10
+skinparam maxMessageSize 100
+
+participant "Scheduler" as scheduler
+participant "System" as system
+database "Key Storage" as storage
+participant "Snowflake" as snowflake
+database "Backup" as backup
+actor "Administrator" as admin
+
+title Scheduled Key Rotation Process
+
+group Main Flow
+    scheduler -> system: Trigger rotation
+    system -> system: Check preconditions
+    system -> storage: Backup current keys
+    system -> system: Generate new keys
+    system -> snowflake: Update keys
+    system -> system: Validate connection
+    system -> backup: Store backup
+    system --> admin: Notify completion
+end
+
+group Alternative Flow [Validation Failure]
+    system -> system: Detect failure
+    system -> storage: Restore previous keys
+    system -> snowflake: Revert changes
+    system --> admin: Notify failure
+end
+
+group Alternative Flow [Emergency]
+    system -> system: Detect critical error
+    system -> admin: Request intervention
+    admin -> system: Manual recovery
+end
+
+@enduml 

@@ -1,0 +1,134 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix meta: <./meta#> .
+@prefix metameta: <./metameta#> .
+@prefix problem: <./problem#> .
+@prefix solution: <./solution#> .
+@prefix conversation: <./conversation#> .
+@prefix guidance: <./guidance#> .
+@prefix pkg: <#> .
+@prefix pdi: <./policy_driven_implementation#> .
+
+# Core Classes
+pkg:PackageManager a owl:Class ;
+    rdfs:label "Package Manager" ;
+    rdfs:comment "Core package manager functionality" .
+
+pkg:Package a owl:Class ;
+    rdfs:label "Package" ;
+    rdfs:comment "A Python package dependency" .
+
+pkg:DependencyType a owl:Class ;
+    rdfs:label "Dependency Type" ;
+    rdfs:comment "Classification of package dependencies" .
+
+pkg:PackageSource a owl:Class ;
+    rdfs:label "Package Source" ;
+    rdfs:comment "Source repository for packages" .
+
+pkg:ValidationStep a owl:Class ;
+    rdfs:label "Validation Step" ;
+    rdfs:comment "Package validation procedure" .
+
+pkg:SecurityImpact a owl:Class ;
+    rdfs:label "Security Impact" ;
+    rdfs:comment "Impact level of security issues" .
+
+pkg:SecurityLikelihood a owl:Class ;
+    rdfs:label "Security Likelihood" ;
+    rdfs:comment "Likelihood of security exploitation" .
+
+# Properties
+pkg:hasVersion a owl:DatatypeProperty ;
+    rdfs:domain pkg:Package ;
+    rdfs:range xsd:string .
+
+pkg:hasSource a owl:ObjectProperty ;
+    rdfs:domain pkg:Package ;
+    rdfs:range pkg:PackageSource .
+
+pkg:hasDependencyType a owl:ObjectProperty ;
+    rdfs:domain pkg:Package ;
+    rdfs:range pkg:DependencyType .
+
+pkg:requiresValidation a owl:ObjectProperty ;
+    rdfs:domain pkg:Package ;
+    rdfs:range pkg:ValidationStep .
+
+pkg:hasSecurityImpact a owl:ObjectProperty ;
+    rdfs:domain pkg:Package ;
+    rdfs:range pkg:SecurityImpact .
+
+pkg:hasSecurityLikelihood a owl:ObjectProperty ;
+    rdfs:domain pkg:Package ;
+    rdfs:range pkg:SecurityLikelihood .
+
+# Instances
+pkg:CoreDependency a pkg:DependencyType ;
+    rdfs:label "Core Dependency" ;
+    rdfs:comment "Required for basic functionality" .
+
+pkg:DevelopmentDependency a pkg:DependencyType ;
+    rdfs:label "Development Dependency" ;
+    rdfs:comment "Required for development/testing" .
+
+pkg:OptionalDependency a pkg:DependencyType ;
+    rdfs:label "Optional Dependency" ;
+    rdfs:comment "Feature-specific dependency" .
+
+pkg:CondaSource a pkg:PackageSource ;
+    rdfs:label "Conda" ;
+    rdfs:comment "Package from conda repository" .
+
+pkg:PipSource a pkg:PackageSource ;
+    rdfs:label "PyPI" ;
+    rdfs:comment "Package from PyPI repository" .
+
+pkg:DependencyValidation a pkg:ValidationStep ;
+    rdfs:label "Dependency Validation" ;
+    rdfs:comment "Check dependency compatibility" .
+
+pkg:SecurityValidation a pkg:ValidationStep ;
+    rdfs:label "Security Validation" ;
+    rdfs:comment "Check for security vulnerabilities" .
+
+pkg:CompatibilityValidation a pkg:ValidationStep ;
+    rdfs:label "Compatibility Validation" ;
+    rdfs:comment "Check version compatibility" .
+
+pkg:HighImpact a pkg:SecurityImpact ;
+    rdfs:label "High Impact" .
+
+pkg:MediumImpact a pkg:SecurityImpact ;
+    rdfs:label "Medium Impact" .
+
+pkg:LowImpact a pkg:SecurityImpact ;
+    rdfs:label "Low Impact" .
+
+pkg:HighLikelihood a pkg:SecurityLikelihood ;
+    rdfs:label "High Likelihood" .
+
+pkg:MediumLikelihood a pkg:SecurityLikelihood ;
+    rdfs:label "Medium Likelihood" .
+
+pkg:LowLikelihood a pkg:SecurityLikelihood ;
+    rdfs:label "Low Likelihood" .
+
+pkg:PackageManagementOntology a owl:Ontology ;
+    rdfs:label "Package Management Ontology" ;
+    rdfs:comment "Ontology for managing Python package dependencies" ;
+    owl:versionInfo "1.0.0" ;
+    owl:imports pdi: .
+
+# Add policy enforcement links
+pkg:SecurityChecker rdfs:subClassOf pdi:EnforcementMechanism ;
+    pdi:enforces pdi:SecurityValidationRequirement .
+
+pkg:PackageValidator rdfs:subClassOf pdi:EnforcementMechanism ;
+    pdi:enforces pdi:DependencyValidationRequirement .
+
+pkg:VersionManager rdfs:subClassOf pdi:EnforcementMechanism ;
+    pdi:enforces pdi:VersionConstraintRequirement . 

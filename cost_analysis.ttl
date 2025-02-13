@@ -104,4 +104,4 @@ cost:mlModelAssumption a cost:CostAssumption ;
     rdfs:comment "ML model inference cost per 1000 queries: $0.50" .
 
 cost:maintenanceAssumption a cost:CostAssumption ;
-    rdfs:comment "Monthly maintenance cost per deployment: 15% of implementation cost" . 
+    rdfs:comment "Monthly maintenance cost per deployment: 15% of implementation cost" .

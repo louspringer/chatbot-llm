@@ -8,10 +8,12 @@
 Tests for the error handling middleware implementation.
 """
 
+from unittest.mock import AsyncMock, MagicMock
+
 import pytest
-from unittest.mock import MagicMock, AsyncMock
 from botbuilder.core import TurnContext
 from botbuilder.schema import Activity
+
 from ..bot.error_middleware import ErrorHandlingMiddleware
 from ..bot.state_manager import StateManager
 

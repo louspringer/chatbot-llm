@@ -12,4 +12,4 @@ WHERE {
     OPTIONAL { ?prop sh:minCount|sh:maxCount ?constraint }
     OPTIONAL { ?prop sh:message ?message }
 }
-ORDER BY ?shape ?property 
+ORDER BY ?shape ?property

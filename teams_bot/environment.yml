@@ -12,4 +12,4 @@ dependencies:
     - botframework-connector
     - opencensus-ext-azure
     - azure-identity
-    - azure-keyvault-secrets 
+    - azure-keyvault-secrets

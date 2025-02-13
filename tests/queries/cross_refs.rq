@@ -1,0 +1,11 @@
+
+    PREFIX pdi: <file:///ontologies/policy_driven_implementation.ttl#>
+    PREFIX cog: <file:///ontologies/cognition_patterns.ttl#>
+    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+    
+    SELECT ?mech ?pattern WHERE {
+        ?mech rdf:type pdi:EnforcementMechanism ;
+              pdi:usesPattern ?pattern .
+        ?pattern rdf:type cog:EmergentPattern .
+    }
+    

@@ -1,0 +1,106 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix meta: <./meta#> .
+@prefix metameta: <./metameta#> .
+@prefix problem: <./problem#> .
+@prefix solution: <./solution#> .
+@prefix conversation: <./conversation#> .
+@prefix guidance: <./guidance#> .
+@prefix viz: <#> .
+
+# Classes
+viz:Visualizer a owl:Class ;
+    rdfs:label "Visualizer" ;
+    rdfs:comment "Base class for visualization generators" .
+
+viz:PlantUMLVisualizer a owl:Class ;
+    rdfs:subClassOf viz:Visualizer ;
+    rdfs:label "PlantUML Visualizer" ;
+    rdfs:comment "Generates PlantUML diagrams" .
+
+viz:MatplotlibVisualizer a owl:Class ;
+    rdfs:subClassOf viz:Visualizer ;
+    rdfs:label "Matplotlib Visualizer" ;
+    rdfs:comment "Generates Matplotlib-based visualizations" .
+
+viz:VisualizationEngine a owl:Class ;
+    rdfs:label "Visualization Engine" ;
+    rdfs:comment "Main engine for handling visualizations" .
+
+viz:VisualizationType a owl:Class ;
+    rdfs:label "Visualization Type" ;
+    rdfs:comment "Type of visualization to generate" .
+
+viz:VisualizationOutput a owl:Class ;
+    rdfs:label "Visualization Output" ;
+    rdfs:comment "Output from visualization generation" .
+
+# Properties
+viz:hasVisualizer a owl:ObjectProperty ;
+    rdfs:domain viz:VisualizationEngine ;
+    rdfs:range viz:Visualizer .
+
+viz:generatesOutput a owl:ObjectProperty ;
+    rdfs:domain viz:Visualizer ;
+    rdfs:range viz:VisualizationOutput .
+
+viz:hasType a owl:ObjectProperty ;
+    rdfs:domain viz:VisualizationOutput ;
+    rdfs:range viz:VisualizationType .
+
+viz:hasFormat a owl:DatatypeProperty ;
+    rdfs:domain viz:VisualizationOutput ;
+    rdfs:range xsd:string .
+
+# Instances
+viz:PlantUMLType a viz:VisualizationType ;
+    rdfs:label "PlantUML" ;
+    viz:hasFormat "puml" .
+
+viz:MatplotlibType a viz:VisualizationType ;
+    rdfs:label "Matplotlib" ;
+    viz:hasFormat "png" .
+
+viz:JSONDiagram a viz:VisualizationType ;
+    rdfs:label "JSON Diagram" ;
+    rdfs:subClassOf viz:PlantUMLType .
+
+viz:PieChart a viz:VisualizationType ;
+    rdfs:label "Pie Chart" ;
+    rdfs:subClassOf viz:PlantUMLType .
+
+viz:SequenceDiagram a viz:VisualizationType ;
+    rdfs:label "Sequence Diagram" ;
+    rdfs:subClassOf viz:PlantUMLType .
+
+viz:LinePlot a viz:VisualizationType ;
+    rdfs:label "Line Plot" ;
+    rdfs:subClassOf viz:MatplotlibType .
+
+viz:BarPlot a viz:VisualizationType ;
+    rdfs:label "Bar Plot" ;
+    rdfs:subClassOf viz:MatplotlibType .
+
+viz:ScatterPlot a viz:VisualizationType ;
+    rdfs:label "Scatter Plot" ;
+    rdfs:subClassOf viz:MatplotlibType .
+
+# SHACL Validation
+viz:VisualizerShape a sh:NodeShape ;
+    sh:targetClass viz:Visualizer ;
+    sh:property [
+        sh:path viz:generatesOutput ;
+        sh:minCount 1 ;
+        sh:message "Visualizer must generate at least one output type"
+    ] .
+
+viz:VisualizationOutputShape a sh:NodeShape ;
+    sh:targetClass viz:VisualizationOutput ;
+    sh:property [
+        sh:path viz:hasType ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:message "Output must have exactly one visualization type"
+    ] . 

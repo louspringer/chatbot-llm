@@ -241,4 +241,4 @@ guidance:TeamsAuthAnalogy a guidance:DomainAnalogy ;
 
 # TODO: Add validation rules for:
 # - Response formats
-# - Security practices 
+# - Security practices

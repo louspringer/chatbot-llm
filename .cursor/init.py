@@ -3,6 +3,7 @@
 
 import os
 import sys
+
 from tools.register_tools import register_all
 
 # Add the project root to Python path
@@ -14,4 +15,4 @@ tools = register_all()
 
 # Make tools available to Cursor
 for tool in tools:
-    globals()[tool['name']] = tool['function'] 
+    globals()[tool["name"]] = tool["function"]

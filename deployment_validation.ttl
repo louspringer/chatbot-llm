@@ -361,4 +361,4 @@ dv:CloudEnvironmentShape a sh:NodeShape ;
                 sh:message "Must specify compliance type."
             ]
         ]
-    ] . 
+    ] .

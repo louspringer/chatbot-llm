@@ -1,0 +1,73 @@
+Channels:
+ - defaults
+ - conda-forge
+Platform: osx-64
+Collecting package metadata (repodata.json): ...working... done
+Solving environment: ...working... done
+
+## Package Plan ##
+
+  environment location: /Users/lou/miniconda3/envs/clpm-bootstrap
+
+  added / updated specs:
+    - pytest-asyncio
+
+
+The following packages will be downloaded:
+
+    package                    |            build
+    ---------------------------|-----------------
+    packaging-24.2             |  py313hecd8cb5_0         203 KB
+    pluggy-1.5.0               |  py313hecd8cb5_0          48 KB
+    pytest-8.3.4               |  py313hecd8cb5_0         1.2 MB
+    pytest-asyncio-0.25.3      |  py313hecd8cb5_0          57 KB
+    ------------------------------------------------------------
+                                           Total:         1.5 MB
+
+The following NEW packages will be INSTALLED:
+
+  iniconfig          pkgs/main/noarch::iniconfig-1.1.1-pyhd3eb1b0_0 
+  packaging          pkgs/main/osx-64::packaging-24.2-py313hecd8cb5_0 
+  pluggy             pkgs/main/osx-64::pluggy-1.5.0-py313hecd8cb5_0 
+  pytest             pkgs/main/osx-64::pytest-8.3.4-py313hecd8cb5_0 
+  pytest-asyncio     pkgs/main/osx-64::pytest-asyncio-0.25.3-py313hecd8cb5_0 
+
+
+
+Downloading and Extracting Packages: ...working...pytest-8.3.4         | 1.2 MB    |            |   0% 
+packaging-24.2       | 203 KB    |            |   0% [A
+
+pytest-asyncio-0.25. | 57 KB     |            |   0% [A[A
+
+
+pluggy-1.5.0         | 48 KB     |            |   0% [A[A[A
+packaging-24.2       | 203 KB    | 7          |   8% [A
+
+pytest-asyncio-0.25. | 57 KB     | ##7        |  28% [A[A
+
+pytest-asyncio-0.25. | 57 KB     | ########## | 100% [A[A
+
+
+pluggy-1.5.0         | 48 KB     | ###3       |  33% [A[A[A
+
+
+pluggy-1.5.0         | 48 KB     | ########## | 100% [A[A[Apytest-8.3.4         | 1.2 MB    | 1          |   1% 
+packaging-24.2       | 203 KB    | ########## | 100% [A
+
+
+pluggy-1.5.0         | 48 KB     | ########## | 100% [A[A[Apytest-8.3.4         | 1.2 MB    | ###2       |  32% 
+
+pytest-asyncio-0.25. | 57 KB     | ########## | 100% [A[A
+
+pytest-asyncio-0.25. | 57 KB     | ########## | 100% [A[A
+packaging-24.2       | 203 KB    | ########## | 100% [A
+packaging-24.2       | 203 KB    | ########## | 100% [Apytest-8.3.4         | 1.2 MB    | ######1    |  62% pytest-8.3.4         | 1.2 MB    | ########3  |  84% pytest-8.3.4         | 1.2 MB    | ########## | 100% pytest-8.3.4         | 1.2 MB    | ########## | 100%                                                      
+                                                     [A
+
+                                                     [A[A
+
+
+                                                     [A[A[A done
+Preparing transaction: - done
+Verifying transaction: | / - done
+Executing transaction: | / - \ | / - \ | / - \ | / - \ | / - \ | done

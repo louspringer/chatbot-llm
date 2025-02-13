@@ -12,7 +12,7 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
         echo "Installing Homebrew..."
         /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
     fi
-    
+
     echo "Installing dependencies with Homebrew..."
     brew install python@3.10 node npm azure-functions-core-tools@4 1password-cli
     brew install --cask bot-framework-emulator
@@ -22,14 +22,14 @@ elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
         echo "Installing dependencies with apt..."
         sudo apt-get update
         sudo apt-get install -y python3.10 python3.10-venv nodejs npm
-        
+
         # Install Azure Functions Core Tools
         curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg
         sudo mv microsoft.gpg /etc/apt/trusted.gpg.d/microsoft.gpg
         sudo sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/microsoft-ubuntu-$(lsb_release -cs)-prod $(lsb_release -cs) main" > /etc/apt/sources.list.d/dotnetdev.list'
         sudo apt-get update
         sudo apt-get install -y azure-functions-core-tools-4
-        
+
         # Install 1Password CLI
         curl -sS https://downloads.1password.com/linux/keys/1password.asc | sudo gpg --dearmor --output /usr/share/keyrings/1password-archive-keyring.gpg
         echo "deb [arch=amd64 signed-by=/usr/share/keyrings/1password-archive-keyring.gpg] https://downloads.1password.com/linux/debian/amd64 stable main" | sudo tee /etc/apt/sources.list.d/1password.list
@@ -51,11 +51,11 @@ if ! command -v conda &> /dev/null; then
     else
         MINICONDA_URL="https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh"
     fi
-    
+
     curl -o miniconda.sh $MINICONDA_URL
     bash miniconda.sh -b -p $HOME/miniconda
     rm miniconda.sh
-    
+
     # Initialize conda
     eval "$($HOME/miniconda/bin/conda shell.bash hook)"
     conda init
@@ -157,25 +157,25 @@ fi
 # Run Python checks if Python files are staged
 if [ ! -z "$STAGED_PY_FILES" ]; then
     echo -e "\n${YELLOW}Running Python code quality checks...${NC}"
-    
+
     # Format code with black
     run_check "python -m black --check $STAGED_PY_FILES" "black"
-    
+
     # Sort imports
     run_check "python -m isort --check-only $STAGED_PY_FILES" "isort"
-    
+
     # Run flake8
     run_check "python -m flake8 $STAGED_PY_FILES" "flake8"
-    
+
     # Run mypy type checking
     run_check "python -m mypy $STAGED_PY_FILES" "mypy"
-    
+
     # Run pylint
     run_check "python -m pylint $STAGED_PY_FILES" "pylint"
-    
+
     # Run bandit security checks
     run_check "python -m bandit -r $STAGED_PY_FILES" "bandit"
-    
+
     # Run critical tests
     echo -e "\n${YELLOW}Running critical tests...${NC}"
     if ! python -m pytest tools/tests/test_validate_local_env.py -v; then
@@ -197,13 +197,13 @@ fi
 # Validate ontology files if changed
 if [ ! -z "$STAGED_TTL_FILES" ]; then
     echo -e "\n${YELLOW}Validating ontology files...${NC}"
-    
+
     # Run ontology validation
     if ! python tools/validate_ontology_state.py; then
         echo -e "${RED}Ontology validation failed!${NC}"
         ERROR=1
     fi
-    
+
     # Additional RDF syntax validation
     if command -v riot &> /dev/null; then
         for file in $STAGED_TTL_FILES; do
@@ -221,13 +221,13 @@ fi
 # Validate session and checkpoint if session.ttl changed
 if [ ! -z "$STAGED_SESSION_FILES" ]; then
     echo -e "\n${YELLOW}Validating session and checkpoint state...${NC}"
-    
+
     # Run checkpoint tests
     if ! python -m pytest tools/tests/test_get_checkpoint.py -v; then
         echo -e "${RED}Checkpoint validation failed!${NC}"
         ERROR=1
     fi
-    
+
     # Check checkpoint output
     if ! python tools/get_checkpoint.py > /dev/null; then
         echo -e "${RED}Invalid checkpoint state!${NC}"
@@ -257,10 +257,10 @@ echo -e "\n${GREEN}All pre-commit checks passed!${NC}"
 exit 0
 EOL
     chmod +x .git/hooks/pre-commit
-    
+
     # Install additional dependencies for pre-commit checks
     pip install pylint bandit isort rdflib
-    
+
     # Check for Apache Jena (riot command)
     if ! command -v riot &> /dev/null; then
         if [[ "$OSTYPE" == "darwin"* ]]; then
@@ -281,4 +281,4 @@ echo "Local environment setup complete!"
 echo "Next steps:"
 echo "1. Update .env with your settings"
 echo "2. Start the bot with: ./start-local.sh"
-echo "3. Connect using Bot Framework Emulator: http://localhost:3978/api/messages" 
+echo "3. Connect using Bot Framework Emulator: http://localhost:3978/api/messages"

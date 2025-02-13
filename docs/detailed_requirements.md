@@ -548,4 +548,4 @@ The End User Representative advocates for user needs and ensures the solution me
 4. User Acceptance Testing
    - Business scenarios
    - User workflows
-   - Performance acceptance 
+   - Performance acceptance

@@ -4,104 +4,91 @@ Script to automatically update the documentation index by scanning for new
 documentation files and updating docs/index.md accordingly.
 """
 
-from pathlib import Path
-import re
-import os
-import signal
 import argparse
 import logging
-from typing import Dict, List, Tuple
+import signal
 from contextlib import contextmanager
+from pathlib import Path
+from typing import Any, Dict, List, Tuple
+
+# Setup logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 def setup_logging(verbose: bool) -> None:
-    """Configure logging based on verbosity."""
+    """Configure logging based on verbosity level."""
     level = logging.DEBUG if verbose else logging.INFO
-    logging.basicConfig(
-        level=level,
-        format='%(message)s' if not verbose else '%(levelname)s: %(message)s'
-    )
+    logging.getLogger().setLevel(level)
 
 
 class TimeoutException(Exception):
-    pass
+    """Exception raised when a timeout occurs."""
 
 
 @contextmanager
 def timeout(seconds: int = 2):
-    """Context manager for timeout handling."""
-    def timeout_handler(signum, frame):
+    """Context manager for timing out operations."""
+
+    def timeout_handler(signum: Any, frame: Any) -> None:
         raise TimeoutException()
-    
-    # Set the timeout handler
-    original_handler = signal.signal(signal.SIGALRM, timeout_handler)
+
+    # Register the signal handler
+    signal.signal(signal.SIGALRM, timeout_handler)
     signal.alarm(seconds)
-    
+
     try:
         yield
     finally:
-        # Restore the original handler
         signal.alarm(0)
-        signal.signal(signal.SIGALRM, original_handler)
 
 
 def is_readable_file(file_path: Path) -> bool:
-    """Check if file is readable and not a special file."""
+    """Check if a file is readable and not a binary file."""
     try:
-        return (file_path.is_file() and 
-                os.access(file_path, os.R_OK) and
-                not file_path.is_symlink() and
-                file_path.stat().st_size < 1_000_000)
-    except (OSError, IOError):
+        with timeout():
+            with open(file_path, "rb") as f:
+                chunk = f.read(1024)
+                return b"\0" not in chunk
+    except (TimeoutException, Exception):
         return False
 
 
 def get_file_description(file_path: Path) -> str:
-    """Extract description from file's frontmatter or first heading."""
-    if not is_readable_file(file_path):
-        logging.debug(f"Skipping unreadable file: {file_path}")
-        return file_path.stem.replace("_", " ").title()
-    
+    """Extract a description from a file's contents."""
     try:
-        with timeout(2):  # 2 second timeout for file operations
-            with file_path.open('r', encoding='utf-8') as f:
-                # Read first 1000 bytes to check for binary content
-                try:
-                    start = f.read(1000)
-                    if '\0' in start:  # Skip binary files
-                        logging.debug(f"Binary file detected: {file_path}")
-                        return file_path.stem.replace("_", " ").title()
-                    
-                    # Reset file pointer
-                    f.seek(0)
-                    content = f.read(10000)  # Limit content read
-                    
-                    # Try to find description in frontmatter
-                    if content.startswith("---"):
-                        frontmatter = content.split("---")[1]
-                        match = re.search(r'description:\s*(.+)', frontmatter)
-                        if match:
-                            desc = match.group(1).strip()
+        if not is_readable_file(file_path):
+            return file_path.stem.replace("_", " ").title()
+
+        with timeout():
+            with open(file_path, "r", encoding="utf-8") as f:
+                content = f.read()
+
+                # Try to find frontmatter description
+                if "---" in content:
+                    try:
+                        _, frontmatter, _ = content.split("---", 2)
+                        if "description:" in frontmatter:
+                            desc = frontmatter.split("description:", 1)[1]
+                            desc = desc.split("\n", 1)[0].strip()
                             logging.debug(
                                 f"Found frontmatter in {file_path}: {desc}"
                             )
                             return desc
-                    
-                    # Try to find first heading description
-                    lines = content.split("\n")
-                    for line in lines[:10]:  # Only check first 10 lines
-                        if line.startswith("# "):
-                            desc = line[2:].strip()
-                            logging.debug(
-                                f"Found heading in {file_path}: {desc}"
-                            )
-                            return desc
-                except (UnicodeDecodeError, IOError) as e:
-                    logging.debug(f"Error reading {file_path}: {str(e)}")
-                
+                    except Exception:
+                        pass
+
+                # Try to find first heading description
+                lines = content.split("\n")
+                for line in lines[:10]:  # Only check first 10 lines
+                    if line.startswith("# "):
+                        desc = line[2:].strip()
+                        logging.debug(f"Found heading in {file_path}: {desc}")
+                        return desc
+
     except (TimeoutException, Exception) as e:
         logging.debug(f"Error processing {file_path}: {str(e)}")
-    
+
     return file_path.stem.replace("_", " ").title()
 
 
@@ -119,126 +106,85 @@ def categorize_file(file_path: Path) -> str:
         "sparql_queries": {".sparql", ".rq"},
         "testing_debug": {"test", "debug"},
         "reports_analysis": {"report", "analysis"},
-        "scripts_tools": {"script", "tool"}
+        "scripts_tools": {"script", "tool"},
     }
-    
+
     file_name = file_path.name.lower()
-    
-    for category, keywords in categories.items():
-        if any(keyword in file_name for keyword in keywords):
-            logging.debug(f"Categorized {file_path} as {category}")
-            return category
-    
-    logging.debug(f"No specific category found for {file_path}, using 'other'")
+    file_stem = file_path.stem.lower()
+    file_suffix = file_path.suffix.lower()
+
+    # Check each category's patterns
+    for category, patterns in categories.items():
+        for pattern in patterns:
+            if (
+                pattern in file_name
+                or pattern in file_stem
+                or pattern == file_suffix
+            ):
+                return category
+
     return "other"
 
 
 def generate_index_content(workspace_root: Path) -> str:
-    """Generate the content for the index.md file."""
-    docs = []
-    excluded = {
-        # Version Control
-        ".git", ".svn",
-        # Package/Environment
-        "node_modules", ".venv", "venv", "env",
-        "virtualenv", ".tox", ".conda",
-        # Cache/Build
-        "__pycache__", ".pytest_cache", ".mypy_cache",
-        ".coverage", "htmlcov", ".ruff_cache",
-        "build", "dist", ".eggs",
-        # IDE/Editor
-        ".vscode", ".idea", ".vs",
-        # Other
-        ".ipynb_checkpoints"
-    }
-    
-    # Only include actual documentation files
-    doc_extensions = {
-        # Documentation
-        ".md",    # Markdown documentation
-        ".rst",   # ReStructured Text docs
-        # Ontology files (since they contain documentation)
-        ".ttl",   # Turtle format ontologies
-        ".owl"    # Web Ontology Language files
-    }
-    
-    logging.info("Scanning workspace for documentation files...")
-    total_files = 0
-    processed_files = 0
-    skipped_files = 0
-    
+    """Generate the documentation index content."""
+    docs: List[Tuple[str, Path, str]] = []
+
+    # Scan for documentation files
     for file_path in workspace_root.rglob("*"):
-        total_files += 1
-        try:
-            # Skip excluded directories and non-matching files
-            if any(x in file_path.parts for x in excluded):
-                skipped_files += 1
-                logging.debug(f"Skipping excluded path: {file_path}")
-                continue
-            
-            if file_path.suffix not in doc_extensions:
-                skipped_files += 1
-                logging.debug(f"Skipping non-doc extension: {file_path}")
-                continue
-            
-            if is_readable_file(file_path):
-                rel_path = file_path.relative_to(workspace_root)
-                category = categorize_file(file_path)
-                description = get_file_description(file_path)
-                docs.append((category, rel_path, description))
-                processed_files += 1
-                logging.debug(f"Processed: {rel_path}")
-        except Exception as e:
-            skipped_files += 1
-            logging.debug(f"Error processing {file_path}: {str(e)}")
+        if not file_path.is_file():
             continue
-    
-    stats = (
-        f"{processed_files} docs processed, {skipped_files} skipped, "
-        f"{total_files} total files"
-    )
-    logging.info(f"Scan complete: {stats}")
-    
-    # Generate the index content
-    logging.info("Generating index content...")
+
+        # Skip certain directories and files
+        if any(part.startswith(".") for part in file_path.parts):
+            continue
+        if "node_modules" in file_path.parts:
+            continue
+
+        # Only include documentation files
+        if file_path.suffix.lower() in {".md", ".rst", ".txt", ".ttl"}:
+            relative_path = file_path.relative_to(workspace_root)
+            category = categorize_file(file_path)
+            description = get_file_description(file_path)
+            docs.append((category, relative_path, description))
+
+    # Group by category
+    grouped = group_by_category(docs)
+
+    # Generate markdown content
     content = ["# Documentation Index\n"]
-    
-    # Add table of contents
     content.append("## Table of Contents")
-    sections = [
-        "Getting Started", "Project Documentation", "Bot Development",
-        "Technical Documentation", "Testing and Debug Tools",
-        "Reports and Analysis", "Scripts and Tools"
-    ]
-    
-    for section in sections:
-        link = section.lower().replace(' ', '-')
-        content.append(f"- [{section}](#{link})")
+
+    # Add TOC entries
+    for category in sorted(grouped.keys()):
+        display_name = category.replace("_", " ").title()
+        content.append(f"- [{display_name}](#{category})")
+
     content.append("\n")
-    
-    # Add categorized documentation
-    for category, files in sorted(group_by_category(docs).items()):
-        title = category.replace('_', ' ').title()
-        content.append(f"## {title}")
-        for file_path, description in sorted(files):
-            is_index = file_path == Path("docs/index.md")
-            path = "#" if is_index else f"../{file_path}"
-            content.append(f"- [{file_path.name}]({path}) - {description}")
-        content.append("")
-    
-    content.append("---\n")
-    msg = "*Note: This index is automatically maintained*"
-    content.append(msg)
-    
+
+    # Add category sections
+    for category in sorted(grouped.keys()):
+        display_name = category.replace("_", " ").title()
+        content.append(f"\n## {display_name}")
+
+        # Add file entries
+        for file_path, description in sorted(grouped[category]):
+            link_text = file_path.name
+            if file_path.name == "index.md":
+                link_text = "#"
+            content.append(f"- [{link_text}]({file_path}) - {description}")
+
+    content.append("\n---\n")
+    content.append("*Note: This index is automatically maintained*")
+
     return "\n".join(content)
 
 
 def group_by_category(
-    docs: List[Tuple[str, Path, str]]
+    docs: List[Tuple[str, Path, str]],
 ) -> Dict[str, List[Tuple[Path, str]]]:
     """Group documentation files by their categories."""
-    GroupedType = Dict[str, List[Tuple[Path, str]]]
-    grouped: GroupedType = {}
+    grouped: Dict[str, List[Tuple[Path, str]]] = {}
     for category, path, description in docs:
         if category not in grouped:
             grouped[category] = []
@@ -249,33 +195,29 @@ def group_by_category(
 def parse_args() -> argparse.Namespace:
     """Parse command line arguments."""
     parser = argparse.ArgumentParser(
-        description="Update the documentation index by scanning for documentation files."
+        description="Update documentation index by scanning files."
     )
     parser.add_argument(
-        "-v", "--verbose",
-        action="store_true",
-        help="Enable verbose output"
+        "-v", "--verbose", action="store_true", help="Enable verbose logging"
     )
     return parser.parse_args()
 
 
-def main():
+def main() -> None:
+    """Main entry point."""
     args = parse_args()
     setup_logging(args.verbose)
-    
-    workspace_root = Path(__file__).parent.parent
+
+    workspace_root = Path.cwd()
     index_path = workspace_root / "docs" / "index.md"
-    
-    logging.info(f"Starting documentation index update in {workspace_root}")
-    
-    # Create docs directory if it doesn't exist
-    index_path.parent.mkdir(exist_ok=True)
-    
-    # Generate and write the index content
+
+    logger.info(f"Generating documentation index at {index_path}")
     content = generate_index_content(workspace_root)
+
+    index_path.parent.mkdir(parents=True, exist_ok=True)
     index_path.write_text(content)
-    logging.info(f"Successfully updated {index_path}")
+    logger.info("Documentation index updated successfully")
 
 
 if __name__ == "__main__":
-    main() 
+    main()

@@ -8,8 +8,10 @@ def check_ontology(file_path: str) -> bool:
     cmd = [
         "arq",
         "--base=file://$(pwd)/",
-        "--data", file_path,
-        "--query", "src/chatbot_llm/queries/debug.rq"
+        "--data",
+        file_path,
+        "--query",
+        "src/chatbot_llm/queries/debug.rq",
     ]
     result = subprocess.run(cmd, capture_output=True, text=True)
     return not bool(result.stderr)
@@ -25,7 +27,7 @@ def validate_all():
         "solution.ttl",
         "chatbot.ttl",
         "cortexteams.ttl",
-        "guidance.ttl"
+        "guidance.ttl",
     ]
 
     results = []

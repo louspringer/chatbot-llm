@@ -83,7 +83,7 @@ LOG_LEVEL=DEBUG
    - Basic text: "Hello"
    - Commands: "/help"
    - Special characters: "Test @#$%"
-   
+
 Expected:
 - Bot responds appropriately
 - No error messages in logs
@@ -238,4 +238,4 @@ conda env create -f environment.yml
 ```bash
 # Full environment check
 ./tools/verify_env.sh
-``` 
+```

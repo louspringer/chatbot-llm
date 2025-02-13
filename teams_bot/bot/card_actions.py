@@ -6,7 +6,8 @@
 # Description: Teams Adaptive Card action handlers
 """
 
-from typing import Dict, Any, Callable, Awaitable
+from typing import Any, Awaitable, Callable, Dict
+
 from botbuilder.core import TurnContext
 from botbuilder.schema import Activity
 
@@ -18,14 +19,14 @@ class CardActionHandler:
 
     def __init__(self):
         """Initialize the action handler."""
-        self._action_handlers: Dict[str, Callable[
-            [TurnContext, Dict[str, Any]], Awaitable[Activity]
-        ]] = {}
+        self._action_handlers: Dict[
+            str, Callable[[TurnContext, Dict[str, Any]], Awaitable[Activity]]
+        ] = {}
 
     def register_action(
         self,
         action_name: str,
-        handler: Callable[[TurnContext, Dict[str, Any]], Awaitable[Activity]]
+        handler: Callable[[TurnContext, Dict[str, Any]], Awaitable[Activity]],
     ) -> None:
         """Register an action handler.
 
@@ -36,9 +37,7 @@ class CardActionHandler:
         self._action_handlers[action_name] = handler
 
     async def handle_action(
-        self,
-        turn_context: TurnContext,
-        action_data: Dict[str, Any]
+        self, turn_context: TurnContext, action_data: Dict[str, Any]
     ) -> Activity:
         """Handle an action from a card.
 
@@ -63,9 +62,7 @@ class CardActionHandler:
             return await self._handle_action_error(turn_context, str(e))
 
     async def _handle_unknown_action(
-        self,
-        turn_context: TurnContext,
-        action_data: Dict[str, Any]
+        self, turn_context: TurnContext, action_data: Dict[str, Any]
     ) -> Activity:
         """Handle an unknown action.
 
@@ -77,21 +74,20 @@ class CardActionHandler:
             An error activity
         """
         error_card = ErrorCard.create(
-            "Unknown action received",
-            error_id="ERR-UNKNOWN-ACTION"
+            "Unknown action received", error_id="ERR-UNKNOWN-ACTION"
         )
         return Activity(
             type="message",
-            attachments=[{
-                "contentType": "application/vnd.microsoft.card.adaptive",
-                "content": error_card
-            }]
+            attachments=[
+                {
+                    "contentType": "application/vnd.microsoft.card.adaptive",
+                    "content": error_card,
+                }
+            ],
         )
 
     async def _handle_action_error(
-        self,
-        turn_context: TurnContext,
-        error_message: str
+        self, turn_context: TurnContext, error_message: str
     ) -> Activity:
         """Handle an error during action processing.
 
@@ -102,14 +98,13 @@ class CardActionHandler:
         Returns:
             An error activity
         """
-        error_card = ErrorCard.create(
-            error_message,
-            error_id="ERR-ACTION-FAILED"
-        )
+        error_card = ErrorCard.create(error_message, error_id="ERR-ACTION-FAILED")
         return Activity(
             type="message",
-            attachments=[{
-                "contentType": "application/vnd.microsoft.card.adaptive",
-                "content": error_card
-            }]
+            attachments=[
+                {
+                    "contentType": "application/vnd.microsoft.card.adaptive",
+                    "content": error_card,
+                }
+            ],
         )

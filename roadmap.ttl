@@ -1,0 +1,66 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix meta: <./meta#> .
+@prefix metameta: <./metameta#> .
+@prefix problem: <./problem#> .
+@prefix solution: <./solution#> .
+@prefix conversation: <./conversation#> .
+@prefix guidance: <./guidance#> .
+@prefix roadmap: <#> .
+
+# Classes
+roadmap:Roadmap a owl:Class ;
+    rdfs:label "Roadmap" ;
+    rdfs:comment "Product roadmap and future plans" .
+
+roadmap:Feature a owl:Class ;
+    rdfs:label "Feature" ;
+    rdfs:comment "Planned feature or enhancement" .
+
+roadmap:Priority a owl:Class ;
+    rdfs:label "Priority" ;
+    rdfs:comment "Priority level for features" .
+
+# Properties
+roadmap:plannedVersion a owl:DatatypeProperty ;
+    rdfs:domain roadmap:Roadmap ;
+    rdfs:range xsd:string .
+
+roadmap:hasFeature a owl:ObjectProperty ;
+    rdfs:domain roadmap:Roadmap ;
+    rdfs:range roadmap:Feature .
+
+roadmap:priority a owl:DatatypeProperty ;
+    rdfs:domain roadmap:Feature ;
+    rdfs:range xsd:string .
+
+roadmap:plannedQuarter a owl:DatatypeProperty ;
+    rdfs:domain roadmap:Feature ;
+    rdfs:range xsd:string .
+
+# Instances
+roadmap:AutomatedRecovery a roadmap:Feature ;
+    rdfs:label "Automated Recovery" ;
+    roadmap:priority "HIGH" ;
+    roadmap:plannedQuarter "2024-Q2" .
+
+roadmap:EnhancedMonitoring a roadmap:Feature ;
+    rdfs:label "Enhanced Monitoring" ;
+    roadmap:priority "HIGH" ;
+    roadmap:plannedQuarter "2024-Q3" .
+
+roadmap:SecurityImprovements a roadmap:Feature ;
+    rdfs:label "Security Improvements" ;
+    roadmap:priority "HIGH" ;
+    roadmap:plannedQuarter "2024-Q4" .
+
+roadmap:HighPriority a roadmap:Priority ;
+    rdfs:label "High Priority" .
+
+roadmap:MediumPriority a roadmap:Priority ;
+    rdfs:label "Medium Priority" .
+
+roadmap:LowPriority a roadmap:Priority ;
+    rdfs:label "Low Priority" . 

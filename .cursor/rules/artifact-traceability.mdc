@@ -122,10 +122,10 @@ WHERE {
 SELECT ?file
 WHERE {
   ?file a :Artifact .
-  FILTER NOT EXISTS { 
+  FILTER NOT EXISTS {
     ?file :hasOntologyReference ?ref ;
           :hasRequirement ?req ;
-          :hasGuidancePattern ?pattern 
+          :hasGuidancePattern ?pattern
   }
 }
 
@@ -181,4 +181,4 @@ WHERE {
    - Be specific about what is being implemented
    - Document relationships clearly
    - Keep descriptions focused and relevant
-   - Explain pattern application 
+   - Explain pattern application

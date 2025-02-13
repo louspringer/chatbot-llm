@@ -9,4 +9,4 @@ WHERE {
             rdfs:label ?label .
     OPTIONAL { ?interp guidance:sourceContext ?source }
     OPTIONAL { ?interp guidance:targetContext ?target }
-} 
+}

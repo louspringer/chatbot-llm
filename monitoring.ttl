@@ -1,0 +1,110 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix meta: <./meta#> .
+@prefix metameta: <./metameta#> .
+@prefix problem: <./problem#> .
+@prefix solution: <./solution#> .
+@prefix conversation: <./conversation#> .
+@prefix guidance: <./guidance#> .
+@prefix monitor: <#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+
+# Classes
+monitor:MonitoringRequirement a owl:Class ;
+    rdfs:label "Monitoring Requirement" ;
+    rdfs:comment "Base class for monitoring requirements" .
+
+monitor:KPI a owl:Class ;
+    rdfs:label "Key Performance Indicator" ;
+    rdfs:comment "Performance metrics and indicators" .
+
+monitor:Alert a owl:Class ;
+    rdfs:label "Alert" ;
+    rdfs:comment "Monitoring alerts and notifications" .
+
+monitor:Implementation a owl:Class ;
+    rdfs:label "Implementation" ;
+    rdfs:comment "Monitoring implementation details" .
+
+# Properties
+monitor:hasKPI a owl:ObjectProperty ;
+    rdfs:domain monitor:MonitoringRequirement ;
+    rdfs:range monitor:KPI .
+
+monitor:hasAlert a owl:ObjectProperty ;
+    rdfs:domain monitor:MonitoringRequirement ;
+    rdfs:range monitor:Alert .
+
+monitor:hasImplementation a owl:ObjectProperty ;
+    rdfs:domain monitor:MonitoringRequirement ;
+    rdfs:range monitor:Implementation .
+
+monitor:hasMetric a owl:DatatypeProperty ;
+    rdfs:domain monitor:KPI ;
+    rdfs:range xsd:string .
+
+# SHACL Validation Rules
+monitor:MonitoringRequirementShape a sh:NodeShape ;
+    sh:targetClass monitor:MonitoringRequirement ;
+    sh:property [
+        sh:path monitor:hasKPI ;
+        sh:minCount 1 ;
+        sh:message "Must have at least one KPI defined"
+    ] ;
+    sh:property [
+        sh:path monitor:hasAlert ;
+        sh:minCount 1 ;
+        sh:message "Must have at least one alert defined"
+    ] ;
+    sh:property [
+        sh:path monitor:hasImplementation ;
+        sh:minCount 1 ;
+        sh:message "Must specify implementation details"
+    ] .
+
+monitor:KPIShape a sh:NodeShape ;
+    sh:targetClass monitor:KPI ;
+    sh:property [
+        sh:path monitor:hasMetric ;
+        sh:minCount 1 ;
+        sh:message "Must have at least one metric defined"
+    ] ;
+    sh:property [
+        sh:path rdfs:label ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "Must have a label"
+    ] .
+
+monitor:AlertShape a sh:NodeShape ;
+    sh:targetClass monitor:Alert ;
+    sh:property [
+        sh:path rdfs:label ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "Must have a label"
+    ] .
+
+# Instances
+monitor:SuccessRate a monitor:KPI ;
+    rdfs:label "Success Rate" ;
+    monitor:hasMetric "RotationSuccess", "RotationDuration" .
+
+monitor:BackupHealth a monitor:KPI ;
+    rdfs:label "Backup Health" ;
+    monitor:hasMetric "BackupSuccess", "StorageUtilization" .
+
+monitor:SecurityMetrics a monitor:KPI ;
+    rdfs:label "Security Metrics" ;
+    monitor:hasMetric "PermissionErrors", "FailedAccess" .
+
+monitor:CriticalAlerts a monitor:Alert ;
+    rdfs:label "Critical Alerts" .
+
+monitor:WarningAlerts a monitor:Alert ;
+    rdfs:label "Warning Alerts" .
+
+monitor:CloudWatchMetrics a monitor:Implementation ;
+    rdfs:label "CloudWatch Metrics Implementation" . 

@@ -75,4 +75,4 @@ Now that we have core bot infrastructure and security in place, we can proceed w
 - cortex
 - teams-integration
 - query-handling
-- high-priority 
+- high-priority

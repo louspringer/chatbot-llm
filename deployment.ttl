@@ -216,4 +216,4 @@ deploy:RBAC rdf:type deploy:SecurityControl ;
     rdfs:label "Role-Based Access Control" ;
     deploy:implementedBy deploy:KeyVault ;
     deploy:implementedBy deploy:CosmosDB ;
-    deploy:implementedBy deploy:SnowflakeWarehouse . 
+    deploy:implementedBy deploy:SnowflakeWarehouse .

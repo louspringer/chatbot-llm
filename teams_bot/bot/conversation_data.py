@@ -9,16 +9,16 @@
 Conversation data management for the Teams bot.
 """
 
-from datetime import datetime, timedelta
-from dataclasses import dataclass, field, asdict
-from typing import Dict, Any, Optional, List, cast, TYPE_CHECKING
+import asyncio
 import json
 import logging
-import asyncio
 import types
+from dataclasses import asdict, dataclass, field
+from datetime import datetime, timedelta
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, cast
 
-from transitions.extensions.asyncio import AsyncMachine
 from transitions.core import MachineError
+from transitions.extensions.asyncio import AsyncMachine
 
 from .conversation_state import ConversationState
 
@@ -29,6 +29,7 @@ logger = logging.getLogger(__name__)
 
 # Maximum error count before forcing reset
 MAX_ERROR_COUNT = 3
+
 
 @dataclass
 class ConversationData:
@@ -120,14 +121,14 @@ class ConversationData:
         """Called before any event is triggered."""
         if self._machine is None:
             raise ValueError("State machine not initialized")
-            
+
         valid_triggers = self._machine.get_triggers(event_data.state.name)
         if event_data.event.name not in valid_triggers:
             self.error_count += 1
             msg = f"Invalid transition attempted: Cannot trigger {event_data.event.name} from state {event_data.state.name}"
             logger.warning(msg)
             raise MachineError(msg)
-            
+
         return True
 
     def _before_state_change(self, event_data):
@@ -137,12 +138,17 @@ class ConversationData:
     def _after_state_change(self, event_data):
         """Called after state changes to update state history."""
         # Only add to state history if it's a new state
-        if not self.state_history or self.state_history[-1]["state"] != event_data.state.name:
-            self.state_history.append({
-                "state": event_data.state.name,
-                "timestamp": datetime.utcnow().isoformat(),
-                "trigger": event_data.event.name if event_data.event else "",
-            })
+        if (
+            not self.state_history
+            or self.state_history[-1]["state"] != event_data.state.name
+        ):
+            self.state_history.append(
+                {
+                    "state": event_data.state.name,
+                    "timestamp": datetime.utcnow().isoformat(),
+                    "trigger": (event_data.event.name if event_data.event else ""),
+                }
+            )
         # Update current state
         self.current_state = ConversationState(event_data.state.name)
 
@@ -172,8 +178,12 @@ class ConversationData:
             return False
 
         try:
-            self.current_state = ConversationState(self.checkpoint_data["current_state"])
-            self.conversation_references = self.checkpoint_data["conversation_references"].copy()
+            self.current_state = ConversationState(
+                self.checkpoint_data["current_state"]
+            )
+            self.conversation_references = self.checkpoint_data[
+                "conversation_references"
+            ].copy()
             self.active_query = self.checkpoint_data["active_query"]
             self.last_response = self.checkpoint_data["last_response"]
             self.error_count = self.checkpoint_data["error_count"]
@@ -218,17 +228,21 @@ class ConversationData:
                 else:
                     data[field] = None
         else:
-            data.update({
-                "active_query": self.active_query,
-                "last_response": self.last_response,
-                "conversation_references": {},  # Empty dict when no state manager
-                "last_message_id": self.last_message_id,
-            })
+            data.update(
+                {
+                    "active_query": self.active_query,
+                    "last_response": self.last_response,
+                    "conversation_references": {},  # Empty dict when no state manager
+                    "last_message_id": self.last_message_id,
+                }
+            )
 
         return data
 
     @classmethod
-    def from_dict(cls, data: dict, state_manager: Optional[Any] = None) -> "ConversationData":
+    def from_dict(
+        cls, data: dict, state_manager: Optional[Any] = None
+    ) -> "ConversationData":
         """Create conversation data from dictionary."""
         instance = cls(
             conversation_id=data["conversation_id"],
@@ -373,12 +387,12 @@ class ConversationData:
 
     async def trigger(self, trigger: str, *args: Any, **kwargs: Any) -> None:
         """Trigger a state transition.
-        
+
         Args:
             trigger: The name of the trigger to execute.
             *args: Positional arguments to pass to the trigger.
             **kwargs: Keyword arguments to pass to the trigger.
-            
+
         Raises:
             ValueError: If state machine is not initialized.
             MachineError: If the transition is not valid.
@@ -386,7 +400,7 @@ class ConversationData:
         """
         if self._machine is None:
             raise ValueError("State machine not initialized")
-        
+
         # Acquire the lock with a timeout
         try:
             async with self._lock:
@@ -394,7 +408,7 @@ class ConversationData:
                 try:
                     await asyncio.wait_for(
                         self._machine.dispatch(trigger, *args, **kwargs),
-                        timeout=1.0
+                        timeout=1.0,
                     )
                 except asyncio.TimeoutError:
                     logger.error(f"Timeout during transition {trigger}")

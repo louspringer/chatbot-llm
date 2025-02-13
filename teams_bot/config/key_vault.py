@@ -6,24 +6,26 @@
 # Description: Azure Key Vault configuration and credential management
 """
 
-from typing import Optional, Dict
-import os
-import logging
 import asyncio
+import logging
+import os
+from typing import Dict, Optional
+
+from azure.core.exceptions import ResourceNotFoundError
 from azure.identity import DefaultAzureCredential, ManagedIdentityCredential
 from azure.keyvault.secrets import SecretClient
-from azure.core.exceptions import ResourceNotFoundError
 
 logger = logging.getLogger(__name__)
+
 
 class KeyVaultConfig:
     """Azure Key Vault configuration and management."""
 
     def __init__(self, vault_url: Optional[str] = None):
         """Initialize Key Vault configuration.
-        
+
         Args:
-            vault_url: Azure Key Vault URL. If not provided, uses 
+            vault_url: Azure Key Vault URL. If not provided, uses
                 AZURE_KEY_VAULT_URL env var.
         """
         self.vault_url = vault_url or os.getenv("AZURE_KEY_VAULT_URL")
@@ -36,8 +38,7 @@ class KeyVaultConfig:
         try:
             self.credential = ManagedIdentityCredential()
             self.client = SecretClient(
-                vault_url=self.vault_url, 
-                credential=self.credential
+                vault_url=self.vault_url, credential=self.credential
             )
             # Skip test connection in __init__ as it's synchronous
             # Connection will be tested on first secret retrieval
@@ -48,28 +49,24 @@ class KeyVaultConfig:
             )
             self.credential = DefaultAzureCredential()
             self.client = SecretClient(
-                vault_url=self.vault_url, 
-                credential=self.credential
+                vault_url=self.vault_url, credential=self.credential
             )
 
     async def get_secret(self, secret_name: str) -> str:
         """Get a secret from Key Vault.
-        
+
         Args:
             secret_name: Name of the secret to retrieve
-            
+
         Returns:
             The secret value
-            
+
         Raises:
             ValueError: If secret not found
         """
         try:
             # Use asyncio.to_thread to run the synchronous get_secret in thread
-            secret = await asyncio.to_thread(
-                self.client.get_secret, 
-                secret_name
-            )
+            secret = await asyncio.to_thread(self.client.get_secret, secret_name)
             if secret and secret.value:
                 return secret.value
             raise ValueError(f"Secret {secret_name} has no value")
@@ -81,7 +78,7 @@ class KeyVaultConfig:
 
     async def set_secret(self, secret_name: str, value: str) -> None:
         """Set a secret in Key Vault.
-        
+
         Args:
             secret_name: Name of the secret
             value: Secret value to store
@@ -94,7 +91,7 @@ class KeyVaultConfig:
 
     async def delete_secret(self, secret_name: str) -> None:
         """Delete a secret from Key Vault.
-        
+
         Args:
             secret_name: Name of the secret to delete
         """
@@ -118,7 +115,7 @@ class KeyVaultConfig:
 
     async def validate_required_secrets(self) -> Dict[str, bool]:
         """Validate that all required secrets are present in Key Vault.
-        
+
         Returns:
             Dictionary mapping secret names to their presence status
         """
@@ -132,4 +129,4 @@ class KeyVaultConfig:
             except Exception as e:
                 logger.error(f"Error validating secret {secret_name}: {e}")
                 status[secret_name] = False
-        return status 
+        return status

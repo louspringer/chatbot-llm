@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=65.0.0", "wheel>=0.40.0"]
+requires = [ "setuptools>=65.0.0", "wheel>=0.40.0",]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -8,58 +8,34 @@ version = "0.1.0"
 description = "Ontology-driven LLM chatbot framework"
 readme = "README.md"
 requires-python = ">=3.10,<3.12"
-license = {file = "LICENSE"}
-authors = [
-    {name = "Lou Springer", email = "lou@louspringer.com"},
-]
-dependencies = [
-    "rdflib>=6.0.0",
-    "owlready2>=0.37",
-    "pyshacl>=0.20.0",
-    "python-dotenv>=0.19.0",
-    "pyyaml>=6.0.0",
-    "aiohttp>=3.8.0",
-    "botbuilder-core>=4.14.0",
-    "botbuilder-schema>=4.14.0",
-    "botbuilder-dialogs>=4.14.0",
-    "botbuilder-ai>=4.14.0",
-    "botbuilder-azure>=4.14.0",
-    "botbuilder-integration-aiohttp>=4.14.0",
-    "azure-functions>=1.17.0",
-    "azure-identity>=1.12.0",
-    "azure-keyvault-secrets>=4.7.0",
-    "snowflake-snowpark-python>=1.0.0",
-]
-classifiers = [
-    "Development Status :: 3 - Alpha",
-    "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
-    "Operating System :: OS Independent",
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-]
+dependencies = [ "rdflib==7.1.3", "azure-monitor-opentelemetry==1.0.0", "requests==2.31.0", "aiohttp==3.10.11", "rich==13.7.0", "click==8.1.7", "pyyaml==6.0.1", "toml==0.10.2",]
+classifiers = [ "Development Status :: 3 - Alpha", "Intended Audience :: Developers", "License :: OSI Approved :: MIT License", "Operating System :: OS Independent", "Programming Language :: Python :: 3", "Programming Language :: Python :: 3.10", "Programming Language :: Python :: 3.11",]
+[[project.authors]]
+name = "Lou Springer"
+email = "lou@louspringer.com"
+
+[project.license]
+file = "LICENSE"
 
 [project.optional-dependencies]
-dev = [
-    "pytest==7.4.3",
-    "pytest-cov>=3.0.0",
-    "pytest-asyncio==0.21.1",
-    "pytest-mock>=3.10.0",
-    "pytest-env>=1.0.0",
-    "black>=24.0.0",
-    "flake8>=7.0.0",
-    "mypy>=1.8.0",
-    "pre-commit>=2.17.0",
-    "botbuilder-testing>=4.14.0",
-]
+dev = [ "pytest==8.3.4", "pytest-asyncio==0.25.3", "pytest-timeout==2.3.1", "pytest-mock==3.14.0", "pytest-cov==6.0.0", "pytest-env==1.0.1", "pytest-xdist==3.6.1",]
 
 [tool.black]
 line-length = 88
-target-version = ['py310']
-include = '\.pyi?$'
+target-version = [ "py310",]
+include = "\\.pyi?$"
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+ensure_newline_before_comments = true
+line_length = 88
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
-python_files = ["test_*.py"]
-addopts = "-ra -q" 
+testpaths = [ "tests",]
+python_files = [ "test_*.py",]
+addopts = "-ra -q"
+markers = [ "integration: marks tests that interact with real packages and external services",]

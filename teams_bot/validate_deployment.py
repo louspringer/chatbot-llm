@@ -3,11 +3,12 @@
 Validate Teams Bot deployment against ontology rules.
 """
 
+import logging
 import sys
 from pathlib import Path
-from rdflib import Graph, Namespace
+
 from pyshacl import validate
-import logging
+from rdflib import Graph, Namespace
 
 # Configure logging
 logging.basicConfig(

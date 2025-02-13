@@ -1,0 +1,9 @@
+
+    PREFIX cog: <file:///ontologies/cognition_patterns.ttl#>
+    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+    
+    SELECT ?meta ?related WHERE {
+        ?meta rdf:type cog:MetaPattern ;
+              cog:relatesTo ?related .
+    }
+    

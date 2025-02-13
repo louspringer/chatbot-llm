@@ -1,0 +1,10 @@
+
+    PREFIX cog: <file:///ontologies/cognition_patterns.ttl#>
+    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+    
+    SELECT ?pattern ?context ?complexity WHERE {
+        ?pattern rdf:type cog:Pattern ;
+                cog:hasContext ?context ;
+                cog:hasComplexity ?complexity .
+    }
+    

@@ -87,7 +87,7 @@ fi
 DEPLOY_CMD=(az deployment group create
     --resource-group "$AZURE_RESOURCE_GROUP"
     --template-file "$ARM_FILE"
-    --parameters 
+    --parameters
     keyVaultName="$AZURE_KEY_VAULT_NAME"
     location="$AZURE_LOCATION"
     servicePrincipalObjectId="$AZURE_SERVICE_PRINCIPAL_ID"
@@ -100,10 +100,10 @@ if [ $DRY_RUN -eq 1 ]; then
 else
     echo "Deploying Key Vault..."
     "${DEPLOY_CMD[@]}"
-    
+
     # Get the Key Vault URI
     KV_URI=$(az keyvault show --name "$AZURE_KEY_VAULT_NAME" --resource-group "$AZURE_RESOURCE_GROUP" --query "properties.vaultUri" -o tsv)
-    
+
     echo "Key Vault deployed successfully!"
     echo "Key Vault URI: $KV_URI"
 fi

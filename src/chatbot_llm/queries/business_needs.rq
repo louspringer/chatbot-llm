@@ -9,19 +9,19 @@ WHERE {
     ?need a :BusinessNeed ;
           rdfs:label ?label ;
           rdfs:comment ?comment .
-    
+
     # Get context and constraints, handling both named and blank nodes
-    OPTIONAL { 
+    OPTIONAL {
         ?need :hasContext ?ctx .
         {
             # Named context from cortexteams
-            ?ctx rdfs:label ?context 
+            ?ctx rdfs:label ?context
         } UNION {
             # Context from chatbot
             BIND(?ctx AS ?context)
         }
     }
-    OPTIONAL { 
+    OPTIONAL {
         ?need :hasConstraint ?con .
         {
             # Named constraints from cortexteams
@@ -32,4 +32,4 @@ WHERE {
         }
     }
 }
-ORDER BY ?label 
+ORDER BY ?label

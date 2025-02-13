@@ -7,14 +7,16 @@ import json
 import logging
 import os
 import sys
-from aiohttp import web
+
 import azure.functions as func
+from aiohttp import web
 from botbuilder.core import (
     BotFrameworkAdapter,
     BotFrameworkAdapterSettings,
     TurnContext,
 )
 from botbuilder.schema import Activity
+
 from teams_bot.bot.cosmos_storage import CosmosStorage
 from teams_bot.bot.state_manager import StateManager
 from teams_bot.config.key_vault import KeyVaultConfig
@@ -36,6 +38,7 @@ if os.getenv("AZURE_KEY_VAULT_URL"):
     except Exception as e:
         logger.error(f"Failed to initialize Key Vault: {e}")
 
+
 async def get_secret(name: str, default: str = "") -> str:
     """Get secret from Key Vault or environment variable."""
     if key_vault:
@@ -45,6 +48,7 @@ async def get_secret(name: str, default: str = "") -> str:
             logger.warning(f"Failed to get secret from Key Vault: {e}")
     return os.getenv(name, default)
 
+
 # Initialize with default values
 SETTINGS = BotFrameworkAdapterSettings(
     app_id="",
@@ -53,6 +57,7 @@ SETTINGS = BotFrameworkAdapterSettings(
 ADAPTER = BotFrameworkAdapter(SETTINGS)
 STATE_MANAGER = None
 
+
 async def initialize_bot():
     """Initialize bot with secrets from Key Vault or environment."""
     global SETTINGS, ADAPTER, STATE_MANAGER
@@ -60,7 +65,7 @@ async def initialize_bot():
     # Update settings with secrets
     SETTINGS.app_id = await get_secret("BOT_APP_ID", "")
     SETTINGS.app_password = await get_secret("BOT_APP_PASSWORD", "")
-    
+
     # Reinitialize adapter with updated settings
     ADAPTER = BotFrameworkAdapter(SETTINGS)
 
@@ -77,8 +82,9 @@ async def initialize_bot():
             database_id=database_id,
             container_id=container_id,
         ),
-        conversation_id="default"
+        conversation_id="default",
     )
+
 
 async def on_error(context: TurnContext, error: Exception):
     """Error handler for the bot."""
@@ -92,7 +98,9 @@ async def on_error(context: TurnContext, error: Exception):
     if STATE_MANAGER:
         await STATE_MANAGER.clear_state(context)
 
+
 ADAPTER.on_turn_error = on_error
+
 
 async def process_message_activity(turn_context: TurnContext):
     """Process a message activity from Teams."""
@@ -101,20 +109,17 @@ async def process_message_activity(turn_context: TurnContext):
     user_profile = await STATE_MANAGER.get_user_profile(turn_context)
 
     # Echo back the message
-    await turn_context.send_activity(
-        f"You said: {turn_context.activity.text}"
-    )
+    await turn_context.send_activity(f"You said: {turn_context.activity.text}")
 
     # Update state
     if turn_context.activity:
         conversation_data.last_message_id = turn_context.activity.id
         if turn_context.activity.timestamp:
-            user_profile.last_interaction = (
-                turn_context.activity.timestamp.isoformat()
-            )
+            user_profile.last_interaction = turn_context.activity.timestamp.isoformat()
 
     await STATE_MANAGER.save_conversation_data(turn_context, conversation_data)
     await STATE_MANAGER.save_user_profile(turn_context, user_profile)
+
 
 async def main(req: func.HttpRequest) -> func.HttpResponse:
     """Process incoming webhook requests from Teams."""
@@ -136,7 +141,7 @@ async def main(req: func.HttpRequest) -> func.HttpResponse:
                 return func.HttpResponse(
                     json.dumps(response),
                     status_code=200,
-                    mimetype="application/json"
+                    mimetype="application/json",
                 )
 
         return func.HttpResponse(status_code=200)
@@ -145,8 +150,10 @@ async def main(req: func.HttpRequest) -> func.HttpResponse:
         logger.exception(error)
         return func.HttpResponse(str(error), status_code=500)
 
+
 # For local debugging
 if __name__ == "__main__":
+
     async def messages(req):
         """Handle local bot messages."""
         try:
@@ -155,17 +162,13 @@ if __name__ == "__main__":
 
             # For local testing, just echo back
             if activity.type == "message":
-                return web.json_response({
-                    "type": "message",
-                    "text": f"Echo: {activity.text}"
-                })
+                return web.json_response(
+                    {"type": "message", "text": f"Echo: {activity.text}"}
+                )
             return web.Response(status=200)
 
         except Exception as e:
-            return web.json_response(
-                data={"error": str(e)},
-                status=500
-            )
+            return web.json_response(data={"error": str(e)}, status=500)
 
     app = web.Application()
     app.router.add_post("/api/messages", messages)

@@ -1,0 +1,79 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix sec: <#> .
+@prefix pkg: <./package_management.ttl#> .
+@prefix meta: <./meta#> .
+@prefix problem: <./problem#> .
+@prefix solution: <./solution#> .
+
+# Security Ontology Classes
+sec:Vulnerability a rdfs:Class ;
+    rdfs:label "Security Vulnerability" ;
+    rdfs:comment "Represents a security vulnerability in a package" .
+
+sec:Severity a rdfs:Class ;
+    rdfs:label "Severity Level" ;
+    rdfs:comment "Represents the severity level of a vulnerability" .
+
+# Severity Instances
+sec:Critical a sec:Severity ;
+    rdfs:label "Critical" ;
+    rdfs:comment "Critical severity level - CVSS score >= 9.0" .
+
+sec:High a sec:Severity ;
+    rdfs:label "High" ;
+    rdfs:comment "High severity level - CVSS score >= 7.0" .
+
+sec:Medium a sec:Severity ;
+    rdfs:label "Medium" ;
+    rdfs:comment "Medium severity level - CVSS score >= 4.0" .
+
+sec:Low a sec:Severity ;
+    rdfs:label "Low" ;
+    rdfs:comment "Low severity level - CVSS score < 4.0" .
+
+# Properties
+sec:affectsPackage a rdf:Property ;
+    rdfs:label "Affects Package" ;
+    rdfs:comment "Links a vulnerability to the affected package" ;
+    rdfs:domain sec:Vulnerability ;
+    rdfs:range xsd:string .
+
+sec:severity a rdf:Property ;
+    rdfs:label "Has Severity" ;
+    rdfs:comment "Indicates the severity level of a vulnerability" ;
+    rdfs:domain sec:Vulnerability ;
+    rdfs:range xsd:string .
+
+sec:cvssScore a rdf:Property ;
+    rdfs:label "CVSS Score" ;
+    rdfs:comment "The CVSS score of the vulnerability" ;
+    rdfs:domain sec:Vulnerability ;
+    rdfs:range xsd:float .
+
+sec:source a rdf:Property ;
+    rdfs:label "Source" ;
+    rdfs:comment "The security scanner that identified the vulnerability" ;
+    rdfs:domain sec:Vulnerability ;
+    rdfs:range xsd:string .
+
+sec:fixedVersion a rdf:Property ;
+    rdfs:label "Fixed Version" ;
+    rdfs:comment "The version where this vulnerability is fixed" ;
+    rdfs:domain sec:Vulnerability ;
+    rdfs:range xsd:string .
+
+sec:mitigationStatus a rdf:Property ;
+    rdfs:label "Mitigation Status" ;
+    rdfs:comment "Current status of vulnerability mitigation" ;
+    rdfs:domain sec:Vulnerability ;
+    rdfs:range xsd:string .
+
+# Integration with Package Management
+pkg:Package rdfs:subClassOf [
+    a owl:Restriction ;
+    owl:onProperty sec:hasVulnerability ;
+    owl:allValuesFrom sec:Vulnerability
+] .
