@@ -1,4 +1,4 @@
 azure-monitor-opentelemetry==1.0.0
 requests==2.31.0
 safety==3.2.14
-aiohttp==3.10.11
+aiohttp==3.11.12
