@@ -7,4 +7,4 @@ WHERE {
     ?s a owl:Ontology .
     ?s ?p ?o .
 }
-LIMIT 1 
+LIMIT 1

@@ -157,4 +157,4 @@ This document outlines the comprehensive requirements for the Snowflake Cortex a
 2. Performance benchmarks
 3. Security compliance
 4. Data governance adherence
-5. Operational efficiency 
+5. Operational efficiency

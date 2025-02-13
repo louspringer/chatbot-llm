@@ -11,7 +11,8 @@ Error handling middleware implementation.
 
 import logging
 from datetime import datetime
-from typing import Callable, Awaitable, Optional
+from typing import Awaitable, Callable, Optional
+
 from botbuilder.core import Middleware, TurnContext
 from botbuilder.schema import Activity, ActivityTypes
 
@@ -78,7 +79,10 @@ class ErrorHandlingMiddleware(Middleware):
         }
 
         logger.error(
-            "Bot Error: %s\nDetails: %s", error_id, error_details, exc_info=error
+            "Bot Error: %s\nDetails: %s",
+            error_id,
+            error_details,
+            exc_info=error,
         )
 
         return error_id

@@ -1,0 +1,447 @@
+@prefix meta: <./meta#> .
+@prefix metameta: <./metameta#> .
+@prefix problem: <./problem#> .
+@prefix solution: <./solution#> .
+@prefix conversation: <./conversation#> .
+@prefix guidance: <./guidance#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix tc: <http://example.org/test-coverage#> .
+
+tc:TestCoverage a owl:Class ;
+    rdfs:label "Test Coverage" ;
+    rdfs:comment "Represents test coverage metrics and requirements for a codebase" ;
+    owl:versionInfo "1.0.0" .
+
+tc:TestCase a owl:Class ;
+    rdfs:label "Test Case" ;
+    rdfs:comment "Represents a specific test case in the test suite" .
+
+tc:TestSuite a owl:Class ;
+    rdfs:label "Test Suite" ;
+    rdfs:comment "A collection of related test cases" .
+
+tc:CoverageMetric a owl:Class ;
+    rdfs:label "Coverage Metric" ;
+    rdfs:comment "A specific metric measuring test coverage" .
+
+tc:TestResult a owl:Class ;
+    rdfs:label "Test Result" ;
+    rdfs:comment "The outcome of running a test case" .
+
+tc:TestRequirement a owl:Class ;
+    rdfs:label "Test Requirement" ;
+    rdfs:comment "A specific requirement that must be tested" .
+
+# Properties
+tc:hasTestCase a owl:ObjectProperty ;
+    rdfs:domain tc:TestSuite ;
+    rdfs:range tc:TestCase ;
+    rdfs:comment "Links a test suite to its test cases" .
+
+tc:hasCoverageMetric a owl:ObjectProperty ;
+    rdfs:domain tc:TestSuite ;
+    rdfs:range tc:CoverageMetric ;
+    rdfs:comment "Links a test suite to its coverage metrics" .
+
+tc:hasResult a owl:ObjectProperty ;
+    rdfs:domain tc:TestCase ;
+    rdfs:range tc:TestResult ;
+    rdfs:comment "Links a test case to its result" .
+
+tc:requiresTest a owl:ObjectProperty ;
+    rdfs:domain tc:TestRequirement ;
+    rdfs:range tc:TestCase ;
+    rdfs:comment "Links a requirement to the test cases that verify it" .
+
+tc:coveragePercentage a owl:DatatypeProperty ;
+    rdfs:domain tc:CoverageMetric ;
+    rdfs:range xsd:decimal ;
+    rdfs:comment "The percentage of code covered by tests" .
+
+tc:testName a owl:DatatypeProperty ;
+    rdfs:domain tc:TestCase ;
+    rdfs:range xsd:string ;
+    rdfs:comment "The name of the test case" .
+
+tc:testDescription a owl:DatatypeProperty ;
+    rdfs:domain tc:TestCase ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Description of what the test case verifies" .
+
+tc:testStatus a owl:DatatypeProperty ;
+    rdfs:domain tc:TestResult ;
+    rdfs:range xsd:string ;
+    rdfs:comment "The status of the test result (passed/failed/skipped)" .
+
+# Instances
+tc:SnowflakeKeyRotationTests a tc:TestSuite ;
+    rdfs:label "Snowflake Key Rotation Tests" ;
+    rdfs:comment "Test suite for Snowflake key rotation functionality" ;
+    tc:hasTestCase tc:SuccessfulKeyRotationTest, tc:WrongRoleTest, tc:InvalidKeyFormatTest,
+                   tc:KeyGenerationFailureTest, tc:BackupFunctionalityTest, tc:CommandExecutionTest ;
+    tc:hasCoverageMetric tc:KeyRotationCoverage .
+
+tc:KeyRotationCoverage a tc:CoverageMetric ;
+    rdfs:label "Key Rotation Coverage" ;
+    tc:coveragePercentage "89.0"^^xsd:decimal .
+
+tc:SuccessfulKeyRotationTest a tc:TestCase ;
+    rdfs:label "Successful Key Rotation Test" ;
+    tc:testName "test_successful_key_rotation" ;
+    tc:testDescription "Verifies successful key rotation with ACCOUNTADMIN role" ;
+    tc:hasResult [ a tc:TestResult ;
+                   tc:testStatus "passed" ] .
+
+tc:WrongRoleTest a tc:TestCase ;
+    rdfs:label "Wrong Role Test" ;
+    tc:testName "test_key_rotation_with_wrong_role" ;
+    tc:testDescription "Verifies failure when using incorrect role" ;
+    tc:hasResult [ a tc:TestResult ;
+                   tc:testStatus "passed" ] .
+
+tc:InvalidKeyFormatTest a tc:TestCase ;
+    rdfs:label "Invalid Key Format Test" ;
+    tc:testName "test_key_rotation_with_invalid_key_format" ;
+    tc:testDescription "Verifies handling of invalid public key format" ;
+    tc:hasResult [ a tc:TestResult ;
+                   tc:testStatus "passed" ] .
+
+tc:KeyGenerationFailureTest a tc:TestCase ;
+    rdfs:label "Key Generation Failure Test" ;
+    tc:testName "test_key_generation_failure" ;
+    tc:testDescription "Verifies handling of key generation failures" ;
+    tc:hasResult [ a tc:TestResult ;
+                   tc:testStatus "passed" ] .
+
+tc:BackupFunctionalityTest a tc:TestCase ;
+    rdfs:label "Backup Functionality Test" ;
+    tc:testName "test_backup_key_files" ;
+    tc:testDescription "Verifies key backup functionality" ;
+    tc:hasResult [ a tc:TestResult ;
+                   tc:testStatus "passed" ] .
+
+tc:CommandExecutionTest a tc:TestCase ;
+    rdfs:label "Command Execution Test" ;
+    tc:testName "test_run_command" ;
+    tc:testDescription "Verifies command execution functionality" ;
+    tc:hasResult [ a tc:TestResult ;
+                   tc:testStatus "passed" ] .
+
+# Shapes
+tc:TestCaseShape a sh:NodeShape ;
+    sh:targetClass tc:TestCase ;
+    sh:property [
+        sh:path tc:testName ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+    ] ,
+    [
+        sh:path tc:testDescription ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+    ] ,
+    [
+        sh:path tc:hasResult ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:class tc:TestResult ;
+    ] .
+
+tc:TestResultShape a sh:NodeShape ;
+    sh:targetClass tc:TestResult ;
+    sh:property [
+        sh:path tc:testStatus ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:in ("passed" "failed" "skipped") ;
+    ] .
+
+# Additional Classes
+tc:TestEnvironment a owl:Class ;
+    rdfs:label "Test Environment" ;
+    rdfs:comment "Specification of the test environment requirements and configuration." .
+
+tc:SystemDependency a owl:Class ;
+    rdfs:label "System Dependency" ;
+    rdfs:comment "A system-level dependency required for testing." .
+
+tc:EnvironmentVariable a owl:Class ;
+    rdfs:label "Environment Variable" ;
+    rdfs:comment "An environment variable required for test execution." .
+
+tc:NetworkRequirement a owl:Class ;
+    rdfs:label "Network Requirement" ;
+    rdfs:comment "A network access requirement for test execution." .
+
+tc:SecurityRequirement a owl:Class ;
+    rdfs:label "Security Requirement" ;
+    rdfs:comment "A security-related requirement for test execution." .
+
+tc:ResourceRequirement a owl:Class ;
+    rdfs:label "Resource Requirement" ;
+    rdfs:comment "A system resource requirement for test execution." .
+
+tc:TestData a owl:Class ;
+    rdfs:label "Test Data" ;
+    rdfs:comment "Test data requirements and mock data specifications." .
+
+# Additional Properties
+tc:hasDependency a owl:ObjectProperty ;
+    rdfs:domain tc:TestEnvironment ;
+    rdfs:range tc:SystemDependency ;
+    rdfs:comment "Links a test environment to its system dependencies." .
+
+tc:hasEnvironmentVariable a owl:ObjectProperty ;
+    rdfs:domain tc:TestEnvironment ;
+    rdfs:range tc:EnvironmentVariable ;
+    rdfs:comment "Links a test environment to its required environment variables." .
+
+tc:hasNetworkRequirement a owl:ObjectProperty ;
+    rdfs:domain tc:TestEnvironment ;
+    rdfs:range tc:NetworkRequirement ;
+    rdfs:comment "Links a test environment to its network requirements." .
+
+tc:hasSecurityRequirement a owl:ObjectProperty ;
+    rdfs:domain tc:TestEnvironment ;
+    rdfs:range tc:SecurityRequirement ;
+    rdfs:comment "Links a test environment to its security requirements." .
+
+tc:hasResourceRequirement a owl:ObjectProperty ;
+    rdfs:domain tc:TestEnvironment ;
+    rdfs:range tc:ResourceRequirement ;
+    rdfs:comment "Links a test environment to its resource requirements." .
+
+tc:hasTestData a owl:ObjectProperty ;
+    rdfs:domain tc:TestEnvironment ;
+    rdfs:range tc:TestData ;
+    rdfs:comment "Links a test environment to its test data requirements." .
+
+tc:dependencyName a owl:DatatypeProperty ;
+    rdfs:domain tc:SystemDependency ;
+    rdfs:range xsd:string ;
+    rdfs:comment "The name of the system dependency." .
+
+tc:dependencyVersion a owl:DatatypeProperty ;
+    rdfs:domain tc:SystemDependency ;
+    rdfs:range xsd:string ;
+    rdfs:comment "The version requirement for the system dependency." .
+
+tc:variableName a owl:DatatypeProperty ;
+    rdfs:domain tc:EnvironmentVariable ;
+    rdfs:range xsd:string ;
+    rdfs:comment "The name of the environment variable." .
+
+tc:variableRequired a owl:DatatypeProperty ;
+    rdfs:domain tc:EnvironmentVariable ;
+    rdfs:range xsd:boolean ;
+    rdfs:comment "Whether the environment variable is required." .
+
+tc:resourceType a owl:DatatypeProperty ;
+    rdfs:domain tc:ResourceRequirement ;
+    rdfs:range xsd:string ;
+    rdfs:comment "The type of system resource (e.g., memory, disk, CPU)." .
+
+tc:resourceMinimum a owl:DatatypeProperty ;
+    rdfs:domain tc:ResourceRequirement ;
+    rdfs:range xsd:string ;
+    rdfs:comment "The minimum required amount of the resource." .
+
+# Enhanced Instances
+tc:SnowflakeKeyRotationTests a tc:TestSuite ;
+    rdfs:label "Snowflake Key Rotation Tests" ;
+    rdfs:comment "Test suite for Snowflake key rotation functionality" ;
+    tc:hasTestCase tc:SuccessfulKeyRotationTest, tc:WrongRoleTest, 
+                   tc:InvalidKeyFormatTest, tc:KeyGenerationFailureTest, 
+                   tc:BackupFunctionalityTest, tc:CommandExecutionTest ;
+    tc:hasCoverageMetric tc:KeyRotationCoverage ;
+    tc:hasEnvironment tc:SnowflakeTestEnvironment ;
+    tc:hasDependency tc:OpenSSLDependency, tc:SnowsqlDependency ;
+    tc:hasValidationRule tc:KeyFormatValidation, tc:RoleValidation .
+
+tc:SnowflakeTestEnvironment a tc:TestEnvironment ;
+    rdfs:label "Snowflake Test Environment" ;
+    rdfs:comment "Test environment for Snowflake integration tests" .
+
+tc:OpenSSLDependency a tc:SystemDependency ;
+    tc:dependencyName "openssl" ;
+    tc:dependencyVersion ">=1.1.1" .
+
+tc:SnowsqlDependency a tc:SystemDependency ;
+    tc:dependencyName "snowsql" ;
+    tc:dependencyVersion ">=1.2" .
+
+tc:PythonDependency a tc:SystemDependency ;
+    tc:dependencyName "python" ;
+    tc:dependencyVersion ">=3.8" .
+
+tc:SnowflakeAccountVar a tc:EnvironmentVariable ;
+    tc:variableName "SNOWFLAKE_ACCOUNT" ;
+    tc:variableRequired true .
+
+tc:SnowflakeUserVar a tc:EnvironmentVariable ;
+    tc:variableName "SNOWFLAKE_USER" ;
+    tc:variableRequired true .
+
+tc:SnowflakeEndpointAccess a tc:NetworkRequirement ;
+    rdfs:comment "Access to Snowflake account endpoints required" .
+
+tc:KeyStoragePermissions a tc:SecurityRequirement ;
+    rdfs:comment "Secure key storage location with restricted permissions (700)" .
+
+tc:MemoryRequirement a tc:ResourceRequirement ;
+    tc:resourceType "memory" ;
+    tc:resourceMinimum "512MB" .
+
+tc:DiskRequirement a tc:ResourceRequirement ;
+    tc:resourceType "disk" ;
+    tc:resourceMinimum "1GB" .
+
+tc:KeyRotationMockData a tc:TestData ;
+    rdfs:comment "Mock data for key rotation tests including successful and error responses" .
+
+tc:KeyFormatValidation a tc:ValidationRule ;
+    rdfs:label "Key Format Validation" ;
+    rdfs:comment "Validates RSA key format and encoding" .
+
+tc:RoleValidation a tc:ValidationRule ;
+    rdfs:label "Role Validation" ;
+    rdfs:comment "Validates Snowflake role requirements" .
+
+tc:KeyRotationRecovery a tc:RecoveryStrategy ;
+    rdfs:label "Key Rotation Recovery" ;
+    rdfs:comment "Strategy for recovering from failed key rotation" .
+
+# Enhanced SHACL Shapes
+tc:TestSuiteShape a sh:NodeShape ;
+    sh:targetClass tc:TestSuite ;
+    sh:property [
+        sh:path tc:hasTestCase ;
+        sh:minCount 1 ;
+        sh:message "Test suite must have at least one test case"
+    ] ,
+    [
+        sh:path tc:hasCoverageMetric ;
+        sh:minCount 1 ;
+        sh:message "Test suite must have coverage metrics"
+    ] ,
+    [
+        sh:path tc:hasEnvironment ;
+        sh:minCount 1 ;
+        sh:message "Test suite must specify environment"
+    ] .
+
+tc:TestCaseShape a sh:NodeShape ;
+    sh:targetClass tc:TestCase ;
+    sh:property [
+        sh:path tc:testName ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:pattern "^test_[a-z_]+$" ;
+        sh:message "Test name must start with 'test_' and use snake_case"
+    ] ,
+    [
+        sh:path tc:testDescription ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:minLength 10 ;
+        sh:message "Test description must be at least 10 characters"
+    ] ,
+    [
+        sh:path tc:hasResult ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:class tc:TestResult ;
+        sh:message "Test case must have exactly one result"
+    ] ,
+    [
+        sh:path tc:priority ;
+        sh:datatype xsd:string ;
+        sh:in ("high" "medium" "low") ;
+        sh:message "Priority must be high, medium, or low"
+    ] ,
+    [
+        sh:path tc:complexity ;
+        sh:datatype xsd:string ;
+        sh:in ("simple" "moderate" "complex") ;
+        sh:message "Complexity must be simple, moderate, or complex"
+    ] ,
+    [
+        sh:path tc:executionTime ;
+        sh:datatype xsd:decimal ;
+        sh:minInclusive 0 ;
+        sh:maxInclusive 300 ;
+        sh:message "Execution time must be between 0 and 300 seconds"
+    ] .
+
+tc:TestEnvironmentShape a sh:NodeShape ;
+    sh:targetClass tc:TestEnvironment ;
+    sh:property [
+        sh:path tc:hasDependency ;
+        sh:minCount 1 ;
+        sh:message "Test environment must have at least one dependency."
+    ] ;
+    sh:property [
+        sh:path tc:hasEnvironmentVariable ;
+        sh:minCount 1 ;
+        sh:message "Test environment must have at least one environment variable."
+    ] ;
+    sh:property [
+        sh:path tc:hasSecurityRequirement ;
+        sh:minCount 1 ;
+        sh:message "Test environment must have at least one security requirement."
+    ] .
+
+tc:SystemDependencyShape a sh:NodeShape ;
+    sh:targetClass tc:SystemDependency ;
+    sh:property [
+        sh:path tc:dependencyName ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "System dependency must have exactly one name."
+    ] ;
+    sh:property [
+        sh:path tc:dependencyVersion ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "System dependency must have exactly one version requirement."
+    ] .
+
+tc:EnvironmentVariableShape a sh:NodeShape ;
+    sh:targetClass tc:EnvironmentVariable ;
+    sh:property [
+        sh:path tc:variableName ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "Environment variable must have exactly one name."
+    ] ;
+    sh:property [
+        sh:path tc:variableRequired ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:boolean ;
+        sh:message "Environment variable must specify whether it is required."
+    ] .
+
+# TODO
+# - Add integration test coverage tracking
+# - Add test dependencies and relationships
+# - Add test execution time metrics
+# - Add test environment requirements
+# - Add test data requirements
+# - Add test execution history tracking
+# - Add test coverage trend analysis
+# - Add test performance benchmarking
+# - Add test data versioning
+# - Add test environment provisioning automation 

@@ -6,17 +6,18 @@ Simulates user interactions and validates bot responses.
 Includes requirement tracing and coverage reporting.
 """
 
-import json
-import logging
 import argparse
 import asyncio
-import aiohttp
+import json
+import logging
 import sys
+from collections import defaultdict
+from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import List, Optional, Dict
-from dataclasses import dataclass, field
-from collections import defaultdict
+from typing import Dict, List, Optional
+
+import aiohttp
 
 # Configure logging
 logging.basicConfig(
@@ -81,7 +82,9 @@ class BotTester:
             self.test_config = json.load(f)
 
         # Initialize requirement coverage tracking
-        for req_id, req_info in self.test_config["requirement_traces"].items():
+        for req_id, req_info in self.test_config[
+            "requirement_traces"
+        ].items():
             self.requirement_coverage[req_id] = RequirementCoverage(
                 requirement_id=req_id,
                 description=req_info["description"],
@@ -154,7 +157,8 @@ class BotTester:
                     return {
                         "success": False,
                         "error": (
-                            f"HTTP {response.status}: " f"{await response.text()}"
+                            f"HTTP {response.status}: "
+                            f"{await response.text()}"
                         ),
                         "time": end_time - start_time,
                     }
@@ -228,7 +232,8 @@ class BotTester:
                 )
             else:
                 logger.info(
-                    f"Test '{test_case.name}' passed" f" ({result.response_time:.2f}s)"
+                    f"Test '{test_case.name}' passed"
+                    f" ({result.response_time:.2f}s)"
                 )
 
         return all_passed
@@ -260,7 +265,9 @@ class BotTester:
         category_coverage = defaultdict(list)
         for req_id, coverage in requirement_coverage.items():
             category = req_id.split("-")[0]
-            category_coverage[category].append({"requirement_id": req_id, **coverage})
+            category_coverage[category].append(
+                {"requirement_id": req_id, **coverage}
+            )
 
         report = {
             "summary": {
@@ -306,15 +313,15 @@ class BotTester:
         """Generate an HTML version of the test report."""
         styles = """
             body { font-family: Arial, sans-serif; margin: 20px; }
-            .summary { 
-                background: #f5f5f5; 
-                padding: 20px; 
-                margin-bottom: 20px; 
+            .summary {
+                background: #f5f5f5;
+                padding: 20px;
+                margin-bottom: 20px;
             }
-            .test-case { 
-                border: 1px solid #ddd; 
-                margin: 10px 0; 
-                padding: 10px; 
+            .test-case {
+                border: 1px solid #ddd;
+                margin: 10px 0;
+                padding: 10px;
             }
             .test-case.failed { background: #fff0f0; }
             .test-case.passed { background: #f0fff0; }
@@ -345,7 +352,7 @@ class BotTester:
         </head>
         <body>
             <h1>Bot Test Report</h1>
-            
+
             <div class="summary">
                 <h2>Summary</h2>
                 <p>Total Tests: {summary['total_tests']}</p>
@@ -369,7 +376,8 @@ class BotTester:
             for req in requirements:
                 coverage = req["coverage_percentage"]
                 criteria_list = "".join(
-                    f"<li>{criterion}</li>" for criterion in req["acceptance_criteria"]
+                    f"<li>{criterion}</li>"
+                    for criterion in req["acceptance_criteria"]
                 )
                 html_content += f"""
                 <div class="requirement">

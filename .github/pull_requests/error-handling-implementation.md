@@ -56,4 +56,4 @@ This PR implements comprehensive error handling for the Teams bot with state man
 - [x] Documentation updated
 - [x] Ontology aligned
 
-Closes #43 
+Closes #43

@@ -1,0 +1,49 @@
+@startuml emergency_recovery
+skinparam monochrome true
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+
+state "Issue Detection" as detect {
+    [*] --> MonitorAlerts
+    MonitorAlerts --> ValidateIssue
+    ValidateIssue --> CategorizeIssue
+    CategorizeIssue --> [*]
+}
+
+state "Backup Selection" as select {
+    [*] --> ListBackups
+    ListBackups --> ValidateBackups
+    ValidateBackups --> SelectBackup
+    SelectBackup --> [*]
+}
+
+state "Recovery Process" as recover {
+    [*] --> RestoreBackup
+    RestoreBackup --> ValidateRestore
+    ValidateRestore --> UpdateConfiguration
+    UpdateConfiguration --> [*]
+}
+
+state "Emergency Procedure" as emergency {
+    [*] --> GenerateEmergencyKeys
+    GenerateEmergencyKeys --> ManualUpdate
+    ManualUpdate --> ValidateAccess
+    ValidateAccess --> [*]
+}
+
+[*] --> detect
+detect --> select : Backup Available
+detect --> emergency : No Backup
+select --> recover
+recover --> VerifyAccess : Success
+recover --> TryAlternateBackup : Failure
+TryAlternateBackup --> recover
+TryAlternateBackup --> emergency : All Backups Failed
+emergency --> VerifyAccess
+VerifyAccess --> DocumentIncident : Success
+VerifyAccess --> EscalateIssue : Failure
+DocumentIncident --> [*]
+EscalateIssue --> [*]
+
+@enduml 

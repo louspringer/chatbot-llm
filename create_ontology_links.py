@@ -4,8 +4,8 @@
 This script creates symlinks for ontology files referenced in chatbot.ttl.
 It is idempotent - running it multiple times will produce the same result.
 """
-from pathlib import Path
 import re
+from pathlib import Path
 
 
 def extract_prefix_paths(ttl_file: Path) -> dict:
@@ -18,17 +18,17 @@ def extract_prefix_paths(ttl_file: Path) -> dict:
         Dictionary mapping prefix names to file paths
     """
     prefixes = {}
-    with open(ttl_file, 'r', encoding='utf-8') as f:
+    with open(ttl_file, "r", encoding="utf-8") as f:
         content = f.read()
         # Match prefix declarations like @prefix name: <./path> .
-        prefix_pattern = r'@prefix\s+(\w+):\s+<\./([^>]+)>\s*\.'
+        prefix_pattern = r"@prefix\s+(\w+):\s+<\./([^>]+)>\s*\."
         matches = re.finditer(prefix_pattern, content)
         for match in matches:
             prefix_name = match.group(1)
             path = match.group(2)
-            if path.endswith('#'):
+            if path.endswith("#"):
                 path = path[:-1]
-            prefixes[prefix_name] = path + '.ttl'
+            prefixes[prefix_name] = path + ".ttl"
     return prefixes
 
 
@@ -59,7 +59,7 @@ def create_symlinks(source_dir: Path, target_dir: Path, prefixes: dict) -> None:
         prefixes: Dictionary mapping prefix names to file paths
     """
     print("\nSource files available:")
-    for f in source_dir.glob('*.ttl'):
+    for f in source_dir.glob("*.ttl"):
         print(f"  {f.name}")
 
     print("\nPrefix mappings:")
@@ -67,7 +67,7 @@ def create_symlinks(source_dir: Path, target_dir: Path, prefixes: dict) -> None:
         print(f"  {prefix} -> {file_path}")
 
     print(f"\nChecking source directory: {source_dir}")
-    print("Found files:", [f.name for f in source_dir.glob('*.ttl')])
+    print("Found files:", [f.name for f in source_dir.glob("*.ttl")])
     print("\nAttempting to create symlinks for:", list(prefixes.values()))
 
     for prefix, file_path in prefixes.items():
@@ -87,13 +87,15 @@ def create_symlinks(source_dir: Path, target_dir: Path, prefixes: dict) -> None:
 def main() -> None:
     """Main entry point."""
     project_root = Path(__file__).parent
-    ontology_framework_dir = project_root / 'ontology-framework'
+    ontology_framework_dir = project_root / "ontology-framework"
 
     if not ontology_framework_dir.exists():
-        print(f"Error: ontology-framework directory not found at {ontology_framework_dir}")
+        print(
+            f"Error: ontology-framework directory not found at {ontology_framework_dir}"
+        )
         return
 
-    chatbot_ttl = project_root / 'chatbot.ttl'
+    chatbot_ttl = project_root / "chatbot.ttl"
     if not chatbot_ttl.exists():
         print(f"Error: {chatbot_ttl} not found")
         return
@@ -102,7 +104,9 @@ def main() -> None:
     create_symlinks(ontology_framework_dir, project_root, prefixes)
 
     print("\nSymlink creation complete!")
-    print("Note: Make sure to add these symlinks to your version control system's ignore file.")
+    print(
+        "Note: Make sure to add these symlinks to your version control system's ignore file."
+    )
 
 
 if __name__ == "__main__":

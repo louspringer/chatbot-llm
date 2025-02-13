@@ -1,17 +1,18 @@
-"""
-# Ontology: cortexteams:CardActionsTest
-# Implements: cortexteams:AdaptiveCards
-# Requirement: REQ-BOT-003 Teams card actions
-# Guidance: guidance:BotPatterns#CardActions
-# Description: Tests for Teams Adaptive Card action handlers
+"""Tests for Teams Adaptive Card action handlers.
+
+Ontology: cortexteams:CardActionsTest
+Implements: cortexteams:AdaptiveCards
+Requirement: REQ-BOT-003 Teams card actions
+Guidance: guidance:BotPatterns#CardActions
 """
 
 from unittest.mock import AsyncMock, MagicMock
+
 import pytest
 from botbuilder.core import TurnContext
 from botbuilder.schema import Activity
 
-from bot.card_actions import CardActionHandler
+from teams_bot.bot.card_actions import CardActionHandler
 
 
 @pytest.fixture
@@ -32,10 +33,9 @@ def action_handler():
 async def test_register_and_handle_action(turn_context, action_handler):
     """Test registering and handling an action."""
     # Create a mock handler
-    mock_handler = AsyncMock(return_value=Activity(
-        type="message",
-        text="Action handled"
-    ))
+    mock_handler = AsyncMock(
+        return_value=Activity(type="message", text="Action handled")
+    )
 
     # Register the handler
     action_handler.register_action("test_action", mock_handler)
@@ -83,6 +83,7 @@ async def test_handle_missing_action(turn_context, action_handler):
 @pytest.mark.asyncio
 async def test_handle_action_error(turn_context, action_handler):
     """Test handling an action that raises an error."""
+
     # Create a handler that raises an exception
     async def error_handler(_, __):
         raise ValueError("Test error")
@@ -100,4 +101,4 @@ async def test_handle_action_error(turn_context, action_handler):
     card = result.attachments[0]
     assert card["contentType"] == "application/vnd.microsoft.card.adaptive"
     assert "Test error" in str(card["content"])
-    assert "ERR-ACTION-FAILED" in str(card["content"]) 
+    assert "ERR-ACTION-FAILED" in str(card["content"])

@@ -6,7 +6,7 @@
 # Description: Teams Adaptive Card templates implementation
 """
 
-from typing import Dict, Any, List, Optional
+from typing import Any, Dict, List, Optional
 
 
 class AdaptiveCardTemplate:
@@ -22,7 +22,7 @@ class AdaptiveCardTemplate:
             "type": "AdaptiveCard",
             "$schema": cls.SCHEMA,
             "version": cls.VERSION,
-            "body": body
+            "body": body,
         }
 
 
@@ -37,12 +37,12 @@ class WelcomeCard(AdaptiveCardTemplate):
                 "type": "TextBlock",
                 "size": "Medium",
                 "weight": "Bolder",
-                "text": f"Welcome {user_name}! 👋"
+                "text": f"Welcome {user_name}! 👋",
             },
             {
                 "type": "TextBlock",
                 "text": "I'm your Snowflake Cortex Teams Bot assistant.",
-                "wrap": True
+                "wrap": True,
             },
             {
                 "type": "ActionSet",
@@ -50,19 +50,15 @@ class WelcomeCard(AdaptiveCardTemplate):
                     {
                         "type": "Action.Submit",
                         "title": "Get Started",
-                        "data": {
-                            "action": "get_started"
-                        }
+                        "data": {"action": "get_started"},
                     },
                     {
                         "type": "Action.Submit",
                         "title": "View Tutorial",
-                        "data": {
-                            "action": "view_tutorial"
-                        }
-                    }
-                ]
-            }
+                        "data": {"action": "view_tutorial"},
+                    },
+                ],
+            },
         ]
         return cls.create_base_card(body)
 
@@ -76,10 +72,10 @@ class FormCard(AdaptiveCardTemplate):
         title: str,
         fields: List[Dict[str, Any]],
         submit_label: str = "Submit",
-        cancel_label: str = "Cancel"
+        cancel_label: str = "Cancel",
     ) -> Dict[str, Any]:
         """Create an interactive form card.
-        
+
         Args:
             title: Form title
             fields: List of form field definitions
@@ -91,12 +87,9 @@ class FormCard(AdaptiveCardTemplate):
                 "type": "TextBlock",
                 "size": "Medium",
                 "weight": "Bolder",
-                "text": title
+                "text": title,
             },
-            {
-                "type": "Container",
-                "items": fields
-            },
+            {"type": "Container", "items": fields},
             {
                 "type": "ActionSet",
                 "actions": [
@@ -104,20 +97,16 @@ class FormCard(AdaptiveCardTemplate):
                         "type": "Action.Submit",
                         "title": submit_label,
                         "style": "positive",
-                        "data": {
-                            "action": "form_submit"
-                        }
+                        "data": {"action": "form_submit"},
                     },
                     {
                         "type": "Action.Submit",
                         "title": cancel_label,
                         "style": "destructive",
-                        "data": {
-                            "action": "form_cancel"
-                        }
-                    }
-                ]
-            }
+                        "data": {"action": "form_cancel"},
+                    },
+                ],
+            },
         ]
         return cls.create_base_card(body)
 
@@ -128,7 +117,7 @@ class FormCard(AdaptiveCardTemplate):
         label: str,
         placeholder: str = "",
         is_required: bool = False,
-        max_length: Optional[int] = None
+        max_length: Optional[int] = None,
     ) -> Dict[str, Any]:
         """Create a text input field."""
         return {
@@ -137,7 +126,7 @@ class FormCard(AdaptiveCardTemplate):
             "label": label,
             "placeholder": placeholder,
             "isRequired": is_required,
-            "maxLength": max_length
+            "maxLength": max_length,
         }
 
     @classmethod
@@ -147,7 +136,7 @@ class FormCard(AdaptiveCardTemplate):
         label: str,
         choices: List[Dict[str, str]],
         is_required: bool = False,
-        is_multi_select: bool = False
+        is_multi_select: bool = False,
     ) -> Dict[str, Any]:
         """Create a choice set input field."""
         return {
@@ -157,12 +146,9 @@ class FormCard(AdaptiveCardTemplate):
             "isRequired": is_required,
             "isMultiSelect": is_multi_select,
             "choices": [
-                {
-                    "title": choice["title"],
-                    "value": choice["value"]
-                }
+                {"title": choice["title"], "value": choice["value"]}
                 for choice in choices
-            ]
+            ],
         }
 
 
@@ -174,7 +160,7 @@ class QueryResultCard(AdaptiveCardTemplate):
         cls,
         title: str,
         results: List[Dict[str, Any]],
-        columns: Optional[List[str]] = None
+        columns: Optional[List[str]] = None,
     ) -> Dict[str, Any]:
         """Create a query result card."""
         if not columns and results:
@@ -187,11 +173,7 @@ class QueryResultCard(AdaptiveCardTemplate):
             {
                 "type": "Column",
                 "width": "auto",
-                "items": [{
-                    "type": "TextBlock",
-                    "text": col,
-                    "weight": "Bolder"
-                }]
+                "items": [{"type": "TextBlock", "text": col, "weight": "Bolder"}],
             }
             for col in columns
         ]
@@ -203,30 +185,26 @@ class QueryResultCard(AdaptiveCardTemplate):
                 {
                     "type": "Column",
                     "width": "auto",
-                    "items": [{
-                        "type": "TextBlock",
-                        "text": str(row.get(col, "")),
-                        "wrap": True
-                    }]
+                    "items": [
+                        {
+                            "type": "TextBlock",
+                            "text": str(row.get(col, "")),
+                            "wrap": True,
+                        }
+                    ],
                 }
                 for col in columns
             ]
-            data_rows.append({
-                "type": "ColumnSet",
-                "columns": row_columns
-            })
+            data_rows.append({"type": "ColumnSet", "columns": row_columns})
 
         body = [
             {
                 "type": "TextBlock",
                 "size": "Medium",
                 "weight": "Bolder",
-                "text": title
+                "text": title,
             },
-            {
-                "type": "ColumnSet",
-                "columns": header_columns
-            },
+            {"type": "ColumnSet", "columns": header_columns},
             *data_rows,
             {
                 "type": "ActionSet",
@@ -234,12 +212,10 @@ class QueryResultCard(AdaptiveCardTemplate):
                     {
                         "type": "Action.Submit",
                         "title": "Export Results",
-                        "data": {
-                            "action": "export_results"
-                        }
+                        "data": {"action": "export_results"},
                     }
-                ]
-            }
+                ],
+            },
         ]
         return cls.create_base_card(body)
 
@@ -249,9 +225,7 @@ class ErrorCard(AdaptiveCardTemplate):
 
     @classmethod
     def create(
-        cls,
-        error_message: str,
-        error_id: Optional[str] = None
+        cls, error_message: str, error_id: Optional[str] = None
     ) -> Dict[str, Any]:
         """Create an error card."""
         body = [
@@ -260,39 +234,37 @@ class ErrorCard(AdaptiveCardTemplate):
                 "size": "Medium",
                 "weight": "Bolder",
                 "color": "Attention",
-                "text": "⚠️ Error"
+                "text": "⚠️ Error",
             },
-            {
-                "type": "TextBlock",
-                "text": error_message,
-                "wrap": True
-            }
+            {"type": "TextBlock", "text": error_message, "wrap": True},
         ]
 
         if error_id:
-            body.append({
-                "type": "TextBlock",
-                "text": f"Reference ID: {error_id}",
-                "size": "Small",
-                "isSubtle": True
-            })
-
-        body.append({
-            "type": "ActionSet",
-            "actions": [
+            body.append(
                 {
-                    "type": "Action.Submit",
-                    "title": "Try Again",
-                    "data": {
-                        "action": "retry"
-                    }
-                },
-                {
-                    "type": "Action.OpenUrl",
-                    "title": "Get Help",
-                    "url": "https://support.example.com"
+                    "type": "TextBlock",
+                    "text": f"Reference ID: {error_id}",
+                    "size": "Small",
+                    "isSubtle": True,
                 }
-            ]
-        })
+            )
+
+        body.append(
+            {
+                "type": "ActionSet",
+                "actions": [
+                    {
+                        "type": "Action.Submit",
+                        "title": "Try Again",
+                        "data": {"action": "retry"},
+                    },
+                    {
+                        "type": "Action.OpenUrl",
+                        "title": "Get Help",
+                        "url": "https://support.example.com",
+                    },
+                ],
+            }
+        )
 
         return cls.create_base_card(body)

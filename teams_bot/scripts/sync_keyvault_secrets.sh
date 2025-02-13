@@ -107,12 +107,12 @@ declare -A secrets=(
 for env_var in "${!secrets[@]}"; do
     secret_name="${secrets[$env_var]}"
     secret_value="${!env_var}"
-    
+
     if [ -z "$secret_value" ]; then
         echo "⚠️  Warning: $env_var is not set in environment, skipping..."
         continue
     fi
-    
+
     if [ "$DRY_RUN" = true ]; then
         echo "🔍 Would sync $env_var to secret '$secret_name'"
     else

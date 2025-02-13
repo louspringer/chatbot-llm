@@ -7,4 +7,4 @@ WHERE {
   ?class a owl:Class ;
          rdfs:label ?label .
 }
-ORDER BY ?label 
+ORDER BY ?label

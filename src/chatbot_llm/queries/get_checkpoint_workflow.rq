@@ -13,4 +13,4 @@ WHERE {
        rdfs:label ?step ;
        rdfs:comment ?comment .
 }
-ORDER BY ?step 
+ORDER BY ?step

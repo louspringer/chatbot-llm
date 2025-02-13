@@ -8,10 +8,10 @@ def register_all():
     """Register all available tools with Cursor."""
     # Register SPARQL query tool
     sparql_tool = register_sparql_query()
-    
+
     # Return all registered tools
     return [sparql_tool]
 
 
-if __name__ == '__main__':
-    register_all() 
+if __name__ == "__main__":
+    register_all()

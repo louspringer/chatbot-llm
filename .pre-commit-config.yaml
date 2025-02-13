@@ -1,0 +1,56 @@
+repos:
+- repo: https://github.com/psf/black
+  rev: 24.2.0
+  hooks:
+    - id: black
+      language_version: python3
+      args: ["--line-length=79", "--verbose"]
+      verbose: true
+
+- repo: https://github.com/pycqa/isort
+  rev: 5.13.2
+  hooks:
+    - id: isort
+      name: isort (python)
+      args: ["--profile=black", "--line-length=79", "--verbose"]
+      verbose: true
+
+- repo: https://github.com/pycqa/flake8
+  rev: 7.0.0
+  hooks:
+    - id: flake8
+      additional_dependencies: [flake8-docstrings]
+      args:
+        - "--max-line-length=132"
+        - "--ignore=D100,D101,D102,D103,D104,D105,D107,D200,D205,D400,D401"
+        - "--per-file-ignores=__init__.py:F401"
+        - "--verbose"
+      verbose: true
+
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v4.5.0
+  hooks:
+    - id: trailing-whitespace
+      verbose: true
+    - id: end-of-file-fixer
+      verbose: true
+    - id: check-yaml
+      verbose: true
+    - id: check-toml
+      verbose: true
+
+default_language_version:
+    python: python3
+
+default_stages: [commit]
+
+ci:
+    autofix_commit_msg: |
+        [pre-commit.ci] Auto fixes from pre-commit hooks
+        
+        for more information, see https://pre-commit.ci
+    autofix_prs: true
+    autoupdate_commit_msg: '[pre-commit.ci] pre-commit autoupdate'
+    autoupdate_schedule: weekly
+    skip: []
+    submodules: false 

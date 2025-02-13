@@ -9,4 +9,4 @@ WHERE {
          rdfs:label ?title ;
          owl:versionInfo ?version ;
          rdfs:comment ?comment .
-} 
+}

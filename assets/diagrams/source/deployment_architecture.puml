@@ -20,12 +20,12 @@ cloud "Microsoft Azure" {
             [State Cache]
         }
     }
-    
+
     node "Azure Key Vault" as keyVault #pink {
         [Secrets Management]
         [Certificate Store]
     }
-    
+
     node "Azure Monitor" as monitor {
         [Application Insights] as appInsights #lightgreen
         [Log Analytics] as logAnalytics #lightgreen
@@ -42,7 +42,7 @@ cloud "Snowflake Cloud" {
         component "Cortex Service" as cortex #lightblue
         database "Data Warehouse" as dw #lightyellow
     }
-    
+
     node "Snowflake Security" as snowSec #pink {
         [Key Management]
         [Access Control]
@@ -115,4 +115,4 @@ legend right
     |<#pink>| Security Services |
 endlegend
 
-@enduml 
+@enduml

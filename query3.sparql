@@ -17,4 +17,4 @@ WHERE {
     ?dependency rdfs:label ?depLabel .
   }
 }
-ORDER BY ?label ?depLabel 
+ORDER BY ?label ?depLabel

@@ -9,4 +9,4 @@ WHERE {
            rdfs:label ?label .
     OPTIONAL { ?class rdfs:comment ?comment }
 }
-ORDER BY ?label 
+ORDER BY ?label

@@ -1,0 +1,242 @@
+@prefix meta: <./meta#> .
+@prefix metameta: <./metameta#> .
+@prefix problem: <./problem#> .
+@prefix solution: <./solution#> .
+@prefix conversation: <./conversation#> .
+@prefix guidance: <./guidance#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix bot: <./bot_user#> .
+@prefix sec: <./security#> .
+
+# Ontology metadata
+bot:BotUserOntology a owl:Ontology ;
+    rdfs:label "Bot User Management Ontology" ;
+    rdfs:comment "Ontology for managing bot users and their security configurations" ;
+    owl:versionInfo "0.1.0" .
+
+# Classes
+bot:BotUser a owl:Class ;
+    rdfs:label "Bot User" ;
+    rdfs:comment "A service account for automated interactions" .
+
+bot:SecurityCredential a owl:Class ;
+    rdfs:label "Security Credential" ;
+    rdfs:comment "Security credentials for bot authentication" .
+
+bot:RSAKeyPair a owl:Class ;
+    rdfs:subClassOf bot:SecurityCredential ;
+    rdfs:label "RSA Key Pair" ;
+    rdfs:comment "RSA public/private key pair for secure authentication" .
+
+bot:Role a owl:Class ;
+    rdfs:label "Role" ;
+    rdfs:comment "Security role defining bot permissions" .
+
+bot:Permission a owl:Class ;
+    rdfs:label "Permission" ;
+    rdfs:comment "Specific permission granted to a role" .
+
+bot:DatabaseObject a owl:Class ;
+    rdfs:label "Database Object" ;
+    rdfs:comment "Database object that can be accessed by the bot" .
+
+# Snowflake Object Classes
+bot:SnowflakeObject a owl:Class ;
+    rdfs:label "Snowflake Object" ;
+    rdfs:comment "Base class for all Snowflake objects" .
+
+bot:Database a owl:Class ;
+    rdfs:subClassOf bot:SnowflakeObject ;
+    rdfs:label "Database" ;
+    rdfs:comment "Snowflake database container" .
+
+bot:Schema a owl:Class ;
+    rdfs:subClassOf bot:SnowflakeObject ;
+    rdfs:label "Schema" ;
+    rdfs:comment "Database schema" .
+
+bot:StoredProcedure a owl:Class ;
+    rdfs:subClassOf bot:SnowflakeObject ;
+    rdfs:label "Stored Procedure" ;
+    rdfs:comment "Snowflake stored procedure" .
+
+bot:Warehouse a owl:Class ;
+    rdfs:subClassOf bot:SnowflakeObject ;
+    rdfs:label "Warehouse" ;
+    rdfs:comment "Compute warehouse for processing" .
+
+# Properties
+bot:hasCredential a owl:ObjectProperty ;
+    rdfs:domain bot:BotUser ;
+    rdfs:range bot:SecurityCredential ;
+    rdfs:comment "Links a bot user to its security credentials" .
+
+bot:hasRole a owl:ObjectProperty ;
+    rdfs:domain bot:BotUser ;
+    rdfs:range bot:Role ;
+    rdfs:comment "Associates a bot user with its roles" .
+
+bot:hasPermission a owl:ObjectProperty ;
+    rdfs:domain bot:Role ;
+    rdfs:range bot:Permission ;
+    rdfs:comment "Defines permissions granted to a role" .
+
+bot:accessesObject a owl:ObjectProperty ;
+    rdfs:domain bot:Permission ;
+    rdfs:range bot:DatabaseObject ;
+    rdfs:comment "Specifies which database objects can be accessed" .
+
+bot:hasPublicKey a owl:DatatypeProperty ;
+    rdfs:domain bot:RSAKeyPair ;
+    rdfs:range xsd:string ;
+    rdfs:comment "The public key component of an RSA key pair" .
+
+bot:hasKeyRotationSchedule a owl:DatatypeProperty ;
+    rdfs:domain bot:RSAKeyPair ;
+    rdfs:range xsd:duration ;
+    rdfs:comment "The schedule for key rotation" .
+
+# Additional Properties
+bot:containsSchema a owl:ObjectProperty ;
+    rdfs:domain bot:Database ;
+    rdfs:range bot:Schema ;
+    rdfs:comment "Database contains schemas" .
+
+bot:containsProcedure a owl:ObjectProperty ;
+    rdfs:domain bot:Schema ;
+    rdfs:range bot:StoredProcedure ;
+    rdfs:comment "Schema contains stored procedures" .
+
+bot:usesWarehouse a owl:ObjectProperty ;
+    rdfs:domain bot:BotUser ;
+    rdfs:range bot:Warehouse ;
+    rdfs:comment "User accesses compute warehouse" .
+
+bot:requiresRole a owl:ObjectProperty ;
+    rdfs:domain bot:StoredProcedure ;
+    rdfs:range bot:Role ;
+    rdfs:comment "Procedure requires specific role for execution" .
+
+# Validation Rules
+bot:BotUserShape a sh:NodeShape ;
+    sh:targetClass bot:BotUser ;
+    sh:property [
+        sh:path bot:hasCredential ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+    ] ;
+    sh:property [
+        sh:path bot:hasRole ;
+        sh:minCount 1 ;
+    ] .
+
+bot:RSAKeyPairShape a sh:NodeShape ;
+    sh:targetClass bot:RSAKeyPair ;
+    sh:property [
+        sh:path bot:hasPublicKey ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:pattern "^ssh-rsa\\s+[A-Za-z0-9+/]+[=]{0,3}\\s+.*$" ;
+    ] .
+
+# Individuals
+bot:TeamsBot a bot:BotUser ;
+    rdfs:label "Teams Bot User" ;
+    rdfs:comment "Service account for Teams bot integration" ;
+    bot:hasRole bot:TeamsBotRole .
+
+bot:TeamsBotRole a bot:Role ;
+    rdfs:label "Teams Bot Role" ;
+    rdfs:comment "Role for Teams bot operations" ;
+    bot:hasPermission bot:QueryPermission,
+                     bot:DataReadPermission .
+
+bot:QueryPermission a bot:Permission ;
+    rdfs:label "Query Permission" ;
+    rdfs:comment "Permission to execute queries" .
+
+bot:DataReadPermission a bot:Permission ;
+    rdfs:label "Data Read Permission" ;
+    rdfs:comment "Permission to read data from tables" .
+
+bot:TeamsBotKeyPair a bot:RSAKeyPair ;
+    rdfs:label "Teams Bot RSA Key Pair" ;
+    bot:hasKeyRotationSchedule "P90D"^^xsd:duration .
+
+# Security Procedures
+bot:KeyRotationProcedure a bot:SecurityProcedure ;
+    rdfs:label "Key Rotation Procedure" ;
+    rdfs:comment "Procedure for rotating bot user RSA keys" ;
+    bot:hasSchedule "P90D"^^xsd:duration ;
+    bot:requiresApproval true .
+
+# Snowflake Object Instances
+bot:TeamsBotDB a bot:Database ;
+    rdfs:label "TEAMS_BOT_DB" ;
+    rdfs:comment "Teams bot database" ;
+    bot:containsSchema bot:PublicSchema .
+
+bot:PublicSchema a bot:Schema ;
+    rdfs:label "PUBLIC" ;
+    rdfs:comment "Public schema for Teams bot" ;
+    bot:containsProcedure bot:RotateKeyProcedure,
+                         bot:LogSecurityEventProcedure .
+
+bot:ComputeWarehouse a bot:Warehouse ;
+    rdfs:label "COMPUTE_WH" ;
+    rdfs:comment "Default compute warehouse" .
+
+bot:RotateKeyProcedure a bot:StoredProcedure ;
+    rdfs:label "ROTATE_BOT_KEY" ;
+    rdfs:comment "Procedure for rotating bot RSA keys" ;
+    bot:requiresRole bot:TeamsBotRole .
+
+bot:LogSecurityEventProcedure a bot:StoredProcedure ;
+    rdfs:label "LOG_SECURITY_EVENT" ;
+    rdfs:comment "Procedure for logging security events" ;
+    bot:requiresRole bot:TeamsBotRole .
+
+bot:SecurityAuditLog a bot:DatabaseObject ;
+    rdfs:label "security_audit_log" ;
+    rdfs:comment "Table for security event logging" .
+
+# Additional SHACL Shapes
+bot:DatabaseShape a sh:NodeShape ;
+    sh:targetClass bot:Database ;
+    sh:property [
+        sh:path bot:containsSchema ;
+        sh:minCount 1 ;
+    ] .
+
+bot:StoredProcedureShape a sh:NodeShape ;
+    sh:targetClass bot:StoredProcedure ;
+    sh:property [
+        sh:path bot:requiresRole ;
+        sh:minCount 1 ;
+    ] .
+
+bot:SchemaShape a sh:NodeShape ;
+    sh:targetClass bot:Schema ;
+    sh:property [
+        sh:path rdfs:label ;
+        sh:pattern "^[A-Z][A-Z0-9_]*$" ;
+    ] .
+
+# TODO Section
+###
+# Future Enhancements:
+# 1. Add support for multiple authentication methods
+# 2. Implement fine-grained permission controls
+# 3. Add audit logging capabilities
+# 4. Enhance key rotation procedures
+# 5. Add support for emergency access procedures
+# 6. Implement role-based access control patterns
+# 7. Add compliance validation rules
+# 8. Define security incident response procedures
+# 9. Add support for custom warehouse configurations
+# 10. Implement resource monitoring and quotas
+### 

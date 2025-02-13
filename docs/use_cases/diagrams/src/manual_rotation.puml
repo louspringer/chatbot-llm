@@ -1,0 +1,42 @@
+@startuml
+skinparam monochrome true
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam roundCorner 10
+skinparam maxMessageSize 100
+
+actor "Administrator" as admin
+participant "System" as system
+database "Key Storage" as storage
+participant "Snowflake" as snowflake
+database "Backup" as backup
+
+title Manual Key Rotation Process
+
+group Main Flow
+    admin -> system: Initiate rotation
+    system -> storage: Backup current keys
+    system -> system: Generate new keys
+    system -> snowflake: Update keys
+    system -> system: Validate connection
+    system -> backup: Store backup
+    system --> admin: Report status
+end
+
+group Alternative Flow [Cancellation]
+    admin -> system: Cancel rotation
+    system -> storage: Restore previous keys
+    system -> snowflake: Revert changes
+    system --> admin: Report cancellation
+end
+
+group Alternative Flow [Recovery]
+    admin -> system: Request recovery
+    system -> backup: Retrieve backup
+    system -> snowflake: Apply backup
+    system -> system: Validate connection
+    system --> admin: Report recovery status
+end
+
+@enduml 

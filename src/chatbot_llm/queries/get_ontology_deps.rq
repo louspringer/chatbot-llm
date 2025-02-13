@@ -11,4 +11,4 @@ WHERE {
     OPTIONAL { ?ontology rdfs:comment ?comment }
     OPTIONAL { ?ontology owl:imports ?imports }
 }
-ORDER BY ?ontology 
+ORDER BY ?ontology

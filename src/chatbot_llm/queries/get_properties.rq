@@ -12,4 +12,4 @@ WHERE {
     OPTIONAL { ?prop rdfs:range ?range }
     OPTIONAL { ?prop rdfs:comment ?comment }
 }
-ORDER BY ?label 
+ORDER BY ?label

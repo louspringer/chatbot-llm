@@ -8,35 +8,35 @@
 
 State management for the Teams bot using transitions FSM.
 """
+import base64
+import json
+import logging
+import os
+from dataclasses import asdict, dataclass, field
 from datetime import datetime, timedelta
-from dataclasses import dataclass, asdict, field
 from typing import (
-    Dict,
     Any,
-    Optional,
-    List,
-    cast,
-    Union,
-    Protocol,
-    TypeVar,
-    Type,
-    Sequence,
     AsyncIterator,
     Awaitable,
     Callable,
+    Dict,
+    List,
     MutableMapping,
+    Optional,
+    Protocol,
+    Sequence,
+    Type,
+    TypeVar,
+    Union,
+    cast,
 )
-import logging
-import os
-import json
-import base64
 
-from botbuilder.core import TurnContext, Storage, StoreItem
+from botbuilder.core import Storage, StoreItem, TurnContext
 from cryptography.fernet import Fernet
 from transitions.extensions.asyncio import AsyncMachine
 
-from .conversation_state import ConversationState
 from .conversation_data import ConversationData
+from .conversation_state import ConversationState
 from .user_profile import UserProfile
 
 logger = logging.getLogger(__name__)

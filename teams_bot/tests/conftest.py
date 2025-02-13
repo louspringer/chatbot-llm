@@ -3,9 +3,9 @@ Configure pytest for async testing.
 """
 
 import pytest
-from botbuilder.core import Storage, MemoryStorage
-from ..bot.state_manager import StateManager
+from botbuilder.core import MemoryStorage, Storage
 
+from ..bot.state_manager import StateManager
 
 # Enable async test functions
 pytest_plugins = ["pytest_asyncio"]

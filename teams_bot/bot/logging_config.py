@@ -12,7 +12,7 @@ import threading
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Optional, Generator
+from typing import Generator, Optional
 
 
 @dataclass
@@ -86,7 +86,7 @@ def configure_logging(
     log_format: str = (
         "%(asctime)s [%(correlation_id)s] [%(conversation_id)s] "
         "%(name)s - %(levelname)s - %(filename)s:%(lineno)d - %(message)s"
-    )
+    ),
 ) -> ContextFilter:
     """Configure logging for the application.
 
@@ -131,9 +131,7 @@ def configure_logging(
 
         # Create rotating file handler
         file_handler = logging.handlers.RotatingFileHandler(
-            log_file,
-            maxBytes=10 * 1024 * 1024,  # 10MB
-            backupCount=5
+            log_file, maxBytes=10 * 1024 * 1024, backupCount=5  # 10MB
         )
         file_handler.setFormatter(formatter)
         file_handler.addFilter(context_filter)

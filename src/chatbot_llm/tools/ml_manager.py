@@ -1,11 +1,12 @@
 """ML model management for query translation."""
 
-from typing import Dict, List, Optional, Tuple
 import json
-from pathlib import Path
-import numpy as np
-from dataclasses import dataclass
 import logging
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Dict, List, Optional, Tuple
+
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -13,6 +14,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class QueryExample:
     """Training example for query translation."""
+
     natural_language: str
     sql_query: str
     context: Optional[Dict] = None
@@ -32,13 +34,13 @@ class ModelManager:
         self,
         natural_query: str,
         sql_query: str,
-        context: Optional[Dict] = None
+        context: Optional[Dict] = None,
     ) -> None:
         """Add a new training example."""
         example = QueryExample(
             natural_language=natural_query,
             sql_query=sql_query,
-            context=context
+            context=context,
         )
         self.training_data.append(example)
 
@@ -49,49 +51,34 @@ class ModelManager:
                 "natural_language": ex.natural_language,
                 "sql_query": ex.sql_query,
                 "context": ex.context,
-                "metadata": ex.metadata
+                "metadata": ex.metadata,
             }
             for ex in self.training_data
         ]
 
-        with output_path.open('w') as f:
+        with output_path.open("w") as f:
             json.dump(data, f, indent=2)
 
     def load_training_data(self, input_path: Path) -> None:
         """Load training data from file."""
-        with input_path.open('r') as f:
+        with input_path.open("r") as f:
             data = json.load(f)
 
-        self.training_data = [
-            QueryExample(**example) for example in data
-        ]
+        self.training_data = [QueryExample(**example) for example in data]
 
-    def evaluate_performance(
-        self,
-        test_queries: List[str]
-    ) -> Dict[str, float]:
+    def evaluate_performance(self, test_queries: List[str]) -> Dict[str, float]:
         """Evaluate model performance on test queries."""
-        metrics = {
-            "accuracy": 0.0,
-            "translation_time": 0.0,
-            "error_rate": 0.0
-        }
+        metrics = {"accuracy": 0.0, "translation_time": 0.0, "error_rate": 0.0}
 
         # TODO: Implement actual evaluation logic
         return metrics
 
-    def update_performance_metrics(
-        self,
-        metrics: Dict[str, float]
-    ) -> None:
+    def update_performance_metrics(self, metrics: Dict[str, float]) -> None:
         """Update model performance metrics."""
         self.performance_metrics.update(metrics)
 
         # Log performance changes
-        logger.info(
-            "Model performance updated: %s",
-            json.dumps(metrics, indent=2)
-        )
+        logger.info("Model performance updated: %s", json.dumps(metrics, indent=2))
 
     def get_model_info(self) -> Dict:
         """Get model information and metrics."""
@@ -99,7 +86,7 @@ class ModelManager:
             "version": self.model_version,
             "training_examples": len(self.training_data),
             "performance": self.performance_metrics,
-            "last_updated": "TODO: Add timestamp"
+            "last_updated": "TODO: Add timestamp",
         }
 
 
@@ -111,9 +98,7 @@ class QueryTranslator:
         self.context: Dict = {}
 
     def translate(
-        self,
-        query: str,
-        context: Optional[Dict] = None
+        self, query: str, context: Optional[Dict] = None
     ) -> Tuple[str, float]:
         """
         Translate natural language query to SQL.
@@ -126,16 +111,9 @@ class QueryTranslator:
 
         # TODO: Implement actual translation logic
         # This is a placeholder
-        return (
-            "SELECT * FROM placeholder",
-            0.95
-        )
+        return ("SELECT * FROM placeholder", 0.95)
 
-    def validate_translation(
-        self,
-        natural_query: str,
-        sql_query: str
-    ) -> bool:
+    def validate_translation(self, natural_query: str, sql_query: str) -> bool:
         """Validate the translation makes sense."""
         # TODO: Implement validation logic
         return True
@@ -145,15 +123,13 @@ class QueryTranslator:
         natural_query: str,
         sql_query: str,
         success: bool,
-        feedback: Optional[str] = None
+        feedback: Optional[str] = None,
     ) -> None:
         """Handle user feedback on translation."""
         if success:
             # Add to training data if translation was successful
             self.model_manager.add_training_example(
-                natural_query,
-                sql_query,
-                self.context
+                natural_query, sql_query, self.context
             )
 
         # Log feedback
@@ -161,7 +137,7 @@ class QueryTranslator:
             "Translation feedback - Query: %s, Success: %s, Feedback: %s",
             natural_query,
             success,
-            feedback
+            feedback,
         )
 
 
@@ -172,14 +148,10 @@ class PerformanceMonitor:
         self.metrics: Dict[str, List[float]] = {
             "accuracy": [],
             "latency": [],
-            "error_rate": []
+            "error_rate": [],
         }
 
-    def add_metric(
-        self,
-        metric_name: str,
-        value: float
-    ) -> None:
+    def add_metric(self, metric_name: str, value: float) -> None:
         """Add a new metric measurement."""
         if metric_name not in self.metrics:
             self.metrics[metric_name] = []
@@ -194,14 +166,11 @@ class PerformanceMonitor:
                     "mean": np.mean(values),
                     "std": np.std(values),
                     "min": np.min(values),
-                    "max": np.max(values)
+                    "max": np.max(values),
                 }
         return summary
 
-    def check_degradation(
-        self,
-        threshold: float = 0.1
-    ) -> List[str]:
+    def check_degradation(self, threshold: float = 0.1) -> List[str]:
         """
         Check for performance degradation.
 

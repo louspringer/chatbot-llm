@@ -168,7 +168,7 @@ g.parse("teams-bot/guidance.ttl", format="turtle")
 3. Run SHACL validation
 4. Check validation results
 5. Fix any violations
-6. Revalidate until clean 
+6. Revalidate until clean
 
 # Teams Bot Validation
 
@@ -219,4 +219,4 @@ See `:DevelopBranchProtection` in `development_workflow.ttl` for the formal spec
 
 ## Ontology Validation
 
-// ... existing code ... 
+// ... existing code ...

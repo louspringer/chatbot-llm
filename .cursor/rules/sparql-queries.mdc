@@ -77,4 +77,4 @@ ORDER BY ?label ?depLabel
    - Be specific with your patterns
    - Use OPTIONAL for optional patterns
    - Add FILTER clauses to reduce results
-   - Consider result set size 
+   - Consider result set size

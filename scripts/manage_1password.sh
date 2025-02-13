@@ -38,7 +38,7 @@ create_or_update_item() {
     local category="$2"
     shift 2
     local fields=("$@")
-    
+
     if op item get "$title" --vault "$VAULT_NAME" &> /dev/null; then
         echo "Updating item: $title"
         op item edit "$title" --vault "$VAULT_NAME" "${fields[@]}"
@@ -83,4 +83,4 @@ create_or_update_item "monitoring-config" "Server" \
 create_or_update_item "data-config" "Database" \
     "stage-name[text]=${SNOWFLAKE_STAGE_NAME:-}"
 
-echo "1Password items have been created/updated successfully" 
+echo "1Password items have been created/updated successfully"

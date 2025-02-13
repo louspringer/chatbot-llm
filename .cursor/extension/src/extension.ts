@@ -17,8 +17,8 @@ export function activate(context: vscode.ExtensionContext) {
 
         // Get the selected text or entire document
         const selection = editor.selection;
-        const query = selection.isEmpty ? 
-            editor.document.getText() : 
+        const query = selection.isEmpty ?
+            editor.document.getText() :
             editor.document.getText(selection);
 
         // Get the workspace folder
@@ -107,4 +107,4 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(disposable);
 }
 
-export function deactivate() {} 
+export function deactivate() {}

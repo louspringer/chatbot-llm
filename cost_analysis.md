@@ -125,4 +125,4 @@ The following factors may impact the base costs:
 4. Prices are subject to change based on market conditions
 
 ---
-*Generated from cost_analysis.ttl ontology* 
+*Generated from cost_analysis.ttl ontology*

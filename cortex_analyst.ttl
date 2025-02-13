@@ -42,6 +42,26 @@ ca:ChatInterface a owl:Class ;
     rdfs:label "Chat Interface" ;
     rdfs:comment "User interface for interacting with the analyst system" .
 
+# SQL Script Management Classes
+ca:SQLScript a owl:Class ;
+    rdfs:label "SQL Script" ;
+    rdfs:comment "A SQL script for database operations in the Cortex Analyst system" .
+
+ca:DeploymentScript a owl:Class ;
+    rdfs:subClassOf ca:SQLScript ;
+    rdfs:label "Deployment Script" ;
+    rdfs:comment "Script for deploying Cortex Analyst database objects and configurations" .
+
+ca:SchemaScript a owl:Class ;
+    rdfs:subClassOf ca:SQLScript ;
+    rdfs:label "Schema Script" ;
+    rdfs:comment "Script for creating and managing Cortex Analyst database schemas" .
+
+ca:DataScript a owl:Class ;
+    rdfs:subClassOf ca:SQLScript ;
+    rdfs:label "Data Script" ;
+    rdfs:comment "Script for loading and manipulating Cortex Analyst data" .
+
 # Properties
 ca:hasMeasure a owl:ObjectProperty ;
     rdfs:domain ca:Table ;
@@ -67,6 +87,49 @@ ca:hasDefaultAggregation a owl:DatatypeProperty ;
     rdfs:domain ca:Measure ;
     rdfs:range xsd:string ;
     rdfs:comment "The default aggregation method for a measure" .
+
+# SQL Script Properties
+ca:hasDeploymentOrder a owl:DatatypeProperty ;
+    rdfs:domain ca:SQLScript ;
+    rdfs:range xsd:integer ;
+    rdfs:label "Has Deployment Order" ;
+    rdfs:comment "Specifies the order in which scripts should be executed" .
+
+ca:dependsOn a owl:ObjectProperty ;
+    rdfs:domain ca:SQLScript ;
+    rdfs:range ca:SQLScript ;
+    rdfs:label "Depends On" ;
+    rdfs:comment "Indicates script dependencies" .
+
+ca:implementsFeature a owl:ObjectProperty ;
+    rdfs:domain ca:SQLScript ;
+    rdfs:range ca:AnalystSystem ;
+    rdfs:label "Implements Feature" ;
+    rdfs:comment "Links script to the Cortex Analyst feature it implements" .
+
+ca:hasValidationRule a owl:ObjectProperty ;
+    rdfs:domain ca:SQLScript ;
+    rdfs:range ca:ValidationRule ;
+    rdfs:label "Has Validation Rule" ;
+    rdfs:comment "Associates validation rules with SQL scripts" .
+
+# SQL Script Validation
+ca:ValidationRule a owl:Class ;
+    rdfs:label "Validation Rule" ;
+    rdfs:comment "Rules for validating SQL script execution and results" .
+
+ca:SQLScriptShape a sh:NodeShape ;
+    sh:targetClass ca:SQLScript ;
+    sh:property [
+        sh:path ca:hasDeploymentOrder ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:integer ;
+    ] ;
+    sh:property [
+        sh:path ca:implementsFeature ;
+        sh:minCount 1 ;
+    ] .
 
 # Individuals
 ca:RevenueModel a ca:SemanticModel ;
@@ -94,6 +157,30 @@ ca:DailyProfitMeasure a ca:Measure ;
     ca:hasExpression "revenue - cogs" ;
     ca:hasDefaultAggregation "sum" .
 
+# SQL Script Individuals
+ca:CreateSchemaScript a ca:SchemaScript ;
+    rdfs:label "Create Schema Script" ;
+    ca:hasDeploymentOrder 1 ;
+    ca:implementsFeature ca:AnalystSystem .
+
+ca:CreateTablesScript a ca:SchemaScript ;
+    rdfs:label "Create Tables Script" ;
+    ca:hasDeploymentOrder 2 ;
+    ca:dependsOn ca:CreateSchemaScript ;
+    ca:implementsFeature ca:AnalystSystem .
+
+ca:LoadDataScript a ca:DataScript ;
+    rdfs:label "Load Data Script" ;
+    ca:hasDeploymentOrder 3 ;
+    ca:dependsOn ca:CreateTablesScript ;
+    ca:implementsFeature ca:AnalystSystem .
+
+ca:CortexSearchScript a ca:DeploymentScript ;
+    rdfs:label "Cortex Search Setup Script" ;
+    ca:hasDeploymentOrder 4 ;
+    ca:dependsOn ca:LoadDataScript ;
+    ca:implementsFeature ca:AnalystSystem .
+
 # SHACL Shapes
 ca:MeasureShape a sh:NodeShape ;
     sh:targetClass ca:Measure ;
@@ -110,6 +197,343 @@ ca:MeasureShape a sh:NodeShape ;
         sh:datatype xsd:string ;
     ] .
 
+# Teams Bot Integration Classes
+ca:BotInterface a owl:Class ;
+    rdfs:subClassOf ca:ChatInterface ;
+    rdfs:label "Bot Interface" ;
+    rdfs:comment "Teams bot interface for interacting with Cortex Analyst" .
+
+ca:BotCredential a owl:Class ;
+    rdfs:label "Bot Credential" ;
+    rdfs:comment "Security credentials for bot authentication with Snowflake" .
+
+ca:BotCommand a owl:Class ;
+    rdfs:label "Bot Command" ;
+    rdfs:comment "Commands that can be executed by the Teams bot" .
+
+ca:QueryCommand a owl:Class ;
+    rdfs:subClassOf ca:BotCommand ;
+    rdfs:label "Query Command" ;
+    rdfs:comment "Command for executing queries against Cortex Analyst" .
+
+ca:AnalysisCommand a owl:Class ;
+    rdfs:subClassOf ca:BotCommand ;
+    rdfs:label "Analysis Command" ;
+    rdfs:comment "Command for performing analysis using Cortex Analyst" .
+
+# Bot Integration Properties
+ca:hasCredential a owl:ObjectProperty ;
+    rdfs:domain ca:BotInterface ;
+    rdfs:range ca:BotCredential ;
+    rdfs:comment "Links bot interface to its Snowflake credentials" .
+
+ca:executesCommand a owl:ObjectProperty ;
+    rdfs:domain ca:BotInterface ;
+    rdfs:range ca:BotCommand ;
+    rdfs:comment "Commands that can be executed by the bot" .
+
+ca:usesModel a owl:ObjectProperty ;
+    rdfs:domain ca:BotCommand ;
+    rdfs:range ca:SemanticModel ;
+    rdfs:comment "Links commands to semantic models they operate on" .
+
+ca:requiresMeasure a owl:ObjectProperty ;
+    rdfs:domain ca:AnalysisCommand ;
+    rdfs:range ca:Measure ;
+    rdfs:comment "Specifies measures required for analysis" .
+
+# Bot Integration Instances
+ca:TeamsBot a ca:BotInterface ;
+    rdfs:label "Teams Bot" ;
+    rdfs:comment "Teams bot for Cortex Analyst interaction" ;
+    ca:executesCommand ca:RevenueQuery, ca:ProfitAnalysis .
+
+ca:RevenueQuery a ca:QueryCommand ;
+    rdfs:label "Revenue Query" ;
+    rdfs:comment "Query daily revenue data" ;
+    ca:usesModel ca:RevenueModel ;
+    ca:requiresMeasure ca:DailyRevenueMeasure .
+
+ca:ProfitAnalysis a ca:AnalysisCommand ;
+    rdfs:label "Profit Analysis" ;
+    rdfs:comment "Analyze profit trends" ;
+    ca:usesModel ca:RevenueModel ;
+    ca:requiresMeasure ca:DailyProfitMeasure .
+
+# Bot Integration Validation
+ca:BotInterfaceShape a sh:NodeShape ;
+    sh:targetClass ca:BotInterface ;
+    sh:property [
+        sh:path ca:hasCredential ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+    ] ;
+    sh:property [
+        sh:path ca:executesCommand ;
+        sh:minCount 1 ;
+    ] .
+
+ca:BotCommandShape a sh:NodeShape ;
+    sh:targetClass ca:BotCommand ;
+    sh:property [
+        sh:path ca:usesModel ;
+        sh:minCount 1 ;
+    ] .
+
+# Security Configuration
+ca:BotSnowflakeConfig a owl:Class ;
+    rdfs:label "Bot Snowflake Configuration" ;
+    rdfs:comment "Snowflake configuration for bot access" .
+
+ca:TeamsBotConfig a ca:BotSnowflakeConfig ;
+    rdfs:label "Teams Bot Snowflake Config" ;
+    ca:database "TEAMS_BOT_DB" ;
+    ca:schema "PUBLIC" ;
+    ca:warehouse "COMPUTE_WH" ;
+    ca:role "TEAMS_BOT_ROLE" .
+
+# Snowflake Object Classes
+ca:SnowflakeObject a owl:Class ;
+    rdfs:label "Snowflake Object" ;
+    rdfs:comment "Base class for all Snowflake objects" .
+
+ca:Database a owl:Class ;
+    rdfs:subClassOf ca:SnowflakeObject ;
+    rdfs:label "Database" ;
+    rdfs:comment "Snowflake database container" .
+
+ca:Schema a owl:Class ;
+    rdfs:subClassOf ca:SnowflakeObject ;
+    rdfs:label "Schema" ;
+    rdfs:comment "Database schema" .
+
+ca:Table a owl:Class ;
+    rdfs:subClassOf ca:SnowflakeObject ;
+    rdfs:label "Table" ;
+    rdfs:comment "Database table" .
+
+ca:View a owl:Class ;
+    rdfs:subClassOf ca:SnowflakeObject ;
+    rdfs:label "View" ;
+    rdfs:comment "Database view" .
+
+ca:StoredProcedure a owl:Class ;
+    rdfs:subClassOf ca:SnowflakeObject ;
+    rdfs:label "Stored Procedure" ;
+    rdfs:comment "Snowflake stored procedure" .
+
+ca:Role a owl:Class ;
+    rdfs:subClassOf ca:SnowflakeObject ;
+    rdfs:label "Role" ;
+    rdfs:comment "Snowflake security role" .
+
+ca:Grant a owl:Class ;
+    rdfs:subClassOf ca:SnowflakeObject ;
+    rdfs:label "Grant" ;
+    rdfs:comment "Permission grant" .
+
+ca:Column a owl:Class ;
+    rdfs:subClassOf ca:SnowflakeObject ;
+    rdfs:label "Column" ;
+    rdfs:comment "Table or view column" .
+
+# Snowflake Object Properties
+ca:hasSchema a owl:ObjectProperty ;
+    rdfs:domain ca:Database ;
+    rdfs:range ca:Schema ;
+    rdfs:comment "Database contains schema" .
+
+ca:hasTable a owl:ObjectProperty ;
+    rdfs:domain ca:Schema ;
+    rdfs:range ca:Table ;
+    rdfs:comment "Schema contains table" .
+
+ca:hasColumn a owl:ObjectProperty ;
+    rdfs:domain [
+        owl:unionOf (ca:Table ca:View)
+    ] ;
+    rdfs:range ca:Column ;
+    rdfs:comment "Table or view contains column" .
+
+ca:hasGrant a owl:ObjectProperty ;
+    rdfs:domain ca:Role ;
+    rdfs:range ca:Grant ;
+    rdfs:comment "Role has permission grant" .
+
+ca:dependsOn a owl:ObjectProperty ;
+    rdfs:domain ca:SnowflakeObject ;
+    rdfs:range ca:SnowflakeObject ;
+    rdfs:comment "Object dependency relationship" .
+
+# Reverse Engineered Database Objects
+ca:CortexAnalystDB a ca:Database ;
+    rdfs:label "CORTEX_ANALYST_DEMO" ;
+    rdfs:comment "Cortex Analyst demonstration database" ;
+    ca:hasSchema ca:RevenueTimeseriesSchema .
+
+ca:TeamsBotDB a ca:Database ;
+    rdfs:label "TEAMS_BOT_DB" ;
+    rdfs:comment "Teams bot database" ;
+    ca:hasSchema ca:PublicSchema .
+
+# Schemas
+ca:RevenueTimeseriesSchema a ca:Schema ;
+    rdfs:label "REVENUE_TIMESERIES" ;
+    rdfs:comment "Schema for revenue analysis" ;
+    ca:hasTable ca:DailyRevenueTable,
+                ca:ProductDimTable,
+                ca:RegionDimTable .
+
+ca:PublicSchema a ca:Schema ;
+    rdfs:label "PUBLIC" ;
+    rdfs:comment "Public schema for Teams bot" ;
+    ca:hasTable ca:SecurityAuditLogTable .
+
+# Tables
+ca:DailyRevenueTable a ca:Table ;
+    rdfs:label "daily_revenue" ;
+    rdfs:comment "Daily revenue fact table" ;
+    ca:hasColumn ca:DateColumn,
+                 ca:RevenueColumn,
+                 ca:CogsColumn,
+                 ca:ForecastedRevenueColumn,
+                 ca:ProductIdColumn,
+                 ca:RegionIdColumn .
+
+ca:ProductDimTable a ca:Table ;
+    rdfs:label "product_dim" ;
+    rdfs:comment "Product dimension table" ;
+    ca:hasColumn ca:ProductIdColumn,
+                 ca:ProductLineColumn .
+
+ca:RegionDimTable a ca:Table ;
+    rdfs:label "region_dim" ;
+    rdfs:comment "Region dimension table" ;
+    ca:hasColumn ca:RegionIdColumn,
+                 ca:SalesRegionColumn,
+                 ca:StateColumn .
+
+ca:SecurityAuditLogTable a ca:Table ;
+    rdfs:label "security_audit_log" ;
+    rdfs:comment "Security audit logging table" ;
+    ca:hasColumn ca:EventIdColumn,
+                 ca:EventTypeColumn,
+                 ca:EventTimestampColumn,
+                 ca:UserNameColumn,
+                 ca:RoleNameColumn,
+                 ca:ActionTakenColumn,
+                 ca:StatusColumn,
+                 ca:ErrorMessageColumn .
+
+# Stored Procedures
+ca:RotateKeyProcedure a ca:StoredProcedure ;
+    rdfs:label "ROTATE_BOT_KEY" ;
+    rdfs:comment "Procedure for rotating bot RSA keys" ;
+    ca:requiresRole ca:TeamsBotRole .
+
+ca:LogSecurityEventProcedure a ca:StoredProcedure ;
+    rdfs:label "LOG_SECURITY_EVENT" ;
+    rdfs:comment "Procedure for logging security events" ;
+    ca:requiresRole ca:TeamsBotRole .
+
+# Roles and Permissions
+ca:AccountAdminRole a ca:Role ;
+    rdfs:label "ACCOUNTADMIN" ;
+    rdfs:comment "Account administrator role" .
+
+ca:SecurityAdminRole a ca:Role ;
+    rdfs:label "SECURITYADMIN" ;
+    rdfs:comment "Security administrator role" .
+
+ca:TeamsBotRole a ca:Role ;
+    rdfs:label "TEAMS_BOT_ROLE" ;
+    rdfs:comment "Teams bot service role" ;
+    ca:hasGrant ca:WarehouseUsageGrant,
+                ca:DatabaseUsageGrant,
+                ca:SchemaUsageGrant,
+                ca:TableSelectGrant .
+
+# Grants
+ca:WarehouseUsageGrant a ca:Grant ;
+    rdfs:label "Warehouse Usage" ;
+    ca:privilege "USAGE" ;
+    ca:onObject ca:ComputeWarehouse .
+
+ca:DatabaseUsageGrant a ca:Grant ;
+    rdfs:label "Database Usage" ;
+    ca:privilege "USAGE" ;
+    ca:onObject ca:TeamsBotDB .
+
+ca:SchemaUsageGrant a ca:Grant ;
+    rdfs:label "Schema Usage" ;
+    ca:privilege "USAGE" ;
+    ca:onObject ca:PublicSchema .
+
+ca:TableSelectGrant a ca:Grant ;
+    rdfs:label "Table Select" ;
+    ca:privilege "SELECT" ;
+    ca:onObject ca:SecurityAuditLogTable .
+
+# Columns
+ca:DateColumn a ca:Column ;
+    rdfs:label "date" ;
+    ca:dataType "DATE" .
+
+ca:RevenueColumn a ca:Column ;
+    rdfs:label "revenue" ;
+    ca:dataType "FLOAT" .
+
+ca:CogsColumn a ca:Column ;
+    rdfs:label "cogs" ;
+    ca:dataType "FLOAT" .
+
+ca:ForecastedRevenueColumn a ca:Column ;
+    rdfs:label "forecasted_revenue" ;
+    ca:dataType "FLOAT" .
+
+ca:ProductIdColumn a ca:Column ;
+    rdfs:label "product_id" ;
+    ca:dataType "INT" .
+
+ca:RegionIdColumn a ca:Column ;
+    rdfs:label "region_id" ;
+    ca:dataType "INT" .
+
+ca:ProductLineColumn a ca:Column ;
+    rdfs:label "product_line" ;
+    ca:dataType "VARCHAR" .
+
+ca:SalesRegionColumn a ca:Column ;
+    rdfs:label "sales_region" ;
+    ca:dataType "VARCHAR" .
+
+ca:StateColumn a ca:Column ;
+    rdfs:label "state" ;
+    ca:dataType "VARCHAR" .
+
+# SHACL Shapes for Validation
+ca:TableShape a sh:NodeShape ;
+    sh:targetClass ca:Table ;
+    sh:property [
+        sh:path ca:hasColumn ;
+        sh:minCount 1 ;
+    ] .
+
+ca:ColumnShape a sh:NodeShape ;
+    sh:targetClass ca:Column ;
+    sh:property [
+        sh:path ca:dataType ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+    ] .
+
+ca:RoleShape a sh:NodeShape ;
+    sh:targetClass ca:Role ;
+    sh:property [
+        sh:path ca:hasGrant ;
+        sh:minCount 1 ;
+    ] .
+
 # TODO Section
 ###
 # Future Enhancements:
@@ -117,4 +541,12 @@ ca:MeasureShape a sh:NodeShape ;
 # 2. Integrate with external semantic models
 # 3. Add validation rules for forecasting accuracy
 # 4. Expand chat interface capabilities
-### 
+# 5. Add deployment monitoring concepts
+# 6. Include rollback procedure definitions
+# 7. Add security validation patterns
+# 8. Define error handling patterns for SQL scripts
+# 9. Add natural language query parsing
+# 10. Implement conversation context management
+# 11. Add support for visualization commands
+# 12. Implement user preference management
+###

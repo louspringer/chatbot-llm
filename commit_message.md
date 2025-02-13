@@ -5,4 +5,4 @@
 - Added emojis for better readability
 - Documented next steps and dependencies
 
-Related to #43 
+Related to #43

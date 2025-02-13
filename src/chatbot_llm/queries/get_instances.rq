@@ -10,4 +10,4 @@ WHERE {
     FILTER(?type != owl:Class && ?type != owl:ObjectProperty && ?type != owl:DatatypeProperty)
     OPTIONAL { ?instance rdfs:comment ?comment }
 }
-ORDER BY ?type ?label 
+ORDER BY ?type ?label

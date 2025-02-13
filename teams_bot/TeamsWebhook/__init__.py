@@ -1,6 +1,7 @@
 """
 Azure Functions app for Teams Bot.
 """
+
 import asyncio
 import logging
 import os
@@ -18,12 +19,13 @@ import azure.functions as func  # noqa: E402
 from botbuilder.core import (  # noqa: E402
     BotFrameworkAdapter,
     BotFrameworkAdapterSettings,
-    MemoryStorage,
     ConversationState,
+    MemoryStorage,
     UserState,
 )
-from teams_bot.bot.teams_bot import TeamsBot  # noqa: E402
+
 from teams_bot.bot.state_manager import StateManager  # noqa: E402
+from teams_bot.bot.teams_bot import TeamsBot  # noqa: E402
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -68,9 +70,7 @@ async def on_error(context, error):
     )
 
     # Send error message to user
-    await context.send_activity(
-        "The bot encountered an error. Please try again."
-    )
+    await context.send_activity("The bot encountered an error. Please try again.")
 
 
 ADAPTER.on_turn_error = on_error

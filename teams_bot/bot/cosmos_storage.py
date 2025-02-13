@@ -9,10 +9,10 @@
 Azure Cosmos DB storage implementation for the Teams bot.
 """
 
-from typing import Dict, Any, List, Optional, cast
 import logging
+from typing import Any, Dict, List, Optional, cast
 
-from azure.cosmos.aio import CosmosClient, ContainerProxy, DatabaseProxy
+from azure.cosmos.aio import ContainerProxy, CosmosClient, DatabaseProxy
 from botbuilder.core import Storage
 
 logger = logging.getLogger(__name__)
@@ -22,7 +22,11 @@ class CosmosStorage(Storage):
     """Azure Cosmos DB storage implementation."""
 
     def __init__(
-        self, cosmos_uri: str, cosmos_key: str, database_id: str, container_id: str
+        self,
+        cosmos_uri: str,
+        cosmos_key: str,
+        database_id: str,
+        container_id: str,
     ) -> None:
         """Initialize the storage."""
         if not cosmos_uri:

@@ -2,14 +2,15 @@
 Configuration settings for the Teams bot.
 """
 
-import os
-import logging
 import asyncio
+import logging
+import os
 from pathlib import Path
-from typing import Optional, Dict, Any
-from dotenv import load_dotenv
-from cryptography.hazmat.primitives import serialization
+from typing import Any, Dict, Optional
+
 from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import serialization
+from dotenv import load_dotenv
 
 from .key_vault import KeyVaultConfig
 
@@ -29,6 +30,7 @@ if os.getenv("AZURE_KEY_VAULT_URL"):
     except Exception as e:
         logger.error(f"Failed to initialize Key Vault: {e}")
 
+
 async def get_secret(name: str, default: str = "") -> str:
     """Get secret from Key Vault or environment variable."""
     if key_vault:
@@ -37,6 +39,7 @@ async def get_secret(name: str, default: str = "") -> str:
         except Exception as e:
             logger.warning(f"Failed to get secret from Key Vault: {e}")
     return os.getenv(name, default)
+
 
 # Bot Configuration
 APP_ID = asyncio.run(get_secret("bot-app-id"))
@@ -69,6 +72,7 @@ COSMOS_DB_CONTAINER = os.getenv("COSMOS_DB_CONTAINER", "state")
 # State encryption
 STATE_ENCRYPTION_KEY = asyncio.run(get_secret("state-encryption-key"))
 
+
 def get_snowflake_private_key() -> Optional[bytes]:
     """Load and format private key for Snowflake authentication."""
     if not SNOWFLAKE_PRIVATE_KEY_PATH:
@@ -79,15 +83,13 @@ def get_snowflake_private_key() -> Optional[bytes]:
         key_path = Path(SNOWFLAKE_PRIVATE_KEY_PATH)
         with key_path.open("rb") as key:
             p_key = serialization.load_pem_private_key(
-                key.read(),
-                password=None,
-                backend=default_backend()
+                key.read(), password=None, backend=default_backend()
             )
 
         pkb = p_key.private_bytes(
             encoding=serialization.Encoding.DER,
             format=serialization.PrivateFormat.PKCS8,
-            encryption_algorithm=serialization.NoEncryption()
+            encryption_algorithm=serialization.NoEncryption(),
         )
 
         return pkb

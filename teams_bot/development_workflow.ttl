@@ -152,4 +152,4 @@
         sh:path :hasBranchProtection ;
         sh:minCount 1 ;
         sh:message "Development phase must have branch protection rules."
-    ] . 
+    ] .

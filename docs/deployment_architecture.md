@@ -88,4 +88,4 @@ The architecture is defined using semantic relationships in the ontology, which 
 
 - [Azure Functions Documentation](https://docs.microsoft.com/en-us/azure/azure-functions/)
 - [Bot Framework Documentation](https://docs.microsoft.com/en-us/azure/bot-service/)
-- [Teams Integration Guide](https://docs.microsoft.com/en-us/microsoftteams/platform/bots/how-to/create-a-bot-for-teams) 
+- [Teams Integration Guide](https://docs.microsoft.com/en-us/microsoftteams/platform/bots/how-to/create-a-bot-for-teams)

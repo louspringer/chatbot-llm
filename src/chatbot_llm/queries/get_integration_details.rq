@@ -7,13 +7,13 @@ WHERE {
     ?need a :BusinessNeed ;
           rdfs:label ?label ;
           rdfs:comment ?comment .
-    OPTIONAL { 
+    OPTIONAL {
         ?need :hasContext ?ctx .
         ?ctx rdfs:label ?context .
     }
-    OPTIONAL { 
+    OPTIONAL {
         ?need :hasConstraint ?con .
         ?con rdfs:label ?constraint .
     }
     FILTER(CONTAINS(LCASE(?label), "teams") || CONTAINS(LCASE(?label), "snowflake"))
-} 
+}

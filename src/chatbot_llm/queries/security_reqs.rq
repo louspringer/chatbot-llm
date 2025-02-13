@@ -8,4 +8,4 @@ WHERE {
        rdfs:label ?label .
     OPTIONAL { ?s :minimumVersion ?version }
     OPTIONAL { ?s :rationale ?rationale }
-} 
+}

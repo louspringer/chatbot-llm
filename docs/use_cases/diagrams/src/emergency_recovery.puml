@@ -1,0 +1,35 @@
+@startuml
+skinparam monochrome true
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam roundCorner 10
+skinparam maxMessageSize 100
+
+actor "Administrator" as admin
+participant "System" as system
+database "Backup Storage" as backup
+participant "Snowflake" as snowflake
+
+title Emergency Key Recovery Process
+
+group Main Flow
+    admin -> system: Identify key issue
+    system -> backup: List available backups
+    system --> admin: Display backup list
+    admin -> system: Select backup
+    system -> backup: Retrieve backup
+    system -> system: Validate backup
+    system -> snowflake: Apply backup
+    system -> system: Validate connection
+    system --> admin: Report status
+end
+
+group Alternative Flow [No Valid Backups]
+    admin -> system: Request emergency keys
+    system -> system: Generate new keys
+    admin -> snowflake: Manual update
+    system -> backup: Store new backup
+end
+
+@enduml 

@@ -214,4 +214,4 @@ Contributors will be recognized in:
 * README.md
 * Release notes
 * Contributors list
-* Special mentions for significant contributions 
+* Special mentions for significant contributions

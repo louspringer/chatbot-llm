@@ -1,0 +1,51 @@
+@startuml scheduled_rotation
+skinparam monochrome true
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+
+state "Environment Check" as check {
+    [*] --> ValidateDependencies
+    ValidateDependencies --> ValidateResources
+    ValidateResources --> ValidatePermissions
+    ValidatePermissions --> [*]
+}
+
+state "Key Generation" as gen {
+    [*] --> GenerateRSAKey
+    GenerateRSAKey --> ExtractPublicKey
+    ExtractPublicKey --> ValidateKeyFormat
+    ValidateKeyFormat --> [*]
+}
+
+state "Backup Process" as backup {
+    [*] --> CreateBackupDir
+    CreateBackupDir --> TimestampKeys
+    TimestampKeys --> CopyKeys
+    CopyKeys --> ValidateBackup
+    ValidateBackup --> [*]
+}
+
+state "Snowflake Update" as update {
+    [*] --> SetAccountAdmin
+    SetAccountAdmin --> UpdatePublicKey
+    UpdatePublicKey --> ValidateConnection
+    ValidateConnection --> [*]
+}
+
+[*] --> check
+check --> gen : Success
+check --> FailureNotification : Failure
+gen --> backup : Success
+gen --> RetryGeneration : Failure
+RetryGeneration --> gen
+RetryGeneration --> FailureNotification : Max Retries
+backup --> update : Success
+backup --> FailureNotification : Failure
+update --> SuccessNotification : Success
+update --> RecoveryProcess : Failure
+RecoveryProcess --> FailureNotification
+SuccessNotification --> [*]
+FailureNotification --> [*]
+
+@enduml 

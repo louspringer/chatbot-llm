@@ -1,0 +1,38 @@
+@startuml monitoring
+skinparam monochrome true
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+
+state "Metric Collection" as collect {
+    [*] --> GatherSystemMetrics
+    GatherSystemMetrics --> GatherProcessMetrics
+    GatherProcessMetrics --> GatherSecurityMetrics
+    GatherSecurityMetrics --> [*]
+}
+
+state "Alert Processing" as alert {
+    [*] --> EvaluateThresholds
+    EvaluateThresholds --> CategorizeAlerts
+    CategorizeAlerts --> DetermineRecipients
+    DetermineRecipients --> [*]
+}
+
+state "Notification Dispatch" as notify {
+    [*] --> FormatMessage
+    FormatMessage --> SelectChannel
+    SelectChannel --> SendNotification
+    SendNotification --> VerifyDelivery
+    VerifyDelivery --> [*]
+}
+
+[*] --> collect
+collect --> ProcessMetrics
+ProcessMetrics --> alert : Thresholds Exceeded
+ProcessMetrics --> StoreMetrics : Normal Range
+alert --> notify
+notify --> UpdateAlertStatus
+StoreMetrics --> [*]
+UpdateAlertStatus --> [*]
+
+@enduml 

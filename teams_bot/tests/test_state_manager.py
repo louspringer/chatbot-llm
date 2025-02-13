@@ -12,18 +12,19 @@ Tests for the state management implementation.
 # pylint: disable=too-many-lines
 # pylint: disable=too-many-locals
 
-import pytest
-from unittest.mock import MagicMock, AsyncMock, patch
-from datetime import datetime, timedelta
 from base64 import b64decode
+from datetime import datetime, timedelta
+from unittest.mock import AsyncMock, MagicMock, patch
+
+import pytest
+from botbuilder.core import MemoryStorage, Storage, TurnContext
 from cryptography.fernet import Fernet
 
-from botbuilder.core import TurnContext, Storage, MemoryStorage
-from ..bot.state_manager import StateManager
+from ..bot.conversation_data import MAX_ERROR_COUNT, ConversationData
 from ..bot.conversation_state import ConversationState
-from ..bot.conversation_data import ConversationData, MAX_ERROR_COUNT
-from ..bot.user_profile import UserProfile
 from ..bot.cosmos_storage import CosmosStorage
+from ..bot.state_manager import StateManager
+from ..bot.user_profile import UserProfile
 
 
 @pytest.fixture

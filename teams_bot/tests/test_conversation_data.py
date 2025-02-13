@@ -8,14 +8,15 @@
 
 import asyncio
 import logging
-import pytest
 from datetime import datetime, timedelta
-from unittest.mock import MagicMock, AsyncMock
+from unittest.mock import AsyncMock, MagicMock
+
+import pytest
+from transitions.core import MachineError
 
 from ..bot.conversation_data import ConversationData
 from ..bot.conversation_state import ConversationState
 from ..bot.state_manager import StateManager
-from transitions.core import MachineError
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -65,11 +66,11 @@ async def test_conversation_data_invalid_init():
 async def test_state_machine_transitions(conversation_data):
     """Test state machine transitions."""
     data = await anext(conversation_data)
-    
+
     # Test valid transitions
     await data.start_authentication()
     assert data.current_state == ConversationState.AUTHENTICATING
-    
+
     await data.authentication_complete()
     assert data.current_state == ConversationState.AUTHENTICATED
 
@@ -78,11 +79,11 @@ async def test_state_machine_transitions(conversation_data):
 async def test_state_timeout_handling(conversation_data):
     """Test state timeout handling."""
     data = await anext(conversation_data)
-    
+
     # Set old last activity
     old_time = datetime.utcnow() - timedelta(minutes=10)
     data.last_activity = old_time.isoformat()
-    
+
     # Verify timeout check
     assert not await data.check_state_timeout()
 
@@ -92,7 +93,7 @@ async def test_checkpoint_creation(conversation_data, mock_state_manager):
     """Test checkpoint creation."""
     data = await anext(conversation_data)
     data.state_manager = mock_state_manager
-    
+
     await data.create_checkpoint()
     assert data.checkpoint_data is not None
     assert data.checkpoint_timestamp is not None
@@ -104,15 +105,15 @@ async def test_checkpoint_restoration(conversation_data, mock_state_manager):
     """Test checkpoint restoration."""
     data = await anext(conversation_data)
     data.state_manager = mock_state_manager
-    
+
     # Create checkpoint
     await data.create_checkpoint()
-    
+
     # Modify state
     data.error_count = 5
     initial = ConversationState.INITIALIZED
     data.current_state = ConversationState.ERROR
-    
+
     # Restore and verify
     success = await data.restore_checkpoint()
     assert success
@@ -125,12 +126,12 @@ async def test_data_encryption(conversation_data, mock_state_manager):
     """Test data encryption."""
     data = await anext(conversation_data)
     data.state_manager = mock_state_manager
-    
+
     # Mock encryption methods
     mock_state_manager.encrypt = MagicMock(return_value="encrypted")
     mock_value = '{"value": "decrypted"}'
     mock_state_manager.decrypt = MagicMock(return_value=mock_value)
-    
+
     # Test to_dict and from_dict with encryption
     encrypted_data = data.to_dict()
     assert "encrypted" in str(encrypted_data)
@@ -140,11 +141,11 @@ async def test_data_encryption(conversation_data, mock_state_manager):
 async def test_error_handling(conversation_data):
     """Test error handling."""
     data = await anext(conversation_data)
-    
+
     # Test invalid transition
     with pytest.raises(MachineError):
         await data.authentication_complete()
-    
+
     assert data.error_count == 1
     assert data.current_state == ConversationState.ERROR
 
@@ -153,11 +154,11 @@ async def test_error_handling(conversation_data):
 async def test_state_history_tracking(conversation_data):
     """Test state history tracking."""
     data = await anext(conversation_data)
-    
+
     # Perform transitions
     await data.start_authentication()
     await data.authentication_complete()
-    
+
     # Verify history
     assert len(data.state_history) == 2
     first_state = ConversationState.AUTHENTICATING.value
@@ -170,11 +171,11 @@ async def test_state_history_tracking(conversation_data):
 async def test_invalid_transitions(conversation_data):
     """Test invalid state transitions."""
     data = await anext(conversation_data)
-    
+
     # Test invalid transition sequence
     with pytest.raises(MachineError):
         await data.start_querying()
-    
+
     assert data.error_count == 1
     assert data.current_state == ConversationState.ERROR
 
@@ -183,11 +184,11 @@ async def test_invalid_transitions(conversation_data):
 async def test_conversation_references(conversation_data):
     """Test conversation references handling."""
     data = await anext(conversation_data)
-    
+
     # Add reference
     ref = {"id": "test_ref"}
     data.conversation_references["test"] = ref
-    
+
     # Verify reference
     assert data.conversation_references["test"] == ref
 
@@ -215,7 +216,7 @@ async def test_concurrent_state_changes(conversation_data):
     await asyncio.gather(
         transition_chain(data1, "1"),
         transition_chain(data2, "2"),
-        transition_chain(data3, "3")
+        transition_chain(data3, "3"),
     )
 
     # Verify final states
@@ -225,4 +226,4 @@ async def test_concurrent_state_changes(conversation_data):
 
 
 if __name__ == "__main__":
-    pytest.main([__file__]) 
+    pytest.main([__file__])

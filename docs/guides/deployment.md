@@ -186,7 +186,7 @@ az backup restore \
    ```bash
    # Check Azure AD token
    az account get-access-token
-   
+
    # Test Teams connection
    python tools/test_teams_auth.py
    ```
@@ -203,7 +203,7 @@ az backup restore \
    ```bash
    # Test model endpoint
    python tools/test_model.py
-   
+
    # Check model logs
    az monitor logs query \
      --workspace your-workspace \
@@ -268,4 +268,4 @@ az backup restore \
   --resource-group rg-cortex-teams \
   --vault-name backup-vault \
   --name full-backup
-``` 
+```

@@ -81,15 +81,15 @@ owl:imports risks: .
     :implements "RBAC and encryption" .
 
 # Risk Relationships
-:teamsAuthFailure 
+:teamsAuthFailure
     :affectsComponent teams:AuthenticationComponent ;
     :requiresControl :authenticationControl .
 
-:modelDrift 
+:modelDrift
     :affectsComponent teams:MLComponent ;
     :requiresControl :modelMonitoring .
 
-:unauthorizedDataAccess 
+:unauthorizedDataAccess
     :affectsComponent teams:DataAccessComponent ;
     :requiresControl :dataAccessControl .
 
@@ -119,4 +119,4 @@ owl:imports risks: .
     rdfs:label "Teams Integration Risk Assessment" ;
     :assessmentDate "2024-01-26"^^xsd:date ;
     :assessedRisks :teamsAuthFailure, :modelDrift, :unauthorizedDataAccess ;
-    :overallRiskLevel "Medium" . 
+    :overallRiskLevel "Medium" .

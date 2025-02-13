@@ -7,4 +7,4 @@
 
 from transitions.core import MachineError
 
-__all__ = ["MachineError"] 
+__all__ = ["MachineError"]

@@ -1,12 +1,13 @@
 """Result formatting tools for Cortex-Teams integration."""
 
 import json
-import pandas as pd
-from typing import Dict, List, Union, Optional
-from pathlib import Path
 import subprocess
 import tempfile
 from abc import ABC, abstractmethod
+from pathlib import Path
+from typing import Dict, List, Optional, Union
+
+import pandas as pd
 
 
 class FormatResult(ABC):
@@ -111,7 +112,10 @@ class TeamsCardFormatter(FormatResult):
         rows = []
         for _, row in df.iterrows():
             row_items = [
-                {"type": "Column", "items": [{"type": "TextBlock", "text": str(val)}]}
+                {
+                    "type": "Column",
+                    "items": [{"type": "TextBlock", "text": str(val)}],
+                }
                 for val in row
             ]
             rows.append({"type": "ColumnSet", "columns": row_items})

@@ -4,12 +4,13 @@ Environment validation script for the Snowflake Cortex Teams Bot project.
 Validates all required dependencies and environment setup.
 """
 
-import sys
-import os
-from typing import Dict, List, Tuple
 import importlib
-import pkg_resources
+import os
 import platform
+import sys
+from typing import Dict, List, Tuple
+
+import pkg_resources
 
 
 def check_python_version() -> Tuple[bool, str]:
@@ -23,13 +24,13 @@ def check_python_version() -> Tuple[bool, str]:
 def check_package(package: str, min_version: str) -> Tuple[bool, str]:
     """Check if a package is installed and meets minimum version."""
     try:
-        if package.startswith('botbuilder.'):
+        if package.startswith("botbuilder."):
             # For botbuilder packages, just check the distribution
             # Package name: botbuilder.core -> botbuilder-core
             # Special case for integration packages:
             # botbuilder.integration.aiohttp -> botbuilder-integration-aiohttp
-            module_path = package.split('.')
-            if module_path[1] == 'integration':
+            module_path = package.split(".")
+            if module_path[1] == "integration":
                 dist_name = (
                     f"{module_path[0]}-{module_path[1]}-{module_path[2]}"
                 )
@@ -83,9 +84,11 @@ def check_snowflake_dependencies() -> List[Tuple[bool, str]]:
     results = []
 
     # Check package installation
-    results.extend([
-        check_package("snowflake-snowpark-python", "1.0.0"),
-    ])
+    results.extend(
+        [
+            check_package("snowflake-snowpark-python", "1.0.0"),
+        ]
+    )
 
     # Validate Snowpark session
     try:
@@ -98,8 +101,8 @@ def check_snowflake_dependencies() -> List[Tuple[bool, str]]:
         result = session.sql(
             "SELECT CURRENT_WAREHOUSE() as warehouse"
         ).collect()
-        if result and result[0]['WAREHOUSE']:
-            warehouse = result[0]['WAREHOUSE']
+        if result and result[0]["WAREHOUSE"]:
+            warehouse = result[0]["WAREHOUSE"]
             results.append((True, f"Connected to warehouse: {warehouse}"))
         else:
             results.append((False, "Snowpark session query failed"))

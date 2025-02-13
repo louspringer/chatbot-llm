@@ -9,9 +9,9 @@
 User profile management for the Teams bot.
 """
 
+from dataclasses import asdict, dataclass, field
 from datetime import datetime
-from dataclasses import dataclass, asdict, field
-from typing import Dict, Any, List, Optional
+from typing import Any, Dict, List, Optional
 
 from botbuilder.core import StoreItem
 

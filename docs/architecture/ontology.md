@@ -97,7 +97,7 @@ The validation framework ensures:
    ```bash
    # Validate changes
    python tools/validate_ontology.py
-   
+
    # Generate documentation
    python tools/generate_docs.py
    ```
@@ -106,7 +106,7 @@ The validation framework ensures:
    ```bash
    # Test ontology consistency
    python tools/test_ontology.py
-   
+
    # Validate relationships
    python tools/validate_relationships.py
    ```

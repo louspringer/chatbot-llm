@@ -5,8 +5,9 @@ Validation utilities for ontology files.
 
 import sys
 from pathlib import Path
-from rdflib import Graph
+
 from pyshacl import validate
+from rdflib import Graph
 
 
 def validate_ontology(ontology_path: str) -> bool:

@@ -1,0 +1,408 @@
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix pkg: <file://package_management#> .
+@prefix pkg1: <file:///Users/lou/Documents/chatbot-llm/package_management.ttl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sec: <file:///Users/lou/Documents/chatbot-llm/security.ttl#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sec:Severity a rdfs:Class ;
+    rdfs:label "Severity Level" ;
+    rdfs:comment "Represents the severity level of a vulnerability" .
+
+sec:Vulnerability a rdfs:Class ;
+    rdfs:label "Security Vulnerability" ;
+    rdfs:comment "Represents a security vulnerability in a package" .
+
+<file:///Users/lou/Documents/chatbot-llm/package_management.ttl##rdflib> a pkg1:Package ;
+    pkg1:dependencyType pkg1:CoreDependency ;
+    pkg1:hasSource pkg1:CondaSource ;
+    pkg1:hasVersion "7.1.3" .
+
+pkg1:rdflib a pkg1:Package ;
+    pkg1:dependencyType pkg1:CoreDependency ;
+    pkg1:hasSource pkg1:CondaSource ;
+    pkg1:hasVersion "7.1.3" .
+
+sec:Critical a sec:Severity ;
+    rdfs:label "Critical" ;
+    rdfs:comment "Critical severity level - CVSS score >= 9.0" .
+
+sec:High a sec:Severity ;
+    rdfs:label "High" ;
+    rdfs:comment "High severity level - CVSS score >= 7.0" .
+
+sec:Low a sec:Severity ;
+    rdfs:label "Low" ;
+    rdfs:comment "Low severity level - CVSS score < 4.0" .
+
+sec:Medium a sec:Severity ;
+    rdfs:label "Medium" ;
+    rdfs:comment "Medium severity level - CVSS score >= 4.0" .
+
+sec:affectsPackage a rdf:Property ;
+    rdfs:label "Affects Package" ;
+    rdfs:comment "Links a vulnerability to the affected package" ;
+    rdfs:domain sec:Vulnerability ;
+    rdfs:range xsd:string .
+
+sec:cvssScore a rdf:Property ;
+    rdfs:label "CVSS Score" ;
+    rdfs:comment "The CVSS score of the vulnerability" ;
+    rdfs:domain sec:Vulnerability ;
+    rdfs:range xsd:float .
+
+sec:fixedVersion a rdf:Property ;
+    rdfs:label "Fixed Version" ;
+    rdfs:comment "The version where this vulnerability is fixed" ;
+    rdfs:domain sec:Vulnerability ;
+    rdfs:range xsd:string .
+
+sec:mitigationStatus a rdf:Property ;
+    rdfs:label "Mitigation Status" ;
+    rdfs:comment "Current status of vulnerability mitigation" ;
+    rdfs:domain sec:Vulnerability ;
+    rdfs:range xsd:string .
+
+sec:severity a rdf:Property ;
+    rdfs:label "Has Severity" ;
+    rdfs:comment "Indicates the severity level of a vulnerability" ;
+    rdfs:domain sec:Vulnerability ;
+    rdfs:range xsd:string .
+
+sec:source a rdf:Property ;
+    rdfs:label "Source" ;
+    rdfs:comment "The security scanner that identified the vulnerability" ;
+    rdfs:domain sec:Vulnerability ;
+    rdfs:range xsd:string .
+
+pkg:DependencyValidation a pkg:ValidationStep ;
+    rdfs:label "Dependency Validation" ;
+    rdfs:comment "Check dependency compatibility" .
+
+pkg:LowImpact a pkg:SecurityImpact ;
+    rdfs:label "Low Impact" .
+
+pkg:LowLikelihood a pkg:SecurityLikelihood ;
+    rdfs:label "Low Likelihood" .
+
+pkg:OptionalDependency a pkg:DependencyType ;
+    rdfs:label "Optional Dependency" ;
+    rdfs:comment "Feature-specific dependency" .
+
+pkg:PackageManagementOntology a owl:Ontology ;
+    rdfs:label "Package Management Ontology" ;
+    rdfs:comment "Ontology for managing Python package dependencies" ;
+    owl:versionInfo "1.0.0" .
+
+pkg:PackageManagementShape a sh:NodeShape ;
+    sh:property [ sh:message "Must have at least one validation step" ;
+            sh:minCount 1 ;
+            sh:path pkg:hasValidationStep ],
+        [ sh:message "Must specify dependency type" ;
+            sh:minCount 1 ;
+            sh:path pkg:hasDependencyType ],
+        [ sh:message "Must specify package source" ;
+            sh:minCount 1 ;
+            sh:path pkg:hasPackageSource ] ;
+    sh:targetClass pkg:PackageManagementProcess .
+
+pkg:SecurityCheck a pkg:ValidationStep ;
+    rdfs:label "Security Check" ;
+    rdfs:comment "Validation step for security scanning" .
+
+pkg:SecurityValidation a pkg:ValidationStep ;
+    rdfs:label "Security Validation" ;
+    rdfs:comment "Check for security vulnerabilities" .
+
+pkg:TestValidation a pkg:ValidationStep ;
+    rdfs:label "Test Validation" ;
+    rdfs:comment "Run test suite" .
+
+pkg:azure_monitor_opentelemetry a pkg:Package ;
+    rdfs:label "azure-monitor-opentelemetry" ;
+    pkg:dependencyType pkg:CoreDependency ;
+    pkg:hasVersion "1.0.0",
+        "1.6.4" .
+
+pkg:click a pkg:Package ;
+    pkg:dependencyType pkg:CoreDependency ;
+    pkg:hasSource pkg:CondaSource ;
+    pkg:hasVersion "8.1.7" .
+
+pkg:cvssScore a owl:DatatypeProperty ;
+    rdfs:domain pkg:SecurityVulnerability ;
+    rdfs:range xsd:decimal .
+
+pkg:dependencyType a owl:ObjectProperty ;
+    rdfs:label "dependency type" ;
+    rdfs:comment "Type of the dependency" ;
+    rdfs:domain pkg:Package ;
+    rdfs:range pkg:DependencyType .
+
+pkg:hasImpact a owl:ObjectProperty ;
+    rdfs:domain pkg:SecurityVulnerability ;
+    rdfs:range pkg:SecurityImpact .
+
+pkg:hasLikelihood a owl:ObjectProperty ;
+    rdfs:domain pkg:SecurityVulnerability ;
+    rdfs:range pkg:SecurityLikelihood .
+
+pkg:hasVersion a owl:DatatypeProperty ;
+    rdfs:label "has version" ;
+    rdfs:comment "Version of the package" ;
+    rdfs:domain pkg:Package ;
+    rdfs:range rdfs:Literal .
+
+pkg:hasVulnerability a owl:ObjectProperty ;
+    rdfs:domain pkg:Package ;
+    rdfs:range pkg:SecurityVulnerability .
+
+pkg:mitigationStatus a owl:DatatypeProperty ;
+    rdfs:domain pkg:SecurityVulnerability ;
+    rdfs:range xsd:string .
+
+pkg:pytest a pkg:Package ;
+    pkg:dependencyType pkg:DevelopmentDependency ;
+    pkg:hasSource pkg:CondaSource ;
+    pkg:hasVersion "8.3.4" .
+
+pkg:pytest_asyncio a pkg:Package ;
+    pkg:dependencyType pkg:DevelopmentDependency ;
+    pkg:hasSource pkg:CondaSource ;
+    pkg:hasVersion "0.25.3" .
+
+pkg:pytest_cov a pkg:Package ;
+    pkg:dependencyType pkg:DevelopmentDependency ;
+    pkg:hasSource pkg:CondaSource ;
+    pkg:hasVersion "6.0.0" .
+
+pkg:pytest_env a pkg:Package ;
+    pkg:dependencyType pkg:DevelopmentDependency ;
+    pkg:hasSource pkg:CondaSource ;
+    pkg:hasVersion "1.0.1" .
+
+pkg:pytest_mock a pkg:Package ;
+    pkg:dependencyType pkg:DevelopmentDependency ;
+    pkg:hasSource pkg:CondaSource ;
+    pkg:hasVersion "3.14.0" .
+
+pkg:pytest_timeout a pkg:Package ;
+    pkg:dependencyType pkg:DevelopmentDependency ;
+    pkg:hasSource pkg:CondaSource ;
+    pkg:hasVersion "2.3.1" .
+
+pkg:pytest_xdist a pkg:Package ;
+    pkg:dependencyType pkg:DevelopmentDependency ;
+    pkg:hasSource pkg:CondaSource ;
+    pkg:hasVersion "3.6.1" .
+
+pkg:pyyaml a pkg:Package ;
+    pkg:dependencyType pkg:CoreDependency ;
+    pkg:hasSource pkg:CondaSource ;
+    pkg:hasVersion "6.0.1" .
+
+pkg:rdflib a pkg:Package ;
+    pkg:dependencyType pkg:CoreDependency ;
+    pkg:hasSource pkg:CondaSource ;
+    pkg:hasVersion "7.1.3" .
+
+pkg:requests a pkg:Package ;
+    rdfs:label "requests" ;
+    pkg:dependencyType pkg:CoreDependency ;
+    pkg:hasVersion "2.31.0" .
+
+pkg:requiresApproval a owl:DatatypeProperty ;
+    rdfs:label "requires approval" ;
+    rdfs:comment "Whether the package requires approval" ;
+    rdfs:domain pkg:Package ;
+    rdfs:range rdfs:Literal .
+
+pkg:rich a pkg:Package ;
+    pkg:dependencyType pkg:CoreDependency ;
+    pkg:hasSource pkg:CondaSource ;
+    pkg:hasVersion "13.7.0" .
+
+pkg:safety a pkg:Package ;
+    rdfs:label "safety" ;
+    pkg:dependencyType pkg:BootstrapDependency ;
+    pkg:hasVersion "3.2.14" ;
+    pkg:source pkg:PipSource .
+
+pkg:source a owl:ObjectProperty ;
+    rdfs:label "source" ;
+    rdfs:comment "Source of the package" ;
+    rdfs:domain pkg:Package ;
+    rdfs:range pkg:PackageSource .
+
+pkg:toml a pkg:Package ;
+    pkg:dependencyType pkg:CoreDependency ;
+    pkg:hasSource pkg:CondaSource ;
+    pkg:hasVersion "0.10.2" .
+
+pkg:BootstrapDependency a pkg:DependencyType ;
+    rdfs:label "Bootstrap Dependency" ;
+    rdfs:comment "Required for package management system functionality" .
+
+pkg:HighImpact a pkg:SecurityImpact ;
+    rdfs:label "High Impact" .
+
+pkg:HighLikelihood a pkg:SecurityLikelihood ;
+    rdfs:label "High Likelihood" .
+
+pkg:MediumImpact a pkg:SecurityImpact ;
+    rdfs:label "Medium Impact" .
+
+pkg:MediumLikelihood a pkg:SecurityLikelihood ;
+    rdfs:label "Medium Likelihood" .
+
+pkg:PipSource a pkg:PackageSource ;
+    rdfs:label "PyPI" ;
+    rdfs:comment "Package from Python Package Index" .
+
+pkg:botbuilder_ai_constraint a pkg:DependencyConstraint ;
+    rdfs:label "Botbuilder AI Constraint" ;
+    pkg:constrainsPackage pkg:aiohttp ;
+    pkg:reason "Required by botbuilder-ai 4.16.2" ;
+    pkg:requiredVersion "3.10.5" ;
+    rdfs:comment "Version constraint imposed by botbuilder-ai package" .
+
+pkg:hasValidationStep a owl:ObjectProperty ;
+    rdfs:label "has validation step" ;
+    rdfs:comment "Links a package to its validation steps" ;
+    rdfs:domain pkg:Package ;
+    rdfs:range pkg:ValidationStep .
+
+pkg:vuln_CVE_2024_52303 a pkg:SecurityVulnerability ;
+    rdfs:label "CVE-2024-52303" ;
+    pkg:affectsPackage pkg:aiohttp ;
+    pkg:cvssScore 6.5 ;
+    pkg:fixedInVersion "3.10.11" ;
+    pkg:hasImpact pkg:MediumImpact ;
+    pkg:hasLikelihood pkg:HighLikelihood ;
+    pkg:mitigationStatus "Pending upstream fix in botbuilder-core" ;
+    rdfs:comment "Middleware Cache Pollution vulnerability in aiohttp" .
+
+pkg:vuln_CVE_2024_52304 a pkg:SecurityVulnerability ;
+    rdfs:label "CVE-2024-52304" ;
+    pkg:affectsPackage pkg:aiohttp ;
+    pkg:cvssScore 7.5 ;
+    pkg:fixedInVersion "3.10.11" ;
+    pkg:hasImpact pkg:HighImpact ;
+    pkg:hasLikelihood pkg:MediumLikelihood ;
+    pkg:mitigationStatus "Pending upstream fix in botbuilder-core" ;
+    rdfs:comment "HTTP Request Smuggling vulnerability in aiohttp" .
+
+pkg1:Package rdfs:subClassOf [ a owl:Restriction ;
+            owl:allValuesFrom sec:Vulnerability ;
+            owl:onProperty sec:hasVulnerability ],
+        [ a owl:Restriction ;
+            owl:allValuesFrom sec:Vulnerability ;
+            owl:onProperty sec:hasVulnerability ],
+        [ a owl:Restriction ;
+            owl:allValuesFrom sec:Vulnerability ;
+            owl:onProperty sec:hasVulnerability ],
+        [ a owl:Restriction ;
+            owl:allValuesFrom sec:Vulnerability ;
+            owl:onProperty sec:hasVulnerability ],
+        [ a owl:Restriction ;
+            owl:allValuesFrom sec:Vulnerability ;
+            owl:onProperty sec:hasVulnerability ],
+        [ a owl:Restriction ;
+            owl:allValuesFrom sec:Vulnerability ;
+            owl:onProperty sec:hasVulnerability ],
+        [ a owl:Restriction ;
+            owl:allValuesFrom sec:Vulnerability ;
+            owl:onProperty sec:hasVulnerability ],
+        [ a owl:Restriction ;
+            owl:allValuesFrom sec:Vulnerability ;
+            owl:onProperty sec:hasVulnerability ],
+        [ a owl:Restriction ;
+            owl:allValuesFrom sec:Vulnerability ;
+            owl:onProperty sec:hasVulnerability ],
+        [ a owl:Restriction ;
+            owl:allValuesFrom sec:Vulnerability ;
+            owl:onProperty sec:hasVulnerability ],
+        [ a owl:Restriction ;
+            owl:allValuesFrom sec:Vulnerability ;
+            owl:onProperty sec:hasVulnerability ],
+        [ a owl:Restriction ;
+            owl:allValuesFrom sec:Vulnerability ;
+            owl:onProperty sec:hasVulnerability ],
+        [ a owl:Restriction ;
+            owl:allValuesFrom sec:Vulnerability ;
+            owl:onProperty sec:hasVulnerability ],
+        [ a owl:Restriction ;
+            owl:allValuesFrom sec:Vulnerability ;
+            owl:onProperty sec:hasVulnerability ],
+        [ a owl:Restriction ;
+            owl:allValuesFrom sec:Vulnerability ;
+            owl:onProperty sec:hasVulnerability ],
+        [ a owl:Restriction ;
+            owl:allValuesFrom sec:Vulnerability ;
+            owl:onProperty sec:hasVulnerability ],
+        [ a owl:Restriction ;
+            owl:allValuesFrom sec:Vulnerability ;
+            owl:onProperty sec:hasVulnerability ],
+        [ a owl:Restriction ;
+            owl:allValuesFrom sec:Vulnerability ;
+            owl:onProperty sec:hasVulnerability ],
+        [ a owl:Restriction ;
+            owl:allValuesFrom sec:Vulnerability ;
+            owl:onProperty sec:hasVulnerability ],
+        [ a owl:Restriction ;
+            owl:allValuesFrom sec:Vulnerability ;
+            owl:onProperty sec:hasVulnerability ],
+        [ a owl:Restriction ;
+            owl:allValuesFrom sec:Vulnerability ;
+            owl:onProperty sec:hasVulnerability ] .
+
+pkg:PackageSource a owl:Class ;
+    rdfs:label "Package Source" ;
+    rdfs:comment "Source of the package (conda, pip)" .
+
+pkg:aiohttp a pkg:Package ;
+    rdfs:label "aiohttp" ;
+    pkg:constrainedBy pkg:botbuilder_ai_constraint ;
+    pkg:dependencyType pkg:CoreDependency ;
+    pkg:hasVersion "3.10.11",
+        "3.10.5" ;
+    pkg:hasVulnerability pkg:vuln_CVE_2024_52303,
+        pkg:vuln_CVE_2024_52304 .
+
+pkg:SecurityImpact a owl:Class ;
+    rdfs:label "Security Impact" ;
+    rdfs:comment "Impact level of a security vulnerability" .
+
+pkg:SecurityLikelihood a owl:Class ;
+    rdfs:label "Security Likelihood" ;
+    rdfs:comment "Likelihood of a security vulnerability being exploited" .
+
+pkg:DependencyType a owl:Class ;
+    rdfs:label "Dependency Type" ;
+    rdfs:comment "Type of package dependency (core, development, optional)" .
+
+pkg:ValidationStep a owl:Class ;
+    rdfs:label "Validation Step" ;
+    rdfs:comment "A step in the package validation process" .
+
+pkg:DevelopmentDependency a pkg:DependencyType ;
+    rdfs:label "Development Dependency" ;
+    rdfs:comment "Required for development/testing" .
+
+pkg:SecurityVulnerability a owl:Class ;
+    rdfs:label "Security Vulnerability" ;
+    rdfs:comment "Known security vulnerability in a package" .
+
+pkg:CoreDependency a pkg:DependencyType ;
+    rdfs:label "Core Dependency" ;
+    rdfs:comment "Required for basic functionality" .
+
+pkg:CondaSource a pkg:PackageSource ;
+    rdfs:label "Conda" ;
+    rdfs:comment "Package from conda repository" .
+
+pkg:Package a owl:Class ;
+    rdfs:label "Package" ;
+    rdfs:comment "A Python package dependency" .

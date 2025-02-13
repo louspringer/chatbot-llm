@@ -1,0 +1,118 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix meta: <./meta#> .
+@prefix cog: <#> .
+
+cog:CognitionPatternsOntology a owl:Ontology ;
+    rdfs:label "Cognition Patterns Ontology" ;
+    rdfs:comment "Patterns for making ontological contexts discoverable and understandable" ;
+    owl:versionInfo "1.0.0" .
+
+# Core Pattern Classes
+cog:Pattern a owl:Class ;
+    rdfs:label "Cognitive Pattern" ;
+    rdfs:comment "Base class for cognitive patterns used in ontology understanding" .
+
+cog:RecurrentPattern a owl:Class ;
+    rdfs:subClassOf cog:Pattern ;
+    rdfs:label "Recurrent Pattern" ;
+    rdfs:comment "Pattern that appears repeatedly across different contexts" .
+
+cog:MetaPattern a owl:Class ;
+    rdfs:subClassOf cog:Pattern ;
+    rdfs:label "Meta Pattern" ;
+    rdfs:comment "Pattern that describes relationships between other patterns" .
+
+cog:EmergentPattern a owl:Class ;
+    rdfs:subClassOf cog:Pattern ;
+    rdfs:label "Emergent Pattern" ;
+    rdfs:comment "Pattern that emerges from combinations of other patterns" .
+
+# Pattern Properties
+cog:hasContext a owl:ObjectProperty ;
+    rdfs:domain cog:Pattern ;
+    rdfs:range cog:Context ;
+    rdfs:comment "Links a pattern to contexts where it appears" .
+
+cog:relatesTo a owl:ObjectProperty ;
+    rdfs:domain cog:Pattern ;
+    rdfs:range cog:Pattern ;
+    rdfs:comment "Shows relationships between patterns" .
+
+cog:hasComplexity a owl:DatatypeProperty ;
+    rdfs:domain cog:Pattern ;
+    rdfs:range xsd:integer ;
+    rdfs:comment "Indicates pattern complexity on a scale of 1-5" .
+
+# Context Classes
+cog:Context a owl:Class ;
+    rdfs:label "Pattern Context" ;
+    rdfs:comment "Context where a pattern appears" .
+
+cog:OntologyContext a owl:Class ;
+    rdfs:subClassOf cog:Context ;
+    rdfs:label "Ontology Context" ;
+    rdfs:comment "Context specific to ontology understanding" .
+
+cog:ArtifactContext a owl:Class ;
+    rdfs:subClassOf cog:Context ;
+    rdfs:label "Artifact Context" ;
+    rdfs:comment "Context specific to code artifacts" .
+
+# Pattern Instances
+cog:HierarchicalIndexing a cog:MetaPattern ;
+    rdfs:label "Hierarchical Indexing" ;
+    rdfs:comment "Pattern for organizing ontologies in searchable hierarchies" ;
+    cog:hasComplexity 3 ;
+    cog:hasContext [
+        a cog:OntologyContext ;
+        rdfs:label "Ontology Organization" ;
+    ] ;
+    cog:relatesTo cog:SemanticMatching .
+
+cog:SemanticMatching a cog:RecurrentPattern ;
+    rdfs:label "Semantic Matching" ;
+    rdfs:comment "Pattern for matching artifacts to ontological concepts" ;
+    cog:hasComplexity 4 ;
+    cog:hasContext [
+        a cog:ArtifactContext ;
+        rdfs:label "Code-Ontology Mapping" ;
+    ] .
+
+cog:CrossReferenceTracking a cog:EmergentPattern ;
+    rdfs:label "Cross-Reference Tracking" ;
+    rdfs:comment "Pattern for managing relationships between ontologies" ;
+    cog:hasComplexity 4 ;
+    cog:hasContext [
+        a cog:OntologyContext ;
+        rdfs:label "Cross-Reference Management" ;
+    ] ;
+    cog:relatesTo cog:HierarchicalIndexing .
+
+# SHACL Validation
+cog:PatternShape a sh:NodeShape ;
+    sh:targetClass cog:Pattern ;
+    sh:property [
+        sh:path cog:hasContext ;
+        sh:minCount 1 ;
+        sh:message "Every pattern must have at least one context" ;
+    ] ,
+    [
+        sh:path cog:hasComplexity ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:minInclusive 1 ;
+        sh:maxInclusive 5 ;
+        sh:message "Pattern complexity must be between 1 and 5" ;
+    ] .
+
+cog:MetaPatternShape a sh:NodeShape ;
+    sh:targetClass cog:MetaPattern ;
+    sh:property [
+        sh:path cog:relatesTo ;
+        sh:minCount 1 ;
+        sh:message "Meta patterns must relate to at least one other pattern" ;
+    ] .

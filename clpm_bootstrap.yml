@@ -1,0 +1,33 @@
+name: clpm-bootstrap
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python>=3.8
+  - pip
+  - pip:
+    # Claude's Package Manager (ClPM - with lowercase 'l')
+    # Cl (Claude) + PM (Package Manager)
+    # Minimal bootstrap dependencies to get ClPM running
+    
+    # Version Management
+    - packaging>=23.2.0  # Version parsing and comparison
+
+    # Configuration Management
+    - toml>=0.10.2      # pyproject.toml handling
+    - pyyaml>=6.0.0     # environment.yml handling
+    - rdflib>=6.0.0     # Ontology management and querying
+
+    # Security Management
+    - safety>=3.0.0     # Security vulnerability checking
+
+    # External Integration
+    - requests>=2.31.0  # HTTP client
+    - pygithub>=2.1.1   # GitHub integration
+
+    # User Interface
+    - click>=8.1.7      # CLI framework
+    - rich>=13.7.0      # Terminal output formatting
+
+variables:
+  PYTHONPATH: ${CONDA_PREFIX}/lib/python3.11/site-packages 

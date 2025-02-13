@@ -1,0 +1,37 @@
+@startuml manual_rotation
+skinparam monochrome true
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam sequenceMessageAlign center
+skinparam sequenceGroupBorderThickness 1
+
+actor "System Administrator" as Admin
+participant "Automated System" as System
+participant "Snowflake Service" as Snow
+
+Admin -> System: Initiate Key Rotation
+activate System
+
+System -> System: Validate Environment
+System -> System: Generate New Keys
+System -> System: Backup Current Keys
+System -> Snow: Update Public Key
+activate Snow
+Snow --> System: Confirm Update
+System -> Snow: Validate Connection
+Snow --> System: Connection Status
+deactivate Snow
+System -> Admin: Report Completion
+
+alt Failure Occurs
+    System -> System: Attempt Recovery
+    System -> Admin: Report Failure
+    Admin -> System: Request Recovery
+    System -> System: Restore from Backup
+    System -> Admin: Report Recovery Status
+end
+
+deactivate System
+
+@enduml 
