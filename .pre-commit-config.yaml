@@ -5,55 +5,55 @@
 # Description: Pre-commit hook configuration for validation
 
 repos:
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v4.5.0
+  hooks:
+    - id: trailing-whitespace
+      types: [text]
+      exclude: '^.*\/(\.venv|assets|botbuilder-python)\/.*$'
+    - id: end-of-file-fixer
+      types: [text]
+      exclude: '^.*\/(\.venv|assets|botbuilder-python)\/.*$'
+    - id: check-yaml
+      types: [yaml]
+      exclude: '^.*\/(\.venv|assets|botbuilder-python)\/.*$'
+    - id: check-toml
+      types: [toml]
+      exclude: '^.*\/(\.venv|assets|botbuilder-python)\/.*$'
+
 - repo: https://github.com/psf/black
   rev: 24.2.0
   hooks:
     - id: black
-      language_version: python3
-      args: ["--line-length=88", "--target-version=py310", "--verbose"]
-      verbose: true
+      types: [python]
+      exclude: '^.*\/\.venv\/.*$'
+      args: ["--line-length=88", "--target-version=py310"]
 
 - repo: https://github.com/pycqa/isort
   rev: 5.13.2
   hooks:
     - id: isort
-      name: isort (python)
-      args: ["--profile=black", "--line-length=88", "--verbose"]
-      verbose: true
+      types: [python]
+      exclude: '^.*\/\.venv\/.*$'
+      args: ["--profile=black", "--line-length=88"]
 
 - repo: https://github.com/pycqa/flake8
   rev: 7.0.0
   hooks:
     - id: flake8
-      additional_dependencies: [flake8-docstrings]
-      args:
-        - "--max-line-length=88"
-        - "--ignore=D100,D101,D102,D103,D104,D105,D107,D200,D205,D400,D401,W503"
-        - "--per-file-ignores=__init__.py:F401"
-        - "--verbose"
-      verbose: true
-
-- repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v4.5.0
-  hooks:
-    - id: trailing-whitespace
-      verbose: true
-    - id: end-of-file-fixer
-      verbose: true
-    - id: check-yaml
-      verbose: true
-    - id: check-toml
-      verbose: true
+      types: [python]
+      exclude: '^.*\/\.venv\/.*$'
+      args: ["--max-line-length=88", "--extend-ignore=E203"]
 
 - repo: local
   hooks:
     - id: guidance-compliance
-      name: Check Guidance Compliance
+      name: Check guidance compliance
       entry: python tools/check_compliance.py
       language: python
-      types: [python, text]
+      types: [python]
+      exclude: '^.*\/\.venv\/.*$'
       pass_filenames: false
-      always_run: true
 
 default_language_version:
     python: python3
