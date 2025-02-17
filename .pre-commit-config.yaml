@@ -1,3 +1,9 @@
+# Ontology: deploy:PreCommitComponent
+# Implements: deploy:CommitValidation
+# Requirement: REQ-DEP-002 Pre-commit validation
+# Guidance: guidance:DeploymentPatterns#PreCommitHooks
+# Description: Pre-commit hook configuration for validation
+
 repos:
 - repo: https://github.com/psf/black
   rev: 24.2.0
@@ -38,6 +44,16 @@ repos:
       verbose: true
     - id: check-toml
       verbose: true
+
+- repo: local
+  hooks:
+    - id: guidance-compliance
+      name: Check Guidance Compliance
+      entry: python tools/check_compliance.py
+      language: python
+      types: [python, text]
+      pass_filenames: false
+      always_run: true
 
 default_language_version:
     python: python3
