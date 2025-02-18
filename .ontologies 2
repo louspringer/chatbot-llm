@@ -1,0 +1,7 @@
+PROJECT_ONTOLOGY=chatbot.ttl
+
+# Core ontologies that provide fundamental concepts and patterns
+CORE_ONTOLOGIES=guidance.ttl,meta.ttl,metameta.ttl,problem.ttl,solution.ttl,conversation.ttl,session.ttl,package_management.ttl
+
+# Project-specific ontologies
+PROJECT_SPECIFIC_ONTOLOGIES=cortexteams.ttl,deployment_validation.ttl,deployment_config.ttl
