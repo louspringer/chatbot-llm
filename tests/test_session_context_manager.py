@@ -3,13 +3,11 @@
 # Requirement: Validate session context manager functionality
 # Guidance: ./guidance.ttl
 # Description: Test suite for session context manager
+#
+# Tests for session_context_manager.py
 
 #!/usr/bin/env python3
-"""
-Tests for session_context_manager.py
-"""
 
-import json
 import os
 from pathlib import Path
 from unittest.mock import Mock, patch
@@ -263,9 +261,11 @@ def test_cli_interface():
         mock_instance.list_contexts.return_value = {"test": "contexts"}
         mock_mgr.return_value = mock_instance
 
-        with patch("builtins.print") as mock_print:
+        with patch.object(mock_instance, "format_output") as mock_format:
             session_manager_main()
-            mock_print.assert_called_with(json.dumps({"test": "contexts"}))
+            mock_format.assert_called_with(
+                {"test": "contexts"}, pretty=False, color=True
+            )
 
 
 @pytest.mark.parametrize(
@@ -290,10 +290,14 @@ def test_cli_commands(command, expected_method):
         mock_instance = Mock()
         mock_result = {"test": f"{command} result"}
         getattr(mock_instance, expected_method).return_value = mock_result
-        if expected_method != "list_contexts":
-            mock_instance.format_context_json.return_value = mock_result
+        mock_instance.format_context_json.return_value = {"formatted": mock_result}
         mock_mgr.return_value = mock_instance
 
-        with patch("builtins.print") as mock_print:
+        with patch.object(mock_instance, "format_output") as mock_format:
             session_manager_main()
-            mock_print.assert_called_with(json.dumps(mock_result))
+            if command == "list":
+                mock_format.assert_called_with(mock_result, pretty=False, color=True)
+            else:
+                mock_format.assert_called_with(
+                    {"formatted": mock_result}, pretty=False, color=True
+                )

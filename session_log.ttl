@@ -5,7 +5,7 @@
 # Description: Session change log for tracking context modifications
 
 @prefix : <file:///Users/lou/Documents/chatbot-llm/session_log#> .
-@prefix guidance: <file:///private/var/folders/hg/zvfs15m17550vl6qnf_q010w0000gn/T/pytest-of-lou/pytest-5/test_update_session_and_log0/guidance#> .
+@prefix guidance: <./guidance#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
@@ -16,5 +16,3 @@
     guidance:hasActor :ClaudeAI ;
     guidance:hasChangeReason "Initial state" ;
     guidance:hasTimestamp "2024-03-20T18:30:00+00:00"^^xsd:dateTime .
-
-:test_context a :Context .
