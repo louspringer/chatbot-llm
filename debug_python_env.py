@@ -1,3 +1,9 @@
+# Ontology: meta:DebugComponent
+# Implements: meta:EnvironmentValidator
+# Requirement: REQ-ENV-001 Python environment validation
+# Guidance: guidance:DebugPatterns#EnvironmentValidation
+# Description: Validates Python environment configuration and dependencies
+
 import os
 import site
 import sys

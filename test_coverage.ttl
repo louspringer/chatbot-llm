@@ -9,40 +9,110 @@
 @prefix conversation: <./conversation#> .
 @prefix guidance: <./guidance#> .
 @prefix test: <./test#> .
+@prefix dc: <http://purl.org/dc/elements/1.1/> .
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
 
 # Test Coverage Ontology
+test:TestCoverageOntology rdf:type owl:Ontology ;
+    dc:title "Test Coverage Ontology" ;
+    dc:version "1.0" ;
+    owl:versionInfo "1.0.0" ;
+    dct:created "2024-02-17"^^xsd:date ;
+    dct:modified "2024-02-17"^^xsd:date ;
+    dct:publisher "Ontology Framework Project" ;
+    dct:license <http://opensource.org/licenses/MIT> ;
+    dct:description "Ontology for managing test coverage metrics and patterns" ;
+    dct:isPartOf <http://louspringer.com/ontology-framework> ;
+    dct:type dct:Dataset ;
+    dct:conformsTo <http://www.w3.org/2002/07/owl> ;
+    dct:requires <./metameta> ;
+    owl:imports <./metameta> ;
+    owl:imports <./guidance> ;
+    rdfs:comment "Test coverage ontology aligned with guidance.ttl standards." .
+
+# Core Classes
 test:TestCoverage a owl:Class ;
     rdfs:label "Test Coverage"@en ;
-    rdfs:comment "Represents test coverage metrics and improvements" .
+    rdfs:comment "Represents test coverage metrics and improvements" ;
+    owl:versionInfo "1.0.0" .
 
 test:Module a owl:Class ;
     rdfs:label "Module"@en ;
-    rdfs:comment "A Python module in the codebase" .
+    rdfs:comment "A Python module in the codebase" ;
+    owl:versionInfo "1.0.0" .
 
 test:CoverageMetric a owl:Class ;
     rdfs:label "Coverage Metric"@en ;
-    rdfs:comment "A metric measuring test coverage" .
+    rdfs:comment "A metric measuring test coverage" ;
+    owl:versionInfo "1.0.0" .
 
 test:TestSuite a owl:Class ;
     rdfs:label "Test Suite"@en ;
-    rdfs:comment "A collection of related tests" .
+    rdfs:comment "A collection of related tests" ;
+    owl:versionInfo "1.0.0" .
+
+test:TestCase a owl:Class ;
+    rdfs:label "Test Case"@en ;
+    rdfs:comment "An individual test case within a test suite" ;
+    owl:versionInfo "1.0.0" .
 
 # Properties
 test:hasCoverage a owl:ObjectProperty ;
+    rdfs:label "Has Coverage"@en ;
+    rdfs:comment "Links a module to its coverage metrics" ;
     rdfs:domain test:Module ;
     rdfs:range test:CoverageMetric .
 
 test:hasTestSuite a owl:ObjectProperty ;
+    rdfs:label "Has Test Suite"@en ;
+    rdfs:comment "Links a module to its test suite" ;
     rdfs:domain test:Module ;
     rdfs:range test:TestSuite .
 
 test:coveragePercentage a owl:DatatypeProperty ;
+    rdfs:label "Coverage Percentage"@en ;
+    rdfs:comment "The percentage of code covered by tests" ;
     rdfs:domain test:CoverageMetric ;
     rdfs:range xsd:decimal .
 
 test:testCount a owl:DatatypeProperty ;
+    rdfs:label "Test Count"@en ;
+    rdfs:comment "Number of tests in a test suite" ;
     rdfs:domain test:TestSuite ;
     rdfs:range xsd:integer .
+
+test:lastUpdated a owl:DatatypeProperty ;
+    rdfs:label "Last Updated"@en ;
+    rdfs:comment "Timestamp of last test execution" ;
+    rdfs:domain test:TestSuite ;
+    rdfs:range xsd:dateTime .
+
+# SHACL Validation
+test:ModuleShape a sh:NodeShape ;
+    sh:targetClass test:Module ;
+    sh:property [
+        sh:path test:hasCoverage ;
+        sh:minCount 1 ;
+        sh:message "Module must have coverage metrics"
+    ] ;
+    sh:property [
+        sh:path test:hasTestSuite ;
+        sh:minCount 1 ;
+        sh:message "Module must have an associated test suite"
+    ] .
+
+test:CoverageMetricShape a sh:NodeShape ;
+    sh:targetClass test:CoverageMetric ;
+    sh:property [
+        sh:path test:coveragePercentage ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:decimal ;
+        sh:minInclusive 0 ;
+        sh:maxInclusive 100 ;
+        sh:message "Coverage percentage must be between 0 and 100"
+    ] .
 
 # Instances
 test:TeamsBotModule a test:Module ;
@@ -50,48 +120,83 @@ test:TeamsBotModule a test:Module ;
     test:hasCoverage [
         a test:CoverageMetric ;
         test:coveragePercentage "90.0"^^xsd:decimal
-    ] .
+    ] ;
+    test:hasTestSuite test:TeamsBotTestSuite .
 
-test:TestTeamsBotModule a test:Module ;
-    rdfs:label "test_teams_bot.py"@en ;
-    test:hasCoverage [
-        a test:CoverageMetric ;
-        test:coveragePercentage "99.0"^^xsd:decimal
-    ] .
+test:TeamsBotTestSuite a test:TestSuite ;
+    rdfs:label "Teams Bot Test Suite"@en ;
+    test:testCount "19"^^xsd:integer ;
+    test:lastUpdated "2024-02-17T23:40:00Z"^^xsd:dateTime ;
+    rdfs:comment "Core bot functionality tests" .
 
 test:ConversationDataModule a test:Module ;
     rdfs:label "conversation_data.py"@en ;
     test:hasCoverage [
         a test:CoverageMetric ;
         test:coveragePercentage "44.0"^^xsd:decimal
-    ] .
+    ] ;
+    test:hasTestSuite test:ConversationDataTestSuite .
+
+test:ConversationDataTestSuite a test:TestSuite ;
+    rdfs:label "Conversation Data Test Suite"@en ;
+    test:testCount "12"^^xsd:integer ;
+    test:lastUpdated "2024-02-17T23:40:00Z"^^xsd:dateTime ;
+    rdfs:comment "State management and data persistence tests" .
 
 test:CardTemplatesModule a test:Module ;
     rdfs:label "card_templates.py"@en ;
     test:hasCoverage [
         a test:CoverageMetric ;
         test:coveragePercentage "100.0"^^xsd:decimal
-    ] .
+    ] ;
+    test:hasTestSuite test:CardTemplatesTestSuite .
+
+test:CardTemplatesTestSuite a test:TestSuite ;
+    rdfs:label "Card Templates Test Suite"@en ;
+    test:testCount "15"^^xsd:integer ;
+    test:lastUpdated "2024-02-17T23:40:00Z"^^xsd:dateTime ;
+    rdfs:comment "Adaptive card template tests" .
 
 test:CardActionsModule a test:Module ;
     rdfs:label "card_actions.py"@en ;
     test:hasCoverage [
         a test:CoverageMetric ;
         test:coveragePercentage "100.0"^^xsd:decimal
-    ] .
+    ] ;
+    test:hasTestSuite test:CardActionsTestSuite .
+
+test:CardActionsTestSuite a test:TestSuite ;
+    rdfs:label "Card Actions Test Suite"@en ;
+    test:testCount "23"^^xsd:integer ;
+    test:lastUpdated "2024-02-17T23:40:00Z"^^xsd:dateTime ;
+    rdfs:comment "Card action handler tests" .
 
 test:LoggingConfigModule a test:Module ;
     rdfs:label "logging_config.py"@en ;
     test:hasCoverage [
         a test:CoverageMetric ;
         test:coveragePercentage "100.0"^^xsd:decimal
-    ] .
+    ] ;
+    test:hasTestSuite test:LoggingConfigTestSuite .
 
-test:MainTestSuite a test:TestSuite ;
-    rdfs:label "Main Test Suite"@en ;
-    test:testCount "19"^^xsd:integer ;
-    rdfs:comment "All tests passing with improved error case coverage" .
+test:LoggingConfigTestSuite a test:TestSuite ;
+    rdfs:label "Logging Config Test Suite"@en ;
+    test:testCount "8"^^xsd:integer ;
+    test:lastUpdated "2024-02-17T23:40:00Z"^^xsd:dateTime ;
+    rdfs:comment "Logging configuration and formatting tests" .
 
-# TODO: Add more test suites as they are implemented
-# TODO: Add test dependencies and relationships
-# TODO: Add test quality metrics
+# TODO Section
+test:TestCoverageEnhancement a guidance:TodoItem ;
+    guidance:priority "HIGH" ;
+    guidance:targetDate "2024-Q2" ;
+    rdfs:comment "Improve conversation data module test coverage to at least 80%" .
+
+test:TestQualityMetrics a guidance:TodoItem ;
+    guidance:priority "MEDIUM" ;
+    guidance:targetDate "2024-Q2" ;
+    rdfs:comment "Implement test quality metrics including complexity and maintainability scores" .
+
+test:TestDependencyTracking a guidance:TodoItem ;
+    guidance:priority "LOW" ;
+    guidance:targetDate "2024-Q3" ;
+    rdfs:comment "Add tracking of test dependencies and relationships between test suites" .
