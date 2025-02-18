@@ -225,7 +225,8 @@ class SessionContextManager:
             if onts:
                 invalid_onts = [ont for ont in onts if ":" not in str(ont)]
                 if invalid_onts:
-                    mismatches.append(f"Invalid ontology references: {invalid_onts}")
+                    msg = f"Invalid ontology references: {invalid_onts}"  # noqa: E501
+                    mismatches.append(msg)
                 if self.dry_run:
                     print(f"Active Ontologies: {onts}")
 
@@ -259,7 +260,8 @@ class SessionContextManager:
                     )
                 ]
                 if invalid_rules:
-                    mismatches.append(f"Invalid cursor rules: {invalid_rules}")
+                    msg = f"Invalid cursor rules: {invalid_rules}"  # noqa: E501
+                    mismatches.append(msg)
                 if self.dry_run:
                     print(f"Active Cursor Rules: {rules}")
 
@@ -319,8 +321,8 @@ class SessionContextManager:
             max_tokens=1000,
             temperature=0,
             system=(
-                "You are a semantic web expert. Extract and format the current "
-                "context from the provided session.ttl content."
+                "You are a semantic web expert. Extract and format the current context "
+                "from the provided session.ttl content."
             ),
             messages=[{"role": "user", "content": context_prompt}],
         )
@@ -584,83 +586,81 @@ class SessionContextManager:
         # Save both files
         self.save_graphs()
 
+    def format_context_json(self, context_data: Any) -> Dict[str, Any]:
+        """Convert context data to JSON format"""
+        # Handle TextBlock objects
+        if hasattr(context_data, "text"):
+            context_data = context_data.text
+        elif isinstance(context_data, list) and hasattr(context_data[0], "text"):
+            context_data = context_data[0].text
 
-def format_output(
-    data: Dict[str, Any], pretty: bool = False, color: bool = True
-) -> None:
-    """Format and print output with optional colors and pretty printing"""
-    console = Console(force_terminal=color)
+        # Parse the text response into structured data
+        if isinstance(context_data, str):
+            lines = context_data.split("\n")
+        else:
+            lines = str(context_data).split("\n")
 
-    if pretty:
-        # Pretty print with syntax highlighting
-        json_str = json.dumps(data, indent=2)
-        syntax = Syntax(json_str, "json", theme="monokai")
-        console.print(syntax)
-    else:
-        # Compact JSON without colors
-        print(json.dumps(data))
+        result = {"contexts": [], "current_state": {}}
+        current_context = None
+        in_state_summary = False
 
+        for line in lines:
+            line = line.strip()
+            if not line:
+                continue
 
-def format_context_json(context_data: Any) -> Dict[str, Any]:
-    """Convert context data to JSON format"""
-    # Handle TextBlock objects
-    if hasattr(context_data, "text"):
-        context_data = context_data.text
-    elif isinstance(context_data, list) and hasattr(context_data[0], "text"):
-        context_data = context_data[0].text
+            # Handle context entries
+            if line.startswith("Entry ID:"):
+                if current_context:
+                    result["contexts"].append(current_context)
+                current_context = {"id": line.split(":", 1)[1].strip()}
+            elif current_context and line.startswith("Timestamp:"):
+                current_context["timestamp"] = line.split(":", 1)[1].strip()
+            elif current_context and line.startswith("Actor:"):
+                current_context["actor"] = line.split(":", 1)[1].strip()
+            elif current_context and line.startswith("Change Reason:"):
+                current_context["reason"] = line.split(":", 1)[1].strip()
+            elif line.startswith("State summary:"):
+                in_state_summary = True
+                if current_context:
+                    current_context["state"] = {}
+            elif in_state_summary and line.startswith("- "):
+                key, value = line[2:].split(":", 1)
+                key = key.strip().lower().replace(" ", "_")
+                value = value.strip()
 
-    # Parse the text response into structured data
-    if isinstance(context_data, str):
-        lines = context_data.split("\n")
-    else:
-        lines = str(context_data).split("\n")
+                # Convert lists
+                if "," in value:
+                    value = [v.strip() for v in value.split(",")]
+                # Convert booleans
+                elif value.lower() in ["true", "false"]:
+                    value = value.lower() == "true"
 
-    result = {"contexts": [], "current_state": {}}
-    current_context = None
-    in_state_summary = False
+                if current_context:
+                    current_context["state"][key] = value
+                else:
+                    result["current_state"][key] = value
 
-    for line in lines:
-        line = line.strip()
-        if not line:
-            continue
+        # Add the last context if any
+        if current_context:
+            result["contexts"].append(current_context)
 
-        # Handle context entries
-        if line.startswith("Entry ID:"):
-            if current_context:
-                result["contexts"].append(current_context)
-            current_context = {"id": line.split(":", 1)[1].strip()}
-        elif current_context and line.startswith("Timestamp:"):
-            current_context["timestamp"] = line.split(":", 1)[1].strip()
-        elif current_context and line.startswith("Actor:"):
-            current_context["actor"] = line.split(":", 1)[1].strip()
-        elif current_context and line.startswith("Change Reason:"):
-            current_context["reason"] = line.split(":", 1)[1].strip()
-        elif line.startswith("State summary:"):
-            in_state_summary = True
-            if current_context:
-                current_context["state"] = {}
-        elif in_state_summary and line.startswith("- "):
-            key, value = line[2:].split(":", 1)
-            key = key.strip().lower().replace(" ", "_")
-            value = value.strip()
+        return result
 
-            # Convert lists
-            if "," in value:
-                value = [v.strip() for v in value.split(",")]
-            # Convert booleans
-            elif value.lower() in ["true", "false"]:
-                value = value.lower() == "true"
+    def format_output(
+        self, data: Dict[str, Any], pretty: bool = False, color: bool = True
+    ) -> None:
+        """Format and print output with optional colors and pretty printing"""
+        console = Console(force_terminal=color)
 
-            if current_context:
-                current_context["state"][key] = value
-            else:
-                result["current_state"][key] = value
-
-    # Add the last context if any
-    if current_context:
-        result["contexts"].append(current_context)
-
-    return result
+        if pretty:
+            # Pretty print with syntax highlighting
+            json_str = json.dumps(data, indent=2)
+            syntax = Syntax(json_str, "json", theme="monokai")
+            console.print(syntax)
+        else:
+            # Compact JSON without colors
+            print(json.dumps(data))
 
 
 def main():
@@ -690,19 +690,19 @@ def main():
             result = manager.list_contexts()  # Already returns a dictionary
         elif args.command == "pop":
             result = manager.pop_context()
-            result = format_context_json(result)  # Convert text to JSON
+            result = manager.format_context_json(result)  # Convert text to JSON
         elif args.command == "search" and args.param:
             result = manager.search_contexts(args.param)
-            result = format_context_json(result)  # Convert text to JSON
+            result = manager.format_context_json(result)  # Convert text to JSON
         elif args.command == "restore" and args.param:
             result = manager.restore_context(args.param)
-            result = format_context_json(result)  # Convert text to JSON
+            result = manager.format_context_json(result)  # Convert text to JSON
         else:
             print("Invalid command or missing parameter")
             return
 
         # Format and display output
-        format_output(result, pretty=args.pretty, color=not args.no_color)
+        manager.format_output(result, pretty=args.pretty, color=not args.no_color)
 
     except Exception as e:
         print(f"Error: {str(e)}")

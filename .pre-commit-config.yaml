@@ -24,6 +24,7 @@ repos:
   rev: 24.2.0
   hooks:
     - id: black
+      language_version: python3
       args: ["--line-length=88", "--target-version=py310"]
       exclude: *exclude_pattern
 
@@ -31,6 +32,7 @@ repos:
   rev: 5.13.2
   hooks:
     - id: isort
+      name: isort (python)
       args: ["--profile=black", "--line-length=88"]
       exclude: *exclude_pattern
 
@@ -38,7 +40,11 @@ repos:
   rev: 7.0.0
   hooks:
     - id: flake8
-      args: ["--max-line-length=88", "--extend-ignore=E203"]
+      additional_dependencies: [flake8-docstrings]
+      args:
+        - "--max-line-length=88"
+        - "--ignore=D100,D101,D102,D103,D104,D105,D107,D200,D205,D400,D401"
+        - "--per-file-ignores=__init__.py:F401"
       exclude: *exclude_pattern
 
 - repo: local
