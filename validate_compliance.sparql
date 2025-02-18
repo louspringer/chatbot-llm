@@ -1,0 +1,41 @@
+# Ontology: meta:ValidationComponent
+# Implements: meta:ComplianceValidator
+# Requirement: REQ-VAL-001 Guidance compliance validation
+# Guidance: guidance:ValidationPatterns#SPARQLValidation
+# Description: SPARQL queries for validating guidance compliance
+
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX session: <./session#>
+PREFIX guidance: <./guidance#>
+PREFIX meta: <./meta#>
+
+# Find all artifacts missing traceability headers
+SELECT DISTINCT ?artifact
+WHERE {
+  ?artifact a owl:Class .
+  FILTER NOT EXISTS {
+    ?artifact session:hasTraceabilityHeader ?header
+  }
+}
+
+# Check guidance pattern compliance
+SELECT ?component ?missingPattern
+WHERE {
+  ?component a owl:Class .
+  ?requiredPattern a guidance:Pattern .
+  FILTER NOT EXISTS {
+    ?component guidance:implementsPattern ?requiredPattern
+  }
+}
+
+# Validate ontology references
+SELECT ?artifact ?invalidRef
+WHERE {
+  ?artifact session:hasOntologyReference ?invalidRef .
+  FILTER NOT EXISTS {
+    ?invalidRef a owl:Class
+  }
+}

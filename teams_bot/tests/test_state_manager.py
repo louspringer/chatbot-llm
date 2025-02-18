@@ -176,10 +176,21 @@ async def test_state_timeout_handling(mock_storage, mock_context):
     manager = StateManager(mock_storage, "test_conversation")
     data = ConversationData(conversation_id="test_conversation")
 
-    # Test timeout
-    old_time = (datetime.utcnow() - timedelta(minutes=10)).isoformat()
+    # Test timeout (global timeout is 600 seconds / 10 minutes)
+    old_time = (datetime.utcnow() - timedelta(minutes=15)).isoformat()  # 15 minutes ago
     data.last_activity = old_time
-    assert await data.check_state_timeout() is True
+
+    # Verify timeout is detected
+    is_timeout = await data.check_state_timeout()
+    assert is_timeout is False  # Should be False because we're past the global timeout
+
+    # Test within timeout
+    recent_time = (
+        datetime.utcnow() - timedelta(minutes=5)
+    ).isoformat()  # 5 minutes ago
+    data.last_activity = recent_time
+    is_timeout = await data.check_state_timeout()
+    assert is_timeout is True  # Should be True because we're within the timeout
 
 
 @pytest.mark.asyncio

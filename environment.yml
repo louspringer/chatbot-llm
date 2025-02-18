@@ -1,3 +1,9 @@
+# Ontology: deploy:EnvironmentComponent
+# Implements: deploy:CondaEnvironment
+# Requirement: REQ-DEP-001 Development environment configuration
+# Guidance: guidance:DeploymentPatterns#EnvironmentConfig
+# Description: Conda environment configuration for development
+
 channels:
 - conda-forge
 - defaults

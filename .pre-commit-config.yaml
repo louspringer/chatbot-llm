@@ -6,54 +6,49 @@
 
 repos:
 - repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v4.5.0
+  rev: v2.3.0
   hooks:
     - id: trailing-whitespace
-      types: [text]
-      exclude: '^.*\/(\.venv|assets|botbuilder-python)\/.*$'
+      exclude: &exclude_pattern >
+          (?x)^(
+              .*\/(\.venv)\/.*
+          )$
     - id: end-of-file-fixer
-      types: [text]
-      exclude: '^.*\/(\.venv|assets|botbuilder-python)\/.*$'
+      exclude: *exclude_pattern
     - id: check-yaml
-      types: [yaml]
-      exclude: '^.*\/(\.venv|assets|botbuilder-python)\/.*$'
+      exclude: *exclude_pattern
     - id: check-toml
-      types: [toml]
-      exclude: '^.*\/(\.venv|assets|botbuilder-python)\/.*$'
+      exclude: *exclude_pattern
 
 - repo: https://github.com/psf/black
   rev: 24.2.0
   hooks:
     - id: black
-      types: [python]
-      exclude: '^.*\/\.venv\/.*$'
       args: ["--line-length=88", "--target-version=py310"]
+      exclude: *exclude_pattern
 
 - repo: https://github.com/pycqa/isort
   rev: 5.13.2
   hooks:
     - id: isort
-      types: [python]
-      exclude: '^.*\/\.venv\/.*$'
       args: ["--profile=black", "--line-length=88"]
+      exclude: *exclude_pattern
 
 - repo: https://github.com/pycqa/flake8
   rev: 7.0.0
   hooks:
     - id: flake8
-      types: [python]
-      exclude: '^.*\/\.venv\/.*$'
       args: ["--max-line-length=88", "--extend-ignore=E203"]
+      exclude: *exclude_pattern
 
 - repo: local
   hooks:
     - id: guidance-compliance
-      name: Check guidance compliance
+      name: guidance-compliance
       entry: python tools/check_compliance.py
       language: python
-      types: [python]
-      exclude: '^.*\/\.venv\/.*$'
-      pass_filenames: false
+      files: (^[^/]+\.(py|ttl|yml|yaml|md|sh)$|^(tools/|tests/|teams_bot/|cortex_analyst/|deployment/|docs/)\S+\.(py|ttl|yml|yaml|md|sh)$)
+      exclude: ^\.venv/
 
 default_language_version:
     python: python3
