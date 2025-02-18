@@ -6,8 +6,7 @@
 
 #!/usr/bin/env python3
 # type: ignore
-"""
-Session Context Manager - Manages session.ttl and session_log.ttl context
+"""Session Context Manager - Manages session.ttl and session_log.ttl context
 operations using LLM assistance for complex operations and maintaining semantic
 consistency.
 """
@@ -710,11 +709,7 @@ def main():
             print("Invalid command or missing parameter")
             return
 
-        # Format and display output
-        if args.pretty:
-            manager.format_output(result, pretty=True, color=not args.no_color)
-        else:
-            print(json.dumps(result))
+        manager.format_output(result, pretty=args.pretty, color=not args.no_color)
 
     except Exception as e:
         print(f"Error: {str(e)}")

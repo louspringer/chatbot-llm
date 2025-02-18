@@ -16,3 +16,12 @@
     guidance:hasActor :ClaudeAI ;
     guidance:hasChangeReason "Initial state" ;
     guidance:hasTimestamp "2024-03-20T18:30:00+00:00"^^xsd:dateTime .
+
+:entry_2024_03_21_001 a guidance:SessionLogEntry ;
+    rdfs:label "Creating PR for Cortex Demo Schema" ;
+    guidance:hasActor :ClaudeAI ;
+    guidance:hasChangeReason "Creating pull request for feature/cortex-demo-schema" ;
+    guidance:hasTimestamp "2024-03-21T10:00:00Z"^^xsd:dateTime ;
+    guidance:hasAction :CreatePullRequest ;
+    guidance:hasSourceBranch "feature/cortex-demo-schema" ;
+    guidance:hasTargetBranch "develop" .
