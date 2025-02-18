@@ -115,9 +115,8 @@ def context_manager(setup_test_files, mock_anthropic):
         log_file,
     )
 
-    with env, session, log:
-        manager = SessionContextManager()
-        return manager
+    with (env, session, log):
+        return SessionContextManager()
 
 
 @pytest.fixture
