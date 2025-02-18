@@ -2,7 +2,7 @@
 # Implements: SessionContextManager
 # Requirement: Maintain session state and context for LLM interactions
 # Guidance: ./guidance.ttl
-# Description: Manages session.ttl and session_log.ttl context operations using LLM assistance
+# Description: Manages session context operations
 
 #!/usr/bin/env python3
 # type: ignore
@@ -52,7 +52,9 @@ class SessionContextManager:
         # Check API key first
         self.api_key = os.getenv("ANTHROPIC_API_KEY")
         if not self.api_key:
-            raise ValueError("ANTHROPIC_API_KEY environment variable not set")  # noqa: E501
+            raise ValueError(
+                "ANTHROPIC_API_KEY environment variable not set"
+            )  # noqa: E501
 
         self.client = anthropic.Client(api_key=self.api_key)
         self.session_graph = Graph()
@@ -215,7 +217,9 @@ class SessionContextManager:
             # Check if active task exists
             task = self.session_graph.value(None, SESSION.activeTask, None)
             if task:
-                if not any(self.session_graph.triples((task, RDF.type, SESSION.Task))):  # noqa: E501
+                if not any(
+                    self.session_graph.triples((task, RDF.type, SESSION.Task))
+                ):  # noqa: E501
                     mismatches.append("Active task reference is invalid")
                 if self.dry_run:
                     print(f"Active Task Check: {task}")
@@ -256,7 +260,9 @@ class SessionContextManager:
                     rule
                     for rule in rules
                     if not any(
-                        self.session_graph.triples((rule, RDF.type, SESSION.CursorRule))  # noqa: E501
+                        self.session_graph.triples(
+                            (rule, RDF.type, SESSION.CursorRule)
+                        )  # noqa: E501
                     )
                 ]
                 if invalid_rules:
@@ -393,7 +399,9 @@ class SessionContextManager:
         if current_context := self.session_graph.value(
             None, RDF.type, SESSION.ContextState
         ):
-            for pred, obj in self.session_graph.predicate_objects(current_context):  # noqa: E501
+            for pred, obj in self.session_graph.predicate_objects(
+                current_context
+            ):  # noqa: E501
                 pred_str = str(pred).split("#")[-1]
                 if pred_str in [
                     "activeCursorRules",
@@ -435,7 +443,8 @@ class SessionContextManager:
         Given the current context:
         {current_context}
 
-        Generate ONLY Turtle RDF (no markdown formatting) to create a new log entry in session_log.ttl with:
+        Generate ONLY Turtle RDF (no markdown formatting) to create a new log entry in
+        session_log.ttl with:
         1. Entry ID: {entry_id}
         2. Timestamp: {timestamp}
         3. Actor: ClaudeAI
@@ -460,7 +469,8 @@ class SessionContextManager:
         Given the session log:
         {self.log_graph.serialize(format="turtle")}
 
-        Generate ONLY Turtle RDF (no markdown formatting) to restore the previous context to session.ttl.
+        Generate ONLY Turtle RDF (no markdown formatting) to restore the previous
+        context to session.ttl.
         Include all necessary triples and ensure proper references.
 
         Start with @prefix declarations and provide ONLY the Turtle RDF content.
@@ -514,7 +524,8 @@ class SessionContextManager:
 
         {self.log_graph.serialize(format="turtle")}
 
-        Generate ONLY Turtle RDF (no markdown formatting) to restore the specified context to session.ttl.
+        Generate ONLY Turtle RDF (no markdown formatting) to restore the specified
+        context to session.ttl.
         Include all necessary triples and ensure proper references.
 
         Start with @prefix declarations and provide ONLY the Turtle RDF content.
@@ -685,22 +696,25 @@ def main():
 
     try:
         if args.command == "list":
-            result = manager.list_contexts()  # Already returns a dictionary
+            result = manager.list_contexts()
         elif args.command == "pop":
             result = manager.pop_context()
-            result = manager.format_context_json(result)  # Convert text to JSON
+            result = manager.format_context_json(result)
         elif args.command == "search" and args.param:
             result = manager.search_contexts(args.param)
-            result = manager.format_context_json(result)  # Convert text to JSON
+            result = manager.format_context_json(result)
         elif args.command == "restore" and args.param:
             result = manager.restore_context(args.param)
-            result = manager.format_context_json(result)  # Convert text to JSON
+            result = manager.format_context_json(result)
         else:
             print("Invalid command or missing parameter")
             return
 
         # Format and display output
-        manager.format_output(result, pretty=args.pretty, color=not args.no_color)
+        if args.pretty:
+            manager.format_output(result, pretty=True, color=not args.no_color)
+        else:
+            print(json.dumps(result))
 
     except Exception as e:
         print(f"Error: {str(e)}")

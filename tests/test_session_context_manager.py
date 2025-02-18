@@ -9,6 +9,7 @@
 Tests for session_context_manager.py
 """
 
+import json
 import os
 from pathlib import Path
 from unittest.mock import Mock, patch
@@ -115,7 +116,7 @@ def context_manager(setup_test_files, mock_anthropic):
         log_file,
     )
 
-    with (env, session, log):
+    with env, session, log:
         return SessionContextManager()
 
 
@@ -125,11 +126,15 @@ def dry_run_manager(setup_test_files, mock_anthropic):
     session_file, log_file = setup_test_files
     env = patch.dict(os.environ, {"ANTHROPIC_API_KEY": "test-key"})
     session = patch(
-        "tools.chatbot_llm.session_context_manager.SESSION_FILE", session_file
+        "tools.chatbot_llm.session_context_manager.SESSION_FILE",
+        session_file,
     )
-    log = patch("tools.chatbot_llm.session_context_manager.SESSION_LOG_FILE", log_file)
+    log = patch(
+        "tools.chatbot_llm.session_context_manager.SESSION_LOG_FILE",
+        log_file,
+    )
 
-    with (env, session, log):
+    with env, session, log:
         return SessionContextManager(dry_run=True)
 
 
@@ -174,9 +179,9 @@ def test_get_current_context(context_manager, mock_anthropic):
 def test_list_contexts(context_manager, mock_anthropic):
     """Test listing contexts"""
     result = context_manager.list_contexts()
-    assert isinstance(result, str)
-    assert ":test_context" in result
-    assert "session:Context" in result
+    assert isinstance(result, dict)
+    assert "contexts" in result
+    assert "current_state" in result
 
 
 def test_pop_context(context_manager, mock_anthropic):
@@ -255,12 +260,12 @@ def test_cli_interface():
 
     with argv, mgr as mock_mgr:
         mock_instance = Mock()
-        mock_instance.list_contexts.return_value = "Test contexts"
+        mock_instance.list_contexts.return_value = {"test": "contexts"}
         mock_mgr.return_value = mock_instance
 
         with patch("builtins.print") as mock_print:
             session_manager_main()
-            mock_print.assert_called_with("Test contexts")
+            mock_print.assert_called_with(json.dumps({"test": "contexts"}))
 
 
 @pytest.mark.parametrize(
@@ -283,12 +288,12 @@ def test_cli_commands(command, expected_method):
 
     with argv, mgr as mock_mgr:
         mock_instance = Mock()
-        mock_result = f"Test {command} result"
+        mock_result = {"test": f"{command} result"}
         getattr(mock_instance, expected_method).return_value = mock_result
+        if expected_method != "list_contexts":
+            mock_instance.format_context_json.return_value = mock_result
         mock_mgr.return_value = mock_instance
 
-        from tools.chatbot_llm.session_context_manager import main
-
         with patch("builtins.print") as mock_print:
-            main()
-            assert mock_print.called
+            session_manager_main()
+            mock_print.assert_called_with(json.dumps(mock_result))
