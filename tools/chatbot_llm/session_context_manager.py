@@ -390,8 +390,9 @@ class SessionContextManager:
 
         # Get current context state
         current_state = {}
-        current_context = self.session_graph.value(None, RDF.type, SESSION.ContextState)
-        if current_context:
+        if current_context := self.session_graph.value(
+            None, RDF.type, SESSION.ContextState
+        ):
             for pred, obj in self.session_graph.predicate_objects(current_context):  # noqa: E501
                 pred_str = str(pred).split("#")[-1]
                 if pred_str in [
