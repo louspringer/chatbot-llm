@@ -5,5 +5,23 @@
 # Description: Main session state tracking for the chatbot
 
 @prefix : <file:///Users/lou/Documents/chatbot-llm/session#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix guidance: <./guidance#> .
 
-:test_context a :Context .
+:current_context a :ContextState ;
+    :activeTask :create_cortex_demo_pr ;
+    :activeOntologies (
+        :ChatbotOntology
+        :CortexDemoOntology
+    ) ;
+    :activeCursorRules (
+        :ProjectOntologyRule
+    ) ;
+    :securityContext [
+        a :SecurityContext ;
+        :requiresValidation true ;
+        :securityLevel "High"
+    ] ;
+    :lastUpdated "2024-03-21T10:00:00Z"^^xsd:dateTime .
