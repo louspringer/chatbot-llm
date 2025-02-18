@@ -129,9 +129,8 @@ def dry_run_manager(setup_test_files, mock_anthropic):
     )
     log = patch("tools.chatbot_llm.session_context_manager.SESSION_LOG_FILE", log_file)
 
-    with env, session, log:
-        manager = SessionContextManager(dry_run=True)
-        return manager
+    with (env, session, log):
+        return SessionContextManager(dry_run=True)
 
 
 def test_init(context_manager):
