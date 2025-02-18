@@ -1,6 +1,9 @@
 [submodule "ontology-framework"]
 	path = ontology-framework
-	url = https://github.com/louspringer/ontology-framework/
+	url = https://github.com/louspringer/ontology-framework.git
 [submodule "cortex-analyst"]
 	path = cortex-analyst
-	url = https://github.com/louspringer/sfguide-getting-started-with-cortex-analyst
+	url = https://github.com/louspringer/sfguide-getting-started-with-cortex-analyst.git
+[submodule "botbuilder-python"]
+	path = botbuilder-python
+	url = https://github.com/microsoft/botbuilder-python.git
