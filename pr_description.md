@@ -1,66 +1,109 @@
-# Security and State Management Improvements
+# Ontology: meta:DocumentationComponent
+
+# Implements: meta:PullRequestTemplate
+
+# Requirement: REQ-DOC-001 Standardized PR documentation
+
+# Guidance: guidance:DocumentationPatterns#PRTemplate
+
+# Description: Template for pull request descriptions with standardized sections
+
+# Cortex Demo Schema Integration
 
 ## Overview
-This PR implements comprehensive security improvements and robust state management, addressing GitGuardian alert 15565986 and enhancing conversation handling.
 
-## Key Changes
+This PR integrates the Cortex Demo Schema feature, enhancing our chatbot's ability to work with semantic data structures and improving overall system robustness.
 
-### 1. State Machine Implementation
-- [x] Implemented FSM for ConversationData
-  - Added state transition validation
-  - Implemented timeout handling
-  - Added checkpoint/restore functionality
-  - Added comprehensive error handling
+## Major Changes
 
-### 2. Security Enhancements
-- [x] Key Management
-  - Removed sensitive key files (GitGuardian 15565986)
-  - Implemented secure key rotation
-  - Added secure backup mechanisms
-  - Set up SECURITYADMIN role for Snowflake
-- [x] Secret Management
-  - Prepared Azure Key Vault integration
-  - Added dynamic secret retrieval
-  - Implemented encryption for sensitive data
-  - Added secure credential refresh
+- **Schema Integration**
+  - Added Cortex demo schema ontology
+  - Implemented semantic validation patterns
+  - Enhanced query handling capabilities
 
-### 3. Error Handling & Logging
-- [x] Enhanced error management
-  - Added structured error logging
-  - Implemented error recovery mechanisms
-  - Added state transition validation
-  - Added error context tracking
-- [x] Improved logging
-  - Added detailed operation logging
-  - Implemented correlation tracking
-  - Added security event logging
-  - Enhanced debug information
+- **Security & State Management**
+  - Improved session state tracking
+  - Enhanced security context validation
+  - Added automated compliance checking
+  - Updated security patterns in session context manager
+
+- **Documentation & Structure**
+  - Added comprehensive ontology documentation
+  - Created GraphViz visualizations for schema relationships
+  - Enhanced traceability between artifacts and requirements
+  - Updated SPARQL query examples
+
+- **Code Quality**
+  - Fixed output formatting in session context manager
+  - Implemented proper error handling
+  - Added validation for context state transitions
+
+## Technical Details
+
+- **Session Context Manager**
+  - Enhanced state tracking with RDF validation
+  - Improved error handling and logging
+  - Added comprehensive test coverage
+  - Fixed output formatting issues
+
+- **Ontology Framework**
+  - Implemented SHACL validation
+  - Added semantic consistency checks
+  - Enhanced traceability patterns
 
 ## Testing
-- Added state machine transition tests
-- Added encryption/decryption tests
-- Added error recovery tests
-- Added timeout handling tests
-- Current coverage: 98% for core components
 
-## Security Considerations
-- All sensitive files removed from git
-- Key rotation mechanism tested
-- Secure backup procedures implemented
-- Access controls validated
+- ✅ All unit tests passing
+- ✅ Integration tests completed
+- ⚠️ Security scanner tests partially skipped (tracked in issue #15)
+- ✅ Manual validation of schema integrity
 
-## Documentation
-- Added state machine documentation
-- Updated security procedures
-- Added key rotation guide
-- Updated deployment guide
+## Known Issues
+
+1. Linter errors in `session_context_manager.py`
+   - To be addressed in separate PR
+   - Non-blocking formatting issues
+   - Tracked for cleanup
+
+2. Security Vulnerabilities
+   - Two moderate-severity issues reported
+   - Under investigation
+   - No critical impact on functionality
+
+## Dependencies
+
+- No new external dependencies added
+- Updated `botbuilder-python` submodule to latest version
+- All existing dependencies remain compatible
+
+## Deployment Notes
+
+- Requires ontology validation after deployment
+- No database migrations needed
+- Compatible with existing configuration
 
 ## Related Issues
-- Closes #3 (Security Implementation)
-- Fixes GitGuardian alert 15565986
 
-## Validation
-- [x] All tests passing
-- [x] Security review complete
+- Closes #12 (Implement Cortex Integration)
+- Related to #15 (Security Scanner Tests)
+
+## Review Focus Areas
+
+1. Semantic consistency in schema changes
+2. Security context handling
+3. State management patterns
+4. Error handling implementation
+5. Test coverage adequacy
+
+## Screenshots
+
+*(To be added during review)*
+
+## Checklist
+
+- [x] Schema validation completed
+- [x] Tests passing
 - [x] Documentation updated
-- [x] No sensitive data in commits
+- [x] Security review conducted
+- [ ] Performance impact assessed
+- [ ] Deployment guide updated
