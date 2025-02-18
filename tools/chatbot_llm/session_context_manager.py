@@ -543,10 +543,7 @@ class SessionContextManager:
             text = str(response.text)
         elif hasattr(response, "content"):
             content = response.content
-            if isinstance(content, list):
-                text = str(content[0].text)
-            else:
-                text = str(content)
+            text = str(content[0].text) if isinstance(content, list) else str(content)
         else:
             text = str(response)
 
