@@ -1,3 +1,9 @@
+# Ontology: ./session.ttl
+# Implements: SessionContextManager
+# Requirement: Maintain session state and context for LLM interactions
+# Guidance: ./guidance.ttl
+# Description: Manages session.ttl and session_log.ttl context operations using LLM assistance
+
 #!/usr/bin/env python3
 # type: ignore
 """
@@ -46,9 +52,7 @@ class SessionContextManager:
         # Check API key first
         self.api_key = os.getenv("ANTHROPIC_API_KEY")
         if not self.api_key:
-            raise ValueError(
-                "ANTHROPIC_API_KEY environment variable not set"
-            )  # noqa: E501
+            raise ValueError("ANTHROPIC_API_KEY environment variable not set")  # noqa: E501
 
         self.client = anthropic.Client(api_key=self.api_key)
         self.session_graph = Graph()
@@ -184,8 +188,8 @@ class SessionContextManager:
             model="claude-3-sonnet-20240229",
             temperature=0,
             system=(
-                "You are a semantic web expert. Generate Turtle RDF for creating a new "
-                "context."
+                "You are a semantic web expert. Generate Turtle RDF for creating "
+                "a new context."
             ),
             messages=[{"role": "user", "content": context_prompt}],
         )
@@ -211,8 +215,7 @@ class SessionContextManager:
             # Check if active task exists
             task = self.session_graph.value(None, SESSION.activeTask, None)
             if task:
-                task_type = (task, RDF.type, SESSION.Task)
-                if not any(self.session_graph.triples(task_type)):  # noqa: E501
+                if not any(self.session_graph.triples((task, RDF.type, SESSION.Task))):  # noqa: E501
                     mismatches.append("Active task reference is invalid")
                 if self.dry_run:
                     print(f"Active Task Check: {task}")
@@ -253,9 +256,7 @@ class SessionContextManager:
                     rule
                     for rule in rules
                     if not any(
-                        self.session_graph.triples(
-                            (rule, RDF.type, SESSION.CursorRule)
-                        )  # noqa: E501
+                        self.session_graph.triples((rule, RDF.type, SESSION.CursorRule))  # noqa: E501
                     )
                 ]
                 if invalid_rules:
@@ -320,8 +321,8 @@ class SessionContextManager:
             max_tokens=1000,
             temperature=0,
             system=(
-                "You are a semantic web expert. Extract and format the current context from the "  # noqa: E501
-                "provided session.ttl content."
+                "You are a semantic web expert. Extract and format the current context "
+                "from the provided session.ttl content."
             ),
             messages=[{"role": "user", "content": context_prompt}],
         )
@@ -389,11 +390,10 @@ class SessionContextManager:
 
         # Get current context state
         current_state = {}
-        current_context = self.session_graph.value(None, RDF.type, SESSION.ContextState)
-        if current_context:
-            for pred, obj in self.session_graph.predicate_objects(
-                current_context
-            ):  # noqa: E501
+        if current_context := self.session_graph.value(
+            None, RDF.type, SESSION.ContextState
+        ):
+            for pred, obj in self.session_graph.predicate_objects(current_context):  # noqa: E501
                 pred_str = str(pred).split("#")[-1]
                 if pred_str in [
                     "activeCursorRules",
@@ -427,7 +427,7 @@ class SessionContextManager:
         current_context = self.get_current_context()
 
         # Create a new log entry for the current context
-        timestamp = datetime.utcnow().isoformat() + "Z"
+        timestamp = f"{datetime.utcnow().isoformat()}Z"
         entry_id = f"entry_{datetime.utcnow().strftime('%Y_%m_%d_%H%M%S')}"
 
         # Generate log entry prompt
@@ -435,13 +435,13 @@ class SessionContextManager:
         Given the current context:
         {current_context}
 
-        Generate Turtle RDF for session_log.ttl with:
+        Generate ONLY Turtle RDF (no markdown formatting) to create a new log entry in session_log.ttl with:
         1. Entry ID: {entry_id}
         2. Timestamp: {timestamp}
         3. Actor: ClaudeAI
         4. Current state preservation
 
-        Start with @prefix declarations.
+        Start with @prefix declarations and provide ONLY the Turtle RDF content.
         """
 
         push_response = self.client.messages.create(
@@ -449,10 +449,10 @@ class SessionContextManager:
             max_tokens=1000,
             temperature=0,
             system=(
-                "You are a semantic web expert. Generate ONLY Turtle RDF with no markdown"  # noqa: E501
-                " or other formatting."
+                "You are a semantic web expert. Generate ONLY Turtle RDF with no "
+                "markdown or other formatting."
             ),
-            messages=[{"role": "user", "content": push_prompt}],  # noqa: E501
+            messages=[{"role": "user", "content": push_prompt}],
         )
 
         # Get the previous context from the log
@@ -460,10 +460,10 @@ class SessionContextManager:
         Given the session log:
         {self.log_graph.serialize(format="turtle")}
 
-        Generate Turtle RDF to restore previous context to session.ttl.
-        Include all necessary triples and references.
+        Generate ONLY Turtle RDF (no markdown formatting) to restore the previous context to session.ttl.
+        Include all necessary triples and ensure proper references.
 
-        Start with @prefix declarations.
+        Start with @prefix declarations and provide ONLY the Turtle RDF content.
         """
 
         restore_response = self.client.messages.create(
@@ -471,10 +471,10 @@ class SessionContextManager:
             max_tokens=1000,
             temperature=0,
             system=(
-                "You are a semantic web expert. Generate ONLY Turtle RDF with no markdown"  # noqa: E501
-                " or other formatting."
+                "You are a semantic web expert. Generate ONLY Turtle RDF with no "
+                "markdown or other formatting."
             ),
-            messages=[{"role": "user", "content": restore_prompt}],  # noqa: E501
+            messages=[{"role": "user", "content": restore_prompt}],
         )
 
         # Update both files
@@ -499,10 +499,10 @@ class SessionContextManager:
             max_tokens=1500,
             temperature=0,
             system=(
-                "You are a semantic web expert. Search and rank context entries based on"  # noqa: E501
-                " the query."
+                "You are a semantic web expert. Search and rank context entries "
+                "based on the query."
             ),
-            messages=[{"role": "user", "content": search_prompt}],  # noqa: E501
+            messages=[{"role": "user", "content": search_prompt}],
         )
 
         return response.content
@@ -514,10 +514,10 @@ class SessionContextManager:
 
         {self.log_graph.serialize(format="turtle")}
 
-        Generate Turtle RDF to restore context {context_id} to session.ttl.
-        Include all necessary triples and references.
+        Generate ONLY Turtle RDF (no markdown formatting) to restore the specified context to session.ttl.
+        Include all necessary triples and ensure proper references.
 
-        Start with @prefix declarations.
+        Start with @prefix declarations and provide ONLY the Turtle RDF content.
         """
 
         response = self.client.messages.create(
@@ -525,10 +525,10 @@ class SessionContextManager:
             max_tokens=1000,
             temperature=0,
             system=(
-                "You are a semantic web expert. Generate ONLY Turtle RDF with no markdown"  # noqa: E501
-                " or other formatting."
+                "You are a semantic web expert. Generate ONLY Turtle RDF with no "
+                "markdown or other formatting."
             ),
-            messages=[{"role": "user", "content": restore_prompt}],  # noqa: E501
+            messages=[{"role": "user", "content": restore_prompt}],
         )
 
         self.update_session_and_log(None, response.content)
@@ -543,10 +543,7 @@ class SessionContextManager:
             text = str(response.text)
         elif hasattr(response, "content"):
             content = response.content
-            if isinstance(content, list):
-                text = str(content[0].text)
-            else:
-                text = str(content)
+            text = str(content[0].text) if isinstance(content, list) else str(content)
         else:
             text = str(response)
 
@@ -619,7 +616,7 @@ class SessionContextManager:
                 current_context["timestamp"] = line.split(":", 1)[1].strip()
             elif current_context and line.startswith("Actor:"):
                 current_context["actor"] = line.split(":", 1)[1].strip()
-            elif current_context and line.startswith("Change Reason:"):  # noqa: E501
+            elif current_context and line.startswith("Change Reason:"):
                 current_context["reason"] = line.split(":", 1)[1].strip()
             elif line.startswith("State summary:"):
                 in_state_summary = True
@@ -648,21 +645,20 @@ class SessionContextManager:
 
         return result
 
+    def format_output(
+        self, data: Dict[str, Any], pretty: bool = False, color: bool = True
+    ) -> None:
+        """Format and print output with optional colors and pretty printing"""
+        console = Console(force_terminal=color)
 
-def format_output(
-    data: Dict[str, Any], pretty: bool = False, color: bool = True
-) -> None:
-    """Format and print output with optional colors and pretty printing"""
-    console = Console(force_terminal=color)
-
-    if pretty:
-        # Pretty print with syntax highlighting
-        json_str = json.dumps(data, indent=2)
-        syntax = Syntax(json_str, "json", theme="monokai")
-        console.print(syntax)
-    else:
-        # Compact JSON without colors
-        print(json.dumps(data))
+        if pretty:
+            # Pretty print with syntax highlighting
+            json_str = json.dumps(data, indent=2)
+            syntax = Syntax(json_str, "json", theme="monokai")
+            console.print(syntax)
+        else:
+            # Compact JSON without colors
+            print(json.dumps(data))
 
 
 def main():
@@ -704,7 +700,7 @@ def main():
             return
 
         # Format and display output
-        format_output(result, pretty=args.pretty, color=not args.no_color)  # noqa: E501
+        manager.format_output(result, pretty=args.pretty, color=not args.no_color)
 
     except Exception as e:
         print(f"Error: {str(e)}")

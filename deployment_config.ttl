@@ -151,6 +151,105 @@ deploy:EnvironmentVariableShape a sh:NodeShape ;
         sh:datatype xsd:string ;
     ] .
 
+# Python Package Management
+deploy:PythonPackage rdf:type owl:Class ;
+    rdfs:subClassOf deploy:DeploymentArtifact ;
+    rdfs:label "Python Package" ;
+    rdfs:comment "A Python package dependency" .
+
+deploy:PackageSource rdf:type owl:Class ;
+    rdfs:label "Package Source" ;
+    rdfs:comment "Source for installing Python packages (conda or pip)" .
+
+deploy:Conda rdf:type deploy:PackageSource ;
+    rdfs:label "Conda" ;
+    rdfs:comment "Conda package manager" .
+
+deploy:Pip rdf:type deploy:PackageSource ;
+    rdfs:label "Pip" ;
+    rdfs:comment "Pip package manager" .
+
+deploy:PackageType rdf:type owl:Class ;
+    rdfs:label "Package Type" ;
+    rdfs:comment "Type of package (core, development, etc.)" .
+
+deploy:CorePackage rdf:type deploy:PackageType ;
+    rdfs:label "Core Package" ;
+    rdfs:comment "Core dependency required for runtime" .
+
+deploy:DevPackage rdf:type deploy:PackageType ;
+    rdfs:label "Development Package" ;
+    rdfs:comment "Package required for development only" .
+
+# Package Properties
+deploy:packageName rdf:type owl:DatatypeProperty ;
+    rdfs:label "package name" ;
+    rdfs:domain deploy:PythonPackage ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Name of the Python package" .
+
+deploy:packageVersion rdf:type owl:DatatypeProperty ;
+    rdfs:label "package version" ;
+    rdfs:domain deploy:PythonPackage ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Version constraint for the package" .
+
+deploy:preferredSource rdf:type owl:ObjectProperty ;
+    rdfs:label "preferred source" ;
+    rdfs:domain deploy:PythonPackage ;
+    rdfs:range deploy:PackageSource ;
+    rdfs:comment "Preferred source for installing the package" .
+
+deploy:packageType rdf:type owl:ObjectProperty ;
+    rdfs:label "package type" ;
+    rdfs:domain deploy:PythonPackage ;
+    rdfs:range deploy:PackageType ;
+    rdfs:comment "Type of the package" .
+
+# Package Validation Shape
+deploy:PythonPackageShape a sh:NodeShape ;
+    sh:targetClass deploy:PythonPackage ;
+    sh:property [
+        sh:path deploy:packageName ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "Package must have a name"
+    ] ;
+    sh:property [
+        sh:path deploy:packageVersion ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:pattern "^(>=|<=|==|~=|!=)?[0-9]+(\\.[0-9]+)*" ;
+        sh:message "Package must have a valid version constraint"
+    ] ;
+    sh:property [
+        sh:path deploy:preferredSource ;
+        sh:minCount 1 ;
+        sh:message "Package must specify preferred source"
+    ] .
+
+# Example Package Instances
+deploy:RDFLib rdf:type deploy:PythonPackage ;
+    rdfs:label "rdflib" ;
+    deploy:packageName "rdflib" ;
+    deploy:packageVersion ">=6.0.0" ;
+    deploy:preferredSource deploy:Conda ;
+    deploy:packageType deploy:CorePackage .
+
+deploy:PyTest rdf:type deploy:PythonPackage ;
+    rdfs:label "pytest" ;
+    deploy:packageName "pytest" ;
+    deploy:packageVersion "==7.4.3" ;
+    deploy:preferredSource deploy:Conda ;
+    deploy:packageType deploy:DevPackage .
+
+deploy:BotBuilderCore rdf:type deploy:PythonPackage ;
+    rdfs:label "botbuilder-core" ;
+    deploy:packageName "botbuilder-core" ;
+    deploy:packageVersion ">=4.14.0" ;
+    deploy:preferredSource deploy:Pip ;
+    deploy:packageType deploy:CorePackage .
+
 # TODO Section
 ###
 # Future Enhancements:

@@ -1,0 +1,10 @@
+---
+description: There should be no such file.
+globs: requirements.txt
+---
+
+# `pyproject.toml` and conda `environment.yml` project.
+
+- Never create a requirements.txt in the root of this project
+- All package updates must be consistently guided by [guidance.ttl](mdc:guidance.ttl)
+- Any such update of packages is expected to update the ontology with a required by relationship to maintain clear tracebility from the need to the implementation. See also [artifact-traceability.mdc](mdc:.cursor/rules/artifact-traceability.mdc).
