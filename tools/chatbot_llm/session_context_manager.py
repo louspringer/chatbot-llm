@@ -427,7 +427,7 @@ class SessionContextManager:
         current_context = self.get_current_context()
 
         # Create a new log entry for the current context
-        timestamp = datetime.utcnow().isoformat() + "Z"
+        timestamp = f"{datetime.utcnow().isoformat()}Z"
         entry_id = f"entry_{datetime.utcnow().strftime('%Y_%m_%d_%H%M%S')}"
 
         # Generate log entry prompt
