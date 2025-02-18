@@ -62,7 +62,14 @@
         :prefix "metameta" ;
         :version "1.0"
     ] ;
-    :hasSecurityRequirement :PythonVersionRequirement .
+    :hasSecurityRequirement :PythonVersionRequirement ;
+    :requiresPackage [
+        a :PackageDependency ;
+        :name "anthropic" ;
+        :version ">=0.7.0" ;
+        :purpose "Claude API integration for LLM capabilities" ;
+        :securityRequirement :APIKeyRequirement
+    ] .
 
 # Define dependency properties
 :OntologyDependency a owl:Class ;
@@ -83,6 +90,29 @@
     rdfs:domain :OntologyDependency ;
     rdfs:range xsd:string ;
     rdfs:comment "Required version of the ontology" .
+
+:PackageDependency a owl:Class ;
+    rdfs:label "Package Dependency" ;
+    rdfs:comment "Declares a dependency on a Python package" .
+
+:name a owl:DatatypeProperty ;
+    rdfs:domain :PackageDependency ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Name of the required package" .
+
+:purpose a owl:DatatypeProperty ;
+    rdfs:domain :PackageDependency ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Purpose/reason for requiring this package" .
+
+:securityRequirement a owl:ObjectProperty ;
+    rdfs:domain :PackageDependency ;
+    rdfs:range :SecurityRequirement ;
+    rdfs:comment "Security requirements for using this package" .
+
+:APIKeyRequirement a :SecurityRequirement ;
+    rdfs:label "API Key Requirement" ;
+    rdfs:comment "Requires an API key stored securely as an environment variable" .
 
 ### Core Concepts
 :Problem a owl:Class ;

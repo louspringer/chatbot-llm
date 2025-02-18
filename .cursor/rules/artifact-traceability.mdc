@@ -1,6 +1,6 @@
 ---
-description: Enforce traceability between artifacts, ontologies, and requirements
-globs: ["*.py", "*.ttl", "*.md", "*.sql", "*.sh", "*.yml", "*.yaml"]
+description: Enforce traceability between artifacts, ontologies, and requirements.
+globs: ["**/*.py", "**/*.ttl", "**/*.md", "**/*.sql", "**/*.sh", "**/*.yml", "**/*.yaml", "!.venv/**", "!venv/**", "!env/**", "!**/.git/**", "!**/node_modules/**", "!**/__pycache__/**", "!**/.pytest_cache/**", "!**/.ipynb_checkpoints/**"]
 ---
 
 # Artifact Traceability Rule
@@ -47,18 +47,18 @@ Every file must include a header in the appropriate comment style:
 
 2. Requirement References:
    - Must follow format: REQ-{DOMAIN}-{NUMBER}
-   - Domains: ML (Machine Learning), SEC (Security), DEP (Deployment)
-   - Must exist in requirements.ttl or linked documentation
+   - Domains: ML (Machine Learning), SEC (Security), DEP (Deployment) see [prefix_management.ttl](mdc:ontology-framework/prefix_management.ttl) and [prefix_validation.ttl](mdc:ontology-framework/prefix_validation.ttl) for the entire list and detals. If you have low confidence in the infered domain, or there is a conflict, create a new domain, prefix and ontology. The user can negotiate merging the ontology or making other changes at commit and test creation time.
+   - Must exist in and be referenced in @requirements.ttl and linked documentation, infer requirements and add them to requirements.ttl if needed.
 
 3. Guidance Pattern References:
-   - Must reference a pattern from guidance.ttl
+   - Must reference a pattern from [guidance.ttl](mdc:guidance.ttl)
    - Must use format: guidance:{PatternGroup}#{PatternName}
    - Pattern must be appropriate for the artifact type
 
 4. Implementation Details:
    - Must specify what is being implemented
    - Implementation must be a subclass/property of the ontology reference
-   - Must conform to the referenced guidance pattern
+   - Must conform to the referenced guidance pattern [guidance.ttl](mdc:guidance.ttl)
    - Description must explain the specific implementation
 
 ## Examples

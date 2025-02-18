@@ -1,3 +1,9 @@
+# Ontology: ./session.ttl
+# Implements: SessionContextManager
+# Requirement: Maintain session state and context for LLM interactions
+# Guidance: ./guidance.ttl
+# Description: Manages session.ttl and session_log.ttl context operations using LLM assistance
+
 #!/usr/bin/env python3
 # type: ignore
 """
@@ -46,9 +52,7 @@ class SessionContextManager:
         # Check API key first
         self.api_key = os.getenv("ANTHROPIC_API_KEY")
         if not self.api_key:
-            raise ValueError(
-                "ANTHROPIC_API_KEY environment variable not set"
-            )  # noqa: E501
+            raise ValueError("ANTHROPIC_API_KEY environment variable not set")  # noqa: E501
 
         self.client = anthropic.Client(api_key=self.api_key)
         self.session_graph = Graph()
@@ -184,8 +188,8 @@ class SessionContextManager:
             model="claude-3-sonnet-20240229",
             temperature=0,
             system=(
-                "You are a semantic web expert. Generate Turtle RDF for creating a new "
-                "context."
+                "You are a semantic web expert. Generate Turtle RDF for creating "
+                "a new context."
             ),
             messages=[{"role": "user", "content": context_prompt}],
         )
@@ -211,8 +215,7 @@ class SessionContextManager:
             # Check if active task exists
             task = self.session_graph.value(None, SESSION.activeTask, None)
             if task:
-                task_type = (task, RDF.type, SESSION.Task)
-                if not any(self.session_graph.triples(task_type)):  # noqa: E501
+                if not any(self.session_graph.triples((task, RDF.type, SESSION.Task))):  # noqa: E501
                     mismatches.append("Active task reference is invalid")
                 if self.dry_run:
                     print(f"Active Task Check: {task}")
@@ -222,8 +225,7 @@ class SessionContextManager:
             if onts:
                 invalid_onts = [ont for ont in onts if ":" not in str(ont)]
                 if invalid_onts:
-                    msg = f"Invalid ontology references: {invalid_onts}"  # noqa: E501
-                    mismatches.append(msg)
+                    mismatches.append(f"Invalid ontology references: {invalid_onts}")
                 if self.dry_run:
                     print(f"Active Ontologies: {onts}")
 
@@ -253,14 +255,11 @@ class SessionContextManager:
                     rule
                     for rule in rules
                     if not any(
-                        self.session_graph.triples(
-                            (rule, RDF.type, SESSION.CursorRule)
-                        )  # noqa: E501
+                        self.session_graph.triples((rule, RDF.type, SESSION.CursorRule))  # noqa: E501
                     )
                 ]
                 if invalid_rules:
-                    msg = f"Invalid cursor rules: {invalid_rules}"  # noqa: E501
-                    mismatches.append(msg)
+                    mismatches.append(f"Invalid cursor rules: {invalid_rules}")
                 if self.dry_run:
                     print(f"Active Cursor Rules: {rules}")
 
@@ -320,8 +319,8 @@ class SessionContextManager:
             max_tokens=1000,
             temperature=0,
             system=(
-                "You are a semantic web expert. Extract and format the current context from the "  # noqa: E501
-                "provided session.ttl content."
+                "You are a semantic web expert. Extract and format the current "
+                "context from the provided session.ttl content."
             ),
             messages=[{"role": "user", "content": context_prompt}],
         )
@@ -391,9 +390,7 @@ class SessionContextManager:
         current_state = {}
         current_context = self.session_graph.value(None, RDF.type, SESSION.ContextState)
         if current_context:
-            for pred, obj in self.session_graph.predicate_objects(
-                current_context
-            ):  # noqa: E501
+            for pred, obj in self.session_graph.predicate_objects(current_context):  # noqa: E501
                 pred_str = str(pred).split("#")[-1]
                 if pred_str in [
                     "activeCursorRules",
@@ -435,13 +432,13 @@ class SessionContextManager:
         Given the current context:
         {current_context}
 
-        Generate Turtle RDF for session_log.ttl with:
+        Generate ONLY Turtle RDF (no markdown formatting) to create a new log entry in session_log.ttl with:
         1. Entry ID: {entry_id}
         2. Timestamp: {timestamp}
         3. Actor: ClaudeAI
         4. Current state preservation
 
-        Start with @prefix declarations.
+        Start with @prefix declarations and provide ONLY the Turtle RDF content.
         """
 
         push_response = self.client.messages.create(
@@ -449,10 +446,10 @@ class SessionContextManager:
             max_tokens=1000,
             temperature=0,
             system=(
-                "You are a semantic web expert. Generate ONLY Turtle RDF with no markdown"  # noqa: E501
-                " or other formatting."
+                "You are a semantic web expert. Generate ONLY Turtle RDF with no "
+                "markdown or other formatting."
             ),
-            messages=[{"role": "user", "content": push_prompt}],  # noqa: E501
+            messages=[{"role": "user", "content": push_prompt}],
         )
 
         # Get the previous context from the log
@@ -460,10 +457,10 @@ class SessionContextManager:
         Given the session log:
         {self.log_graph.serialize(format="turtle")}
 
-        Generate Turtle RDF to restore previous context to session.ttl.
-        Include all necessary triples and references.
+        Generate ONLY Turtle RDF (no markdown formatting) to restore the previous context to session.ttl.
+        Include all necessary triples and ensure proper references.
 
-        Start with @prefix declarations.
+        Start with @prefix declarations and provide ONLY the Turtle RDF content.
         """
 
         restore_response = self.client.messages.create(
@@ -471,10 +468,10 @@ class SessionContextManager:
             max_tokens=1000,
             temperature=0,
             system=(
-                "You are a semantic web expert. Generate ONLY Turtle RDF with no markdown"  # noqa: E501
-                " or other formatting."
+                "You are a semantic web expert. Generate ONLY Turtle RDF with no "
+                "markdown or other formatting."
             ),
-            messages=[{"role": "user", "content": restore_prompt}],  # noqa: E501
+            messages=[{"role": "user", "content": restore_prompt}],
         )
 
         # Update both files
@@ -499,10 +496,10 @@ class SessionContextManager:
             max_tokens=1500,
             temperature=0,
             system=(
-                "You are a semantic web expert. Search and rank context entries based on"  # noqa: E501
-                " the query."
+                "You are a semantic web expert. Search and rank context entries "
+                "based on the query."
             ),
-            messages=[{"role": "user", "content": search_prompt}],  # noqa: E501
+            messages=[{"role": "user", "content": search_prompt}],
         )
 
         return response.content
@@ -514,10 +511,10 @@ class SessionContextManager:
 
         {self.log_graph.serialize(format="turtle")}
 
-        Generate Turtle RDF to restore context {context_id} to session.ttl.
-        Include all necessary triples and references.
+        Generate ONLY Turtle RDF (no markdown formatting) to restore the specified context to session.ttl.
+        Include all necessary triples and ensure proper references.
 
-        Start with @prefix declarations.
+        Start with @prefix declarations and provide ONLY the Turtle RDF content.
         """
 
         response = self.client.messages.create(
@@ -525,10 +522,10 @@ class SessionContextManager:
             max_tokens=1000,
             temperature=0,
             system=(
-                "You are a semantic web expert. Generate ONLY Turtle RDF with no markdown"  # noqa: E501
-                " or other formatting."
+                "You are a semantic web expert. Generate ONLY Turtle RDF with no "
+                "markdown or other formatting."
             ),
-            messages=[{"role": "user", "content": restore_prompt}],  # noqa: E501
+            messages=[{"role": "user", "content": restore_prompt}],
         )
 
         self.update_session_and_log(None, response.content)
@@ -587,67 +584,6 @@ class SessionContextManager:
         # Save both files
         self.save_graphs()
 
-    def format_context_json(self, context_data: Any) -> Dict[str, Any]:
-        """Convert context data to JSON format"""
-        # Handle TextBlock objects
-        if hasattr(context_data, "text"):
-            context_data = context_data.text
-        elif isinstance(context_data, list) and hasattr(context_data[0], "text"):
-            context_data = context_data[0].text
-
-        # Parse the text response into structured data
-        if isinstance(context_data, str):
-            lines = context_data.split("\n")
-        else:
-            lines = str(context_data).split("\n")
-
-        result = {"contexts": [], "current_state": {}}
-        current_context = None
-        in_state_summary = False
-
-        for line in lines:
-            line = line.strip()
-            if not line:
-                continue
-
-            # Handle context entries
-            if line.startswith("Entry ID:"):
-                if current_context:
-                    result["contexts"].append(current_context)
-                current_context = {"id": line.split(":", 1)[1].strip()}
-            elif current_context and line.startswith("Timestamp:"):
-                current_context["timestamp"] = line.split(":", 1)[1].strip()
-            elif current_context and line.startswith("Actor:"):
-                current_context["actor"] = line.split(":", 1)[1].strip()
-            elif current_context and line.startswith("Change Reason:"):  # noqa: E501
-                current_context["reason"] = line.split(":", 1)[1].strip()
-            elif line.startswith("State summary:"):
-                in_state_summary = True
-                if current_context:
-                    current_context["state"] = {}
-            elif in_state_summary and line.startswith("- "):
-                key, value = line[2:].split(":", 1)
-                key = key.strip().lower().replace(" ", "_")
-                value = value.strip()
-
-                # Convert lists
-                if "," in value:
-                    value = [v.strip() for v in value.split(",")]
-                # Convert booleans
-                elif value.lower() in ["true", "false"]:
-                    value = value.lower() == "true"
-
-                if current_context:
-                    current_context["state"][key] = value
-                else:
-                    result["current_state"][key] = value
-
-        # Add the last context if any
-        if current_context:
-            result["contexts"].append(current_context)
-
-        return result
-
 
 def format_output(
     data: Dict[str, Any], pretty: bool = False, color: bool = True
@@ -663,6 +599,68 @@ def format_output(
     else:
         # Compact JSON without colors
         print(json.dumps(data))
+
+
+def format_context_json(context_data: Any) -> Dict[str, Any]:
+    """Convert context data to JSON format"""
+    # Handle TextBlock objects
+    if hasattr(context_data, "text"):
+        context_data = context_data.text
+    elif isinstance(context_data, list) and hasattr(context_data[0], "text"):
+        context_data = context_data[0].text
+
+    # Parse the text response into structured data
+    if isinstance(context_data, str):
+        lines = context_data.split("\n")
+    else:
+        lines = str(context_data).split("\n")
+
+    result = {"contexts": [], "current_state": {}}
+    current_context = None
+    in_state_summary = False
+
+    for line in lines:
+        line = line.strip()
+        if not line:
+            continue
+
+        # Handle context entries
+        if line.startswith("Entry ID:"):
+            if current_context:
+                result["contexts"].append(current_context)
+            current_context = {"id": line.split(":", 1)[1].strip()}
+        elif current_context and line.startswith("Timestamp:"):
+            current_context["timestamp"] = line.split(":", 1)[1].strip()
+        elif current_context and line.startswith("Actor:"):
+            current_context["actor"] = line.split(":", 1)[1].strip()
+        elif current_context and line.startswith("Change Reason:"):
+            current_context["reason"] = line.split(":", 1)[1].strip()
+        elif line.startswith("State summary:"):
+            in_state_summary = True
+            if current_context:
+                current_context["state"] = {}
+        elif in_state_summary and line.startswith("- "):
+            key, value = line[2:].split(":", 1)
+            key = key.strip().lower().replace(" ", "_")
+            value = value.strip()
+
+            # Convert lists
+            if "," in value:
+                value = [v.strip() for v in value.split(",")]
+            # Convert booleans
+            elif value.lower() in ["true", "false"]:
+                value = value.lower() == "true"
+
+            if current_context:
+                current_context["state"][key] = value
+            else:
+                result["current_state"][key] = value
+
+    # Add the last context if any
+    if current_context:
+        result["contexts"].append(current_context)
+
+    return result
 
 
 def main():
@@ -692,19 +690,19 @@ def main():
             result = manager.list_contexts()  # Already returns a dictionary
         elif args.command == "pop":
             result = manager.pop_context()
-            result = manager.format_context_json(result)  # Convert text to JSON
+            result = format_context_json(result)  # Convert text to JSON
         elif args.command == "search" and args.param:
             result = manager.search_contexts(args.param)
-            result = manager.format_context_json(result)  # Convert text to JSON
+            result = format_context_json(result)  # Convert text to JSON
         elif args.command == "restore" and args.param:
             result = manager.restore_context(args.param)
-            result = manager.format_context_json(result)  # Convert text to JSON
+            result = format_context_json(result)  # Convert text to JSON
         else:
             print("Invalid command or missing parameter")
             return
 
         # Format and display output
-        format_output(result, pretty=args.pretty, color=not args.no_color)  # noqa: E501
+        format_output(result, pretty=args.pretty, color=not args.no_color)
 
     except Exception as e:
         print(f"Error: {str(e)}")

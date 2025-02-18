@@ -1,0 +1,158 @@
+@prefix meta: <./meta#> .
+@prefix metameta: <./metameta#> .
+@prefix problem: <./problem#> .
+@prefix solution: <./solution#> .
+@prefix conversation: <./conversation#> .
+@prefix guidance: <./guidance#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix trace: <./traceability#> .
+@prefix ca: <./cortex_analyst#> .
+@prefix teams: <./cortexteams#> .
+@prefix deploy: <./deployment#> .
+
+# Traceability Ontology
+trace:TraceabilityOntology a owl:Ontology ;
+    rdfs:label "Schema Object Traceability" ;
+    rdfs:comment "Traces relationships between requirements, design, and implementation of schema objects" ;
+    owl:versionInfo "0.1.0" .
+
+# Infrastructure Classes
+trace:Infrastructure a owl:Class ;
+    rdfs:label "Infrastructure" ;
+    rdfs:comment "Infrastructure components like databases, schemas, warehouses" .
+
+trace:SecurityRole a owl:Class ;
+    rdfs:label "Security Role" ;
+    rdfs:comment "Security roles and permissions" .
+
+trace:DeploymentOrder a owl:Class ;
+    rdfs:label "Deployment Order" ;
+    rdfs:comment "Defines the order of deployment steps" .
+
+# Additional Properties
+trace:requiresRole a owl:ObjectProperty ;
+    rdfs:label "requires role" ;
+    rdfs:comment "Indicates that an operation requires a specific role" .
+
+trace:deploymentStep a owl:DatatypeProperty ;
+    rdfs:domain trace:DeploymentOrder ;
+    rdfs:range xsd:integer ;
+    rdfs:comment "The order in which components should be deployed" .
+
+# Infrastructure Components
+trace:CortexInfrastructure a trace:Infrastructure ;
+    rdfs:label "Cortex Infrastructure" ;
+    rdfs:comment "Core infrastructure for Cortex Analyst" ;
+    trace:deploymentStep "1"^^xsd:integer ;
+    trace:requiresRole trace:AdminRole ;
+    trace:implements [
+        a trace:Implementation ;
+        rdfs:label "Infrastructure SQL" ;
+        trace:dependsOn "cortex-analyst/create_schema.sql"
+    ] .
+
+trace:CortexUserRole a trace:SecurityRole ;
+    rdfs:label "Cortex User Role" ;
+    rdfs:comment "Role for Cortex Analyst users" ;
+    trace:deploymentStep "1"^^xsd:integer ;
+    trace:requiresRole trace:SecurityAdminRole .
+
+# Base Requirements
+ca:InfrastructureReq a trace:Requirement ;
+    rdfs:label "Infrastructure Requirements" ;
+    rdfs:comment "Core infrastructure requirements" ;
+    trace:satisfies trace:CortexInfrastructure .
+
+ca:SecurityReq a trace:Requirement ;
+    rdfs:label "Security Requirements" ;
+    rdfs:comment "Security and role requirements" ;
+    trace:satisfies trace:CortexUserRole .
+
+# Base Tables
+ca:BaseTablesReq a trace:Requirement ;
+    rdfs:label "Base Tables Requirements" ;
+    rdfs:comment "Core table structure requirements" ;
+    trace:deploymentStep "2"^^xsd:integer ;
+    trace:requiresRole trace:CortexUserRole ;
+    trace:satisfies [
+        a trace:Design ;
+        rdfs:label "Base Tables Design" ;
+        trace:implements [
+            a trace:Implementation ;
+            rdfs:label "Base Tables SQL" ;
+            trace:dependsOn "cortex-analyst/create_tables.sql"
+        ]
+    ] .
+
+# Teams Integration Requirements
+teams:TeamsIntegrationReq a trace:Requirement ;
+    rdfs:label "Teams Integration Requirements" ;
+    rdfs:comment "Requirements for Teams bot integration" ;
+    trace:deploymentStep "3"^^xsd:integer ;
+    trace:requiresRole trace:CortexUserRole ;
+    trace:dependsOn ca:BaseTablesReq ;
+    trace:satisfies [
+        a trace:Design ;
+        rdfs:label "Teams Schema Design" ;
+        trace:implements teams:TeamsDatabase
+    ] .
+
+# Semantic Layer Requirements
+ca:SemanticLayerReq a trace:Requirement ;
+    rdfs:label "Semantic Layer Requirements" ;
+    rdfs:comment "Semantic layer and view requirements" ;
+    trace:deploymentStep "4"^^xsd:integer ;
+    trace:requiresRole trace:CortexUserRole ;
+    trace:dependsOn ca:BaseTablesReq, teams:TeamsIntegrationReq ;
+    trace:satisfies [
+        a trace:Design ;
+        rdfs:label "Semantic Layer Design" ;
+        trace:implements [
+            a trace:Implementation ;
+            rdfs:label "Semantic Objects SQL" ;
+            trace:dependsOn "cortex-analyst/create_semantic_objects.sql"
+        ]
+    ] .
+
+# Data Loading Requirements
+ca:DataLoadingReq a trace:Requirement ;
+    rdfs:label "Data Loading Requirements" ;
+    rdfs:comment "Data loading and validation requirements" ;
+    trace:deploymentStep "5"^^xsd:integer ;
+    trace:requiresRole trace:CortexUserRole ;
+    trace:dependsOn ca:BaseTablesReq, teams:TeamsIntegrationReq, ca:SemanticLayerReq ;
+    trace:satisfies [
+        a trace:Design ;
+        rdfs:label "Data Loading Design" ;
+        trace:implements [
+            a trace:Implementation ;
+            rdfs:label "Data Loading SQL" ;
+            trace:dependsOn "cortex-analyst/load_data.sql"
+        ]
+    ] .
+
+# Implementation Dependencies
+teams:TeamsDatabase trace:implements [
+    a trace:Implementation ;
+    rdfs:label "Teams Tables SQL" ;
+    rdfs:comment "SQL implementation of Teams tables" ;
+    trace:dependsOn "cortex-analyst/create_teams_tables.sql"
+] .
+
+ca:RevenueModel trace:implements [
+    a trace:Implementation ;
+    rdfs:label "Semantic Objects SQL" ;
+    rdfs:comment "SQL implementation of semantic objects" ;
+    trace:dependsOn "cortex-analyst/create_semantic_objects.sql" ;
+    trace:dependsOn teams:TeamsDatabase
+] .
+
+# Validation Rules
+trace:SchemaValidationRule a trace:Test ;
+    rdfs:label "Schema Validation Rules" ;
+    rdfs:comment "Rules for validating schema object consistency" ;
+    trace:validates teams:TeamsDatabase, ca:RevenueModel ;
+    trace:requiresRole trace:CortexUserRole .
