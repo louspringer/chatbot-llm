@@ -1,4 +1,8 @@
 ---
+ontology: meta:ComplianceComponent
+implements: meta:TraceabilityRule
+requirement: REQ-VAL-001
+guidance: guidance:ValidationPatterns#TraceabilityPattern
 description: Enforce traceability between artifacts, ontologies, and requirements.
 globs: ["**/*.py", "**/*.ttl", "**/*.md", "**/*.sql", "**/*.sh", "**/*.yml", "**/*.yaml", "!.venv/**", "!venv/**", "!env/**", "!**/.git/**", "!**/node_modules/**", "!**/__pycache__/**", "!**/.pytest_cache/**", "!**/.ipynb_checkpoints/**"]
 ---
@@ -12,7 +16,10 @@ All artifacts (code, documentation, configuration, scripts) must be traceable to
 
 ## Required Header Format
 
-Every file must include a header in the appropriate comment style:
+Every file must include a header in the appropriate format:
+
+### For Code and Configuration Files
+Use language-appropriate comments:
 
 ```python
 # Ontology: chatbot:MLComponent
@@ -22,20 +29,17 @@ Every file must include a header in the appropriate comment style:
 # Description: Translates natural language queries to SQL using LLM
 ```
 
-```turtle
-# Ontology: meta:SecurityConcept
-# Implements: meta:AuthenticationConcept
-# Requirement: REQ-SEC-001 Secure credential management
-# Guidance: guidance:SecurityPatterns#AuthenticationPattern
-# Description: Defines security patterns for authentication
-```
+### For Markdown Files
+Use YAML frontmatter:
 
-```yaml
-# Ontology: deploy:Component
-# Implements: deploy:ConfigurationComponent
-# Requirement: REQ-DEP-001 Environment configuration
-# Guidance: guidance:DeploymentPatterns#ConfigurationManagement
-# Description: Deployment configuration for cloud resources
+```markdown
+---
+ontology: chatbot:MLComponent
+implements: chatbot:QueryTranslator
+requirement: REQ-ML-001
+guidance: guidance:MLPatterns#NLPComponent
+description: Translates natural language queries to SQL using LLM
+---
 ```
 
 ## Validation Rules
@@ -47,96 +51,19 @@ Every file must include a header in the appropriate comment style:
 
 2. Requirement References:
    - Must follow format: REQ-{DOMAIN}-{NUMBER}
-   - Domains: ML (Machine Learning), SEC (Security), DEP (Deployment) see [prefix_management.ttl](mdc:ontology-framework/prefix_management.ttl) and [prefix_validation.ttl](mdc:ontology-framework/prefix_validation.ttl) for the entire list and detals. If you have low confidence in the infered domain, or there is a conflict, create a new domain, prefix and ontology. The user can negotiate merging the ontology or making other changes at commit and test creation time.
-   - Must exist in and be referenced in @requirements.ttl and linked documentation, infer requirements and add them to requirements.ttl if needed.
+   - Domains: ML (Machine Learning), SEC (Security), DEP (Deployment)
+   - Must exist in requirements.ttl
 
 3. Guidance Pattern References:
-   - Must reference a pattern from [guidance.ttl](mdc:guidance.ttl)
+   - Must reference a pattern from guidance.ttl
    - Must use format: guidance:{PatternGroup}#{PatternName}
    - Pattern must be appropriate for the artifact type
 
 4. Implementation Details:
    - Must specify what is being implemented
    - Implementation must be a subclass/property of the ontology reference
-   - Must conform to the referenced guidance pattern [guidance.ttl](mdc:guidance.ttl)
+   - Must conform to the referenced guidance pattern
    - Description must explain the specific implementation
-
-## Examples
-
-### Python Class Implementation
-```python
-# Ontology: chatbot:MLComponent
-# Implements: chatbot:ModelManager
-# Requirement: REQ-ML-002 Model lifecycle management
-# Guidance: guidance:MLPatterns#ModelLifecycle
-# Description: Manages ML model versions and updates
-class ModelManager:
-    """Handles ML model lifecycle operations."""
-    pass
-```
-
-### Configuration File
-```yaml
-# Ontology: deploy:InfrastructureComponent
-# Implements: deploy:FunctionsApp
-# Requirement: REQ-DEP-003 Serverless function deployment
-# Guidance: guidance:DeploymentPatterns#ServerlessConfig
-# Description: Azure Functions configuration for bot hosting
-version: 1.0
-functions:
-  - name: bot_handler
-    type: python
-```
-
-### Shell Script
-```bash
-# Ontology: deploy:RuntimeDependency
-# Implements: deploy:PythonEnvironment
-# Requirement: REQ-DEP-002 Development environment setup
-# Guidance: guidance:DevOpsPatterns#EnvironmentSetup
-# Description: Sets up Python virtual environment with dependencies
-```
-
-## Validation Queries
-
-Use these SPARQL queries to validate traceability:
-
-```sparql
-# Find artifacts without guidance patterns
-SELECT ?file
-WHERE {
-  ?file a :Artifact .
-  FILTER NOT EXISTS { ?file :hasGuidancePattern ?pattern }
-}
-
-# Validate pattern compatibility
-SELECT ?file ?pattern ?artifactType
-WHERE {
-  ?file :hasGuidancePattern ?pattern ;
-        a ?artifactType .
-  ?pattern guidance:appliesTo ?validType .
-  FILTER NOT EXISTS { ?artifactType rdfs:subClassOf ?validType }
-}
-
-# Check complete traceability
-SELECT ?file
-WHERE {
-  ?file a :Artifact .
-  FILTER NOT EXISTS {
-    ?file :hasOntologyReference ?ref ;
-          :hasRequirement ?req ;
-          :hasGuidancePattern ?pattern
-  }
-}
-
-# Validate pattern implementation
-SELECT ?file ?pattern ?violation
-WHERE {
-  ?file :hasGuidancePattern ?pattern .
-  ?pattern guidance:hasConstraint ?constraint .
-  ?file guidance:violatesConstraint ?violation .
-}
-```
 
 ## Error Prevention
 

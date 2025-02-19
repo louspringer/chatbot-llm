@@ -53,8 +53,9 @@ repos:
       name: guidance-compliance
       entry: python tools/check_compliance.py
       language: python
-      files: (^[^/]+\.(py|ttl|yml|yaml|md|sh)$|^(tools/|tests/|teams_bot/|cortex_analyst/|deployment/|docs/)\S+\.(py|ttl|yml|yaml|md|sh)$)
-      exclude: ^\.venv/
+      additional_dependencies: [pyyaml]
+      types: [text]
+      exclude: ^(.git/|.venv/|venv/|env/|node_modules/|__pycache__/|.pytest_cache/|.ipynb_checkpoints/)
 
 default_language_version:
     python: python3
