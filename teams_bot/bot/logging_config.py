@@ -70,11 +70,11 @@ class ContextFilter(logging.Filter):
 class TeamsLogFormatter(logging.Formatter):
     """Custom formatter for Teams bot logging."""
 
-    def __init__(self, fmt=None):
-        """Initialize the formatter with a default format that includes the log level."""
+    def __init__(self, fmt: Optional[str] = None):
+        """Initialize the formatter with optional format string."""
         if fmt is None:
             fmt = "%(levelname)s - %(message)s"
-        super().__init__(fmt)
+        super().__init__(fmt=fmt)
 
     def format(self, record: logging.LogRecord) -> str:
         """Format the record with context data."""
