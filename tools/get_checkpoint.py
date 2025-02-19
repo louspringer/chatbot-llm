@@ -6,7 +6,7 @@ Tool to query and display checkpoint information from session.ttl
 # Implements: SessionCheckpoint
 # Requirement: REQ-CHECKPOINT-001
 # Guidance: guidance.ttl#CheckpointManagement
-# Description: Provides tools for managing and querying checkpoint information in the session
+# Description: Tools for managing and querying session checkpoints
 """
 
 import logging
@@ -27,15 +27,16 @@ def clean_uri(uri):
     uuid_pattern = r"^[a-f0-9]{32}b\d+$"
     n_uuid_pattern = r"^n[a-f0-9]{32}b\d+$"
     uuid_dash_pattern = (
-        r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-"
-        r"[0-9a-f]{12}$"
+        r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-" r"[0-9a-f]{12}$"
     )
 
-    if (
-        re.match(uuid_pattern, uri)
-        or re.match(n_uuid_pattern, uri)
-        or re.match(uuid_dash_pattern, uri)
-    ):
+    # Check for UUID matches
+    uuid_matches = [
+        uuid_pattern,
+        n_uuid_pattern,
+        uuid_dash_pattern,
+    ]
+    if any(re.match(pattern, uri) for pattern in uuid_matches):
         return "<internal-reference>"
 
     # Warn about absolute paths - they should never be used

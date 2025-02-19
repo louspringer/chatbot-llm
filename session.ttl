@@ -1,8 +1,8 @@
-# Ontology: chatbot.ttl
-# Implements: SessionManagement
-# Requirement: REQ-SESSION-001
-# Guidance: guidance:SessionManagementPattern
-# Description: Manages session state and tracking for the chatbot
+# Ontology: session.ttl
+# Implements: SessionManagementPattern
+# Requirement: REQ-001-SESSION-TRACKING
+# Guidance: guidance:SessionLoggingPattern
+# Description: Tracks the current session state and context changes
 
 @prefix : <file:///Users/lou/Documents/chatbot-llm/session#> .
 

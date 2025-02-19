@@ -1,11 +1,11 @@
-# Ontology: chatbot.ttl
-# Implements: SessionLogging
-# Requirement: REQ-SESSION-002
+# Ontology: session_log.ttl
+# Implements: SessionLoggingPattern
+# Requirement: REQ-002-SESSION-HISTORY
 # Guidance: guidance:SessionLoggingPattern
-# Description: Maintains a log of all session changes and state transitions
+# Description: Maintains a log of all session changes and context switches
 
-@prefix : <file:///private/var/folders/hg/zvfs15m17550vl6qnf_q010w0000gn/T/pytest-of-lou/pytest-17/test_update_session_and_log0/session_log#> .
-@prefix guidance: <file:///private/var/folders/hg/zvfs15m17550vl6qnf_q010w0000gn/T/pytest-of-lou/pytest-17/test_update_session_and_log0/guidance#> .
+@prefix : <file:///private/var/folders/hg/zvfs15m17550vl6qnf_q010w0000gn/T/pytest-of-lou/pytest-27/test_update_session_and_log0/session_log#> .
+@prefix guidance: <file:///private/var/folders/hg/zvfs15m17550vl6qnf_q010w0000gn/T/pytest-of-lou/pytest-27/test_update_session_and_log0/guidance#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
