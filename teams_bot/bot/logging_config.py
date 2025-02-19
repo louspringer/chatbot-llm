@@ -14,6 +14,9 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Generator, Optional
 
+# Constants
+MAX_LOG_SIZE = 10 * 1024 * 1024  # 10MB
+
 
 @dataclass
 class LogContext:
@@ -66,6 +69,12 @@ class ContextFilter(logging.Filter):
 
 class TeamsLogFormatter(logging.Formatter):
     """Custom formatter for Teams bot logging."""
+
+    def __init__(self, fmt=None):
+        """Initialize the formatter with a default format that includes the log level."""
+        if fmt is None:
+            fmt = "%(levelname)s - %(message)s"
+        super().__init__(fmt)
 
     def format(self, record: logging.LogRecord) -> str:
         """Format the record with context data."""
@@ -131,7 +140,9 @@ def configure_logging(
 
         # Create rotating file handler
         file_handler = logging.handlers.RotatingFileHandler(
-            log_file, maxBytes=10 * 1024 * 1024, backupCount=5  # 10MB
+            log_file,
+            maxBytes=MAX_LOG_SIZE,
+            backupCount=5,
         )
         file_handler.setFormatter(formatter)
         file_handler.addFilter(context_filter)
