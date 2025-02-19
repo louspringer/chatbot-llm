@@ -1,52 +1,95 @@
 ---
-ontology: meta:DocumentationComponent
-implements: meta:PRDescription
-requirement: REQ-DOC-001
-guidance: guidance:DocumentationPatterns#PRFormat
-description: Pull request description for guidance pattern updates
+ontology: guidance:PRManagementPattern
+implements: guidance:BestPractice
+requirement: REQ-ONTO-001
+guidance: guidance:OntologyEvolution#PatternAddition
+description: Add PR management and GitHub integration patterns to guidance.ttl
 ---
 
-## Description
+# PR Management Patterns Addition 🔧
 
-Updates to logging configuration and session management
+## Overview 🎯
 
-### Changes
+This PR adds comprehensive PR management and GitHub integration patterns to `guidance.ttl`. These patterns provide structured guidance for PR templates, branch naming, review processes, and validation requirements.
 
-- Modified logging configuration in teams_bot
-- Added session tracking files (session.ttl, session_log.ttl)
-- Updated submodules (cortex-analyst, ontology-framework)
-- Added markdown frontmatter support to guidance patterns
-- Updated compliance checker to support YAML frontmatter
+## Changes 📝
 
-### Ontology Changes
+### Added PR Management Pattern Classes
 
-- Added session tracking ontologies
-- Added markdown formatting directives to guidance.ttl
-- Version: 1.0.1 (added markdown frontmatter support)
+- `PRManagementPattern`: Base class for PR management
+- `PRTemplate`: Template structure for PRs
+- `BranchStrategy`: Branch management and naming
+- `ReviewProcess`: Code review and approval process
 
-### Test Coverage
+### Added Properties
 
-- Existing tests remain unchanged
-- New session tracking functionality covered by ontology validation
-- Added YAML frontmatter validation to compliance checker
+- Object Properties:
+  - `hasTemplate`: Links to PR templates
+  - `hasBranchStrategy`: Links to branch strategy
+  - `hasReviewProcess`: Links to review process
+- Data Properties:
+  - `requiresOntologyHeader`: Boolean for ontology headers
+  - `requiresTestCoverage`: Decimal for test coverage
+  - `branchNamingFormat`: String for branch naming
+  - `requiredReviewers`: Integer for reviewer count
 
-### Security Considerations
+### Added Rules
 
-- No sensitive information in logging or session tracking
-- All environment variables properly managed
-- No credentials exposed
+- `PRTemplateRule`: Structure and requirements for PR templates
+- `BranchNamingRule`: Branch naming conventions
+- `ReviewProcessRule`: Review process requirements
 
-### Dependencies
+### Added Instance
 
-- Added pyyaml for frontmatter parsing
-- Updated submodule dependencies
+- `prManagementGuidance`: Example instance with:
+  - Required ontology headers
+  - 80% test coverage requirement
+  - Branch naming format
+  - One required reviewer
 
-### Checklist
+### Added SHACL Validation
 
-- [x] Code follows project style guidelines
-- [x] Documentation updated
-- [x] Tests passing
-- [x] Security review completed
-- [x] Ontology changes validated
-- [x] Session tracking implemented
-- [x] YAML frontmatter support tested
+- `PRManagementShape`: Validates PR management patterns
+
+## Dependencies 📦
+
+- No new dependencies added
+- Uses existing SHACL validation framework
+
+## Testing Instructions 🔍
+
+1. Validate ontology:
+
+   ```bash
+   python tools/validate_guidance.py
+   ```
+
+2. Verify SHACL validation:
+
+   ```bash
+   python tools/validate_shacl.py guidance.ttl
+   ```
+
+3. Check pattern integration:
+
+   ```bash
+   python tools/test_pattern_integration.py
+   ```
+
+## Validation ✅
+
+- [x] SHACL validation passes
+- [x] Pattern integration verified
+- [x] No circular dependencies
+- [x] Documentation complete
+- [x] Examples provided
+
+## Related Issues 🔗
+
+- Resolves #40 - Add PR management and GitHub integration patterns
+
+## Notes 📌
+
+- This pattern will be used to validate future PRs
+- Provides foundation for automated PR validation
+- Can be extended with additional rules as needed
