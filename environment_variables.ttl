@@ -1,0 +1,183 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix meta: <./meta#> .
+@prefix metameta: <./metameta#> .
+@prefix problem: <./problem#> .
+@prefix solution: <./solution#> .
+@prefix conversation: <./conversation#> .
+@prefix guidance: <./guidance#> .
+@prefix env: <./environment_variables#> .
+@prefix config: <./config_management#> .
+@prefix deploy: <./deployment_config#> .
+
+# Ontology: cortexteams:EnvironmentVariables
+# Implements: cortexteams:Configuration
+# Requirement: REQ-ENV-001 Environment Variable Management
+# Guidance: guidance:BotPatterns#Configuration
+# Description: Environment variable definitions and management for the Teams bot
+
+# Ontology Definition
+env:EnvironmentVariablesOntology rdf:type owl:Ontology ;
+    rdfs:label "Environment Variables Ontology" ;
+    rdfs:comment "Centralized ontology for environment variable definitions and management" ;
+    owl:versionInfo "1.0.0" ;
+    owl:imports <./guidance>, <./meta>, <./config_management>, <./deployment_config> .
+
+# Core Classes
+env:EnvironmentVariable rdf:type owl:Class ;
+    rdfs:label "Environment Variable" ;
+    rdfs:comment "A system environment variable used in the application" ;
+    rdfs:subClassOf config:ConfigurationItem .
+
+env:VariableGroup rdf:type owl:Class ;
+    rdfs:label "Variable Group" ;
+    rdfs:comment "A logical grouping of related environment variables" .
+
+# Properties
+env:hasDefaultValue rdf:type owl:DatatypeProperty ;
+    rdfs:label "has default value" ;
+    rdfs:domain env:EnvironmentVariable ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Default value for the environment variable" .
+
+env:isRequired rdf:type owl:DatatypeProperty ;
+    rdfs:label "is required" ;
+    rdfs:domain env:EnvironmentVariable ;
+    rdfs:range xsd:boolean ;
+    rdfs:comment "Whether the environment variable is required" .
+
+env:belongsToGroup rdf:type owl:ObjectProperty ;
+    rdfs:label "belongs to group" ;
+    rdfs:domain env:EnvironmentVariable ;
+    rdfs:range env:VariableGroup ;
+    rdfs:comment "Groups related environment variables" .
+
+env:usedInComponent rdf:type owl:ObjectProperty ;
+    rdfs:label "used in component" ;
+    rdfs:domain env:EnvironmentVariable ;
+    rdfs:range deploy:DeploymentArtifact ;
+    rdfs:comment "Links environment variables to deployment artifacts that use them" .
+
+# Variable Groups
+env:SnowflakeGroup rdf:type env:VariableGroup ;
+    rdfs:label "Snowflake Configuration" ;
+    rdfs:comment "Snowflake-related environment variables" .
+
+env:TeamsGroup rdf:type env:VariableGroup ;
+    rdfs:label "Teams Bot Configuration" ;
+    rdfs:comment "Teams Bot-related environment variables" .
+
+env:SecurityGroup rdf:type env:VariableGroup ;
+    rdfs:label "Security Configuration" ;
+    rdfs:comment "Security-related environment variables" .
+
+env:LoggingGroup rdf:type env:VariableGroup ;
+    rdfs:label "Logging Configuration" ;
+    rdfs:comment "Logging-related environment variables" .
+
+# Environment Variables
+env:SNOWFLAKE_ROLE rdf:type env:EnvironmentVariable ;
+    rdfs:label "SNOWFLAKE_ROLE" ;
+    rdfs:comment "Snowflake role for deployment" ;
+    env:hasDefaultValue "cortex_user_role" ;
+    env:isRequired true ;
+    env:belongsToGroup env:SnowflakeGroup ;
+    env:usedInComponent deploy:DeployScript ;
+    owl:sameAs deploy:RoleVar .
+
+env:SNOWFLAKE_DATABASE rdf:type env:EnvironmentVariable ;
+    rdfs:label "SNOWFLAKE_DATABASE" ;
+    rdfs:comment "Snowflake database name" ;
+    env:hasDefaultValue "cortex_analyst_demo" ;
+    env:isRequired true ;
+    env:belongsToGroup env:SnowflakeGroup ;
+    env:usedInComponent deploy:DeployScript ;
+    owl:sameAs deploy:DatabaseVar .
+
+env:SNOWFLAKE_SCHEMA rdf:type env:EnvironmentVariable ;
+    rdfs:label "SNOWFLAKE_SCHEMA" ;
+    rdfs:comment "Snowflake schema name" ;
+    env:hasDefaultValue "revenue_timeseries" ;
+    env:isRequired true ;
+    env:belongsToGroup env:SnowflakeGroup ;
+    env:usedInComponent deploy:DeployScript ;
+    owl:sameAs deploy:SchemaVar .
+
+env:TEAMS_BOT_ID rdf:type env:EnvironmentVariable ;
+    rdfs:label "TEAMS_BOT_ID" ;
+    rdfs:comment "Teams Bot application ID" ;
+    env:isRequired true ;
+    env:belongsToGroup env:TeamsGroup ;
+    env:usedInComponent deploy:EnvFile .
+
+env:TEAMS_BOT_PASSWORD rdf:type env:EnvironmentVariable ;
+    rdfs:label "TEAMS_BOT_PASSWORD" ;
+    rdfs:comment "Teams Bot application password" ;
+    env:isRequired true ;
+    env:belongsToGroup env:TeamsGroup ;
+    env:usedInComponent deploy:EnvFile .
+
+env:DEBUG rdf:type env:EnvironmentVariable ;
+    rdfs:label "DEBUG" ;
+    rdfs:comment "Debug mode flag" ;
+    env:hasDefaultValue "false" ;
+    env:isRequired false ;
+    env:belongsToGroup env:LoggingGroup ;
+    env:usedInComponent deploy:EnvFile .
+
+env:LOG_LEVEL rdf:type env:EnvironmentVariable ;
+    rdfs:label "LOG_LEVEL" ;
+    rdfs:comment "Logging level" ;
+    env:hasDefaultValue "INFO" ;
+    env:isRequired false ;
+    env:belongsToGroup env:LoggingGroup ;
+    env:usedInComponent deploy:EnvFile .
+
+env:ANTHROPIC_API_KEY rdf:type env:EnvironmentVariable ;
+    rdfs:label "ANTHROPIC_API_KEY" ;
+    rdfs:comment "Anthropic API key for Claude" ;
+    env:isRequired true ;
+    env:belongsToGroup env:SecurityGroup ;
+    env:usedInComponent deploy:EnvFile .
+
+# SHACL Validation
+env:EnvironmentVariableShape rdf:type sh:NodeShape ;
+    sh:targetClass env:EnvironmentVariable ;
+    sh:property [
+        sh:path rdfs:label ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:pattern "^[A-Z][A-Z0-9_]*$" ;
+        sh:message "Environment variable name must be uppercase with underscores"
+    ] ;
+    sh:property [
+        sh:path env:isRequired ;
+        sh:minCount 1 ;
+        sh:datatype xsd:boolean ;
+        sh:message "Must specify if variable is required"
+    ] ;
+    sh:property [
+        sh:path env:belongsToGroup ;
+        sh:minCount 1 ;
+        sh:class env:VariableGroup ;
+        sh:message "Must belong to a variable group"
+    ] ;
+    sh:property [
+        sh:path env:usedInComponent ;
+        sh:minCount 1 ;
+        sh:class deploy:DeploymentArtifact ;
+        sh:message "Must specify which component uses this variable"
+    ] .
+
+# TODO Section
+###
+# Future Enhancements:
+# 1. Add validation rules for variable value formats
+# 2. Add support for environment-specific values (dev/staging/prod)
+# 3. Add dependency tracking between variables
+# 4. Add secret rotation requirements for sensitive variables
+# 5. Add documentation on variable usage patterns
+###
