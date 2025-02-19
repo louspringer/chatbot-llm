@@ -17,35 +17,28 @@ This PR adds comprehensive PR management and GitHub integration patterns to `gui
 ### Added PR Management Pattern Classes
 
 - `PRManagementPattern`: Base class for PR management
-- `PRTemplate`: Template structure for PRs
-- `BranchStrategy`: Branch management and naming
-- `ReviewProcess`: Code review and approval process
+- `PRTemplate`: Template for PR descriptions and requirements
+- `BranchStrategy`: Strategy for branch naming and management
+- `ReviewProcess`: Process for reviewing and approving PRs
 
 ### Added Properties
 
 - Object Properties:
-  - `hasTemplate`: Links to PR templates
-  - `hasBranchStrategy`: Links to branch strategy
-  - `hasReviewProcess`: Links to review process
+  - `hasTemplate`: Links pattern to PR template
+  - `hasBranchStrategy`: Links pattern to branch strategy
+  - `hasReviewProcess`: Links pattern to review process
 - Data Properties:
   - `requiresOntologyHeader`: Boolean for ontology headers
-  - `requiresTestCoverage`: Decimal for test coverage
-  - `branchNamingFormat`: String for branch naming
-  - `requiredReviewers`: Integer for reviewer count
-
-### Added Rules
-
-- `PRTemplateRule`: Structure and requirements for PR templates
-- `BranchNamingRule`: Branch naming conventions
-- `ReviewProcessRule`: Review process requirements
+  - `requiresTestCoverage`: Boolean for test coverage
+  - `branchNameFormat`: String for branch naming format
 
 ### Added Instance
 
 - `prManagementGuidance`: Example instance with:
   - Required ontology headers
-  - 80% test coverage requirement
-  - Branch naming format
-  - One required reviewer
+  - Test coverage requirements
+  - Feature branch naming format
+  - Review process with approval and test requirements
 
 ### Added SHACL Validation
 
