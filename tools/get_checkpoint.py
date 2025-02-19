@@ -1,6 +1,12 @@
 #!/usr/bin/env python3
 """
 Tool to query and display checkpoint information from session.ttl
+
+# Ontology: session.ttl
+# Implements: SessionCheckpoint
+# Requirement: REQ-CHECKPOINT-001
+# Guidance: guidance.ttl#CheckpointManagement
+# Description: Provides tools for managing and querying checkpoint information in the session
 """
 
 import logging
@@ -17,11 +23,25 @@ def clean_uri(uri):
     # Convert to string if not already
     uri = str(uri)
 
+    # Handle UUID-like strings
+    uuid_pattern = r"^[a-f0-9]{32}b\d+$"
+    n_uuid_pattern = r"^n[a-f0-9]{32}b\d+$"
+    uuid_dash_pattern = (
+        r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-"
+        r"[0-9a-f]{12}$"
+    )
+
+    if (
+        re.match(uuid_pattern, uri)
+        or re.match(n_uuid_pattern, uri)
+        or re.match(uuid_dash_pattern, uri)
+    ):
+        return "<internal-reference>"
+
     # Warn about absolute paths - they should never be used
     if uri.startswith("file:///"):
         logging.warning(
-            "Found absolute path URI - "
-            "these should be relative to project root"
+            "Found absolute path URI - these should be relative to project root"
         )
 
     # Handle paths - always use relative paths
@@ -110,61 +130,150 @@ def get_readable_value(g, node):
     return clean_node_id(str(node))
 
 
-def get_checkpoint_prompt(g, base_path):
+def collect_requirements(g, task, predicate):
+    """Collect requirements from a task node using the specified predicate."""
+    requirements = []
+    for _, _, req_node in g.triples((task, predicate, None)):
+        # Get the requirement text directly from the requirement node
+        req_predicate = URIRef(
+            str(predicate).replace("promptRequirements", "requirement")
+        )
+        req_text = g.value(req_node, req_predicate)
+        if req_text:
+            requirements.append(str(req_text))
+    return requirements
+
+
+def format_component_value(value, predicate=None):
+    """Format a component value based on its predicate."""
+    if not value:
+        return ""
+
+    # Handle prefix declarations
+    if value.startswith("@prefix"):
+        return "\n".join("    " + line for line in value.split("\n"))
+
+    # Format based on predicate type
+    if predicate:
+        if "requiredFiles" in predicate:
+            return f"File: {value}"
+        elif "branch" in predicate:
+            return f"Branch: {value}"
+        elif "issue" in predicate and "Title" not in predicate:
+            return f"Issue #{value}"
+        elif "issueTitle" in predicate:
+            return f"Title: {value}"
+
+    return str(value)
+
+
+def get_checkpoint_components(g, namespace):
+    """Get components and their details from a checkpoint."""
+    components = {}
+
+    # Get current checkpoint
+    checkpoint = None
+    for uri in [
+        URIRef(str(namespace) + "currentCheckpoint"),
+        URIRef("./session#currentCheckpoint"),
+        URIRef("#currentCheckpoint"),
+    ]:
+        if any(g.triples((uri, None, None))):
+            checkpoint = uri
+            break
+
+    if not checkpoint:
+        return {}
+
+    # Get all components linked to the checkpoint
+    for _, _, component in g.triples((checkpoint, namespace.hasComponent, None)):
+        # Get component label
+        label = g.value(component, RDFS.label)
+        if not label:
+            continue
+
+        label = str(label)
+        components[label] = []
+
+        # Get component priority
+        priority = g.value(component, namespace.componentPriority)
+        priority = int(priority) if priority else 999
+
+        # Collect all predicates and values for this component
+        for _, pred, obj in g.triples((component, None, None)):
+            if pred in [RDF.type, RDFS.label, namespace.componentPriority]:
+                continue
+
+            value = format_component_value(str(obj), str(pred))
+            if value:
+                components[label].append((priority, value))
+
+        # Sort details by priority
+        components[label].sort(key=lambda x: x[0])
+
+    return components
+
+
+def validate_prompt_state(g, checkpoint, namespace):
+    """Validate the prompt state of a checkpoint."""
+    warnings = []
+    is_valid = True
+
+    # Check if checkpoint has a prompt state
+    prompt_states = list(g.objects(checkpoint, namespace.hasPromptState))
+    if not prompt_states:
+        warnings.append("Checkpoint missing prompt state")
+        return False, warnings
+
+    prompt_state = prompt_states[0]
+
+    # Check last updated timestamp
+    last_updated = g.value(prompt_state, namespace.lastUpdated)
+    if last_updated:
+        from datetime import datetime, timedelta, timezone
+
+        try:
+            timestamp = datetime.fromisoformat(str(last_updated))
+            if timestamp < datetime.now(timezone.utc) - timedelta(days=7):
+                warnings.append("Prompt state is stale (>7 days old)")
+        except ValueError:
+            warnings.append("Invalid timestamp format")
+
+    # Check linked task
+    task = g.value(prompt_state, namespace.linkedTask)
+    if not task:
+        warnings.append("No task linked to prompt state")
+    else:
+        # Check if task requires prompt update
+        requires_update = g.value(task, namespace.requiresPromptUpdate)
+        if requires_update and str(requires_update).lower() == "true":
+            warnings.append("Task requires prompt update")
+
+    return is_valid, warnings
+
+
+def get_checkpoint_prompt(g, namespace):
     """Generate a checkpoint prompt from the graph."""
-    SESSION = Namespace("file://" + base_path + "/session#")
-    prompt_parts = []
+    # Get current checkpoint
+    checkpoint = None
+    for uri in [
+        URIRef(str(namespace) + "currentCheckpoint"),
+        URIRef("./session#currentCheckpoint"),
+        URIRef("#currentCheckpoint"),
+    ]:
+        if any(g.triples((uri, None, None))):
+            checkpoint = uri
+            break
 
-    # Get current context
-    current_context = g.value(None, RDF.type, SESSION.CurrentContext)
+    if not checkpoint:
+        return None
 
-    # Get task progress
-    if current_context:
-        task_progress = []
-        for s, p, o in g.triples(
-            (current_context, SESSION.taskProgress, None)
-        ):
-            value = get_readable_value(g, o)
-            if value:  # Only add non-empty values
-                task_progress.append(value)
+    # Get resumption prompt
+    prompt = g.value(checkpoint, namespace.resumptionPrompt)
+    if not prompt:
+        return None
 
-        if task_progress:
-            prompt_parts.append("\nRecent Progress:")
-            for item in task_progress:
-                prompt_parts.append(f"- {item}")
-
-    # Get blocking issues
-    blocking_issues = []
-    for s, p, o in g.triples((None, SESSION.blockingIssues, None)):
-        value = get_readable_value(g, o)
-        if value:  # Only add non-empty values
-            blocking_issues.append(value)
-
-    if blocking_issues:
-        prompt_parts.append("\nBlocking Issues:")
-        for issue in blocking_issues:
-            prompt_parts.append(f"- {issue}")
-
-    # Get next steps
-    next_steps = []
-    for s, p, o in g.triples((None, SESSION.nextSteps, None)):
-        value = get_readable_value(g, o)
-        if value:  # Only add non-empty values
-            next_steps.append(value)
-
-    if next_steps:
-        prompt_parts.append("\nNext Steps:")
-        for step in next_steps:
-            prompt_parts.append(f"- {step}")
-
-    # Get current task
-    current_task = g.value(None, RDF.type, SESSION.Task)
-    if current_task:
-        task_label = get_readable_value(g, current_task)
-        if task_label:  # Only add if we have a valid label
-            prompt_parts.append(f"\nHow can I help you with: {task_label}")
-
-    return "\n".join(prompt_parts)
+    return str(prompt)
 
 
 def main():
@@ -198,7 +307,7 @@ def main():
             break
 
     if checkpoint:
-        prompt = get_checkpoint_prompt(g, base_path)
+        prompt = get_checkpoint_prompt(g, SESSION)
         if prompt:
             print("\n=== Current Checkpoint Prompt ===\n")
             print(prompt)
