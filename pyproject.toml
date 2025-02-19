@@ -1,3 +1,9 @@
+# Ontology: package_management.ttl
+# Implements: ProjectConfiguration
+# Requirement: REQ-PKG-001
+# Guidance: guidance.ttl#PackageManagement
+# Description: Project configuration for build, dependencies, and tools
+
 [build-system]
 requires = [ "setuptools>=65.0.0", "wheel>=0.40.0",]
 build-backend = "setuptools.build_meta"
@@ -35,7 +41,8 @@ ensure_newline_before_comments = true
 line_length = 88
 
 [tool.pytest.ini_options]
-testpaths = [ "tests",]
-python_files = [ "test_*.py",]
+# Note: src/chatbot_llm/tests contains shell scripts, not Python tests
+testpaths = ["tests", "teams_bot/tests", "tools/tests"]
+python_files = ["test_*.py"]
 addopts = "-ra -q"
 markers = [ "integration: marks tests that interact with real packages and external services",]
