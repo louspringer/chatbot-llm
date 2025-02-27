@@ -34,7 +34,9 @@ class SecurityCheck:
         self.graph = graph
 
     def check_package_security(
-        self, package_name: str, version_str: str
+        self,
+        package_name: str,
+        version_str: str,
     ) -> Tuple[bool, Optional[Dict]]:
         """Check package security using safety DB and update ontology."""
         try:
@@ -102,7 +104,10 @@ class PackageManager:
         logger.debug(f"Loaded {len(self.graph)} triples")
 
     def validate_package_request(
-        self, package_name: str, version: str, dependency_type: str
+        self,
+        package_name: str,
+        version: str,
+        dependency_type: str,
     ) -> bool:
         """Validates package addition against ontology rules."""
         # Check if package type is valid
@@ -126,7 +131,9 @@ class PackageManager:
         return True
 
     def _check_dependency_constraints(
-        self, package_name: str, version_str: str
+        self,
+        package_name: str,
+        version_str: str,
     ) -> bool:
         """Check if the requested version satisfies all dependency
         constraints.
@@ -164,18 +171,18 @@ class PackageManager:
             # Perform security check
             security = SecurityCheck(self.graph)
             is_secure, vulns = security.check_package_security(
-                package_name, version_str
+                package_name,
+                version_str,
             )
 
             if not is_secure and vulns:
                 logger.error(
                     f"Security vulnerabilities found in {package_name} "
-                    f"version {version_str}:"
+                    f"version {version_str}:",
                 )
                 for vuln in vulns:
                     vuln_msg = (
-                        f"  - {vuln['vulnerability_id']}: "
-                        f"{vuln['description']}"
+                        f"  - {vuln['vulnerability_id']}: " f"{vuln['description']}"
                     )
                     logger.error(vuln_msg)
                 return False
@@ -226,7 +233,9 @@ class PackageManager:
         logger.info(f"Using conda: {use_conda}")
 
         if not self.validate_package_request(
-            package_name, version, dependency_type
+            package_name,
+            version,
+            dependency_type,
         ):
             return False
 
@@ -266,7 +275,10 @@ class PackageManager:
         subprocess.run(cmd, check=True)
 
     def _add_pip_package(
-        self, package_name: str, version: str, dependency_type: str
+        self,
+        package_name: str,
+        version: str,
+        dependency_type: str,
     ):
         """Adds package to pyproject.toml and installs it."""
         with open(self.pyproject_path, "r") as f:
@@ -281,7 +293,8 @@ class PackageManager:
             if "optional-dependencies" not in pyproject["project"]:
                 pyproject["project"]["optional-dependencies"] = {}
             dev_deps = pyproject["project"]["optional-dependencies"].get(
-                "dev", []
+                "dev",
+                [],
             )
             dev_deps.append(f"{package_name}>={version}")
             pyproject["project"]["optional-dependencies"]["dev"] = dev_deps
@@ -293,7 +306,10 @@ class PackageManager:
         subprocess.run(["pip", "install", "-e", "."], check=True)
 
     def _update_ontology(
-        self, package_name: str, version: str, dependency_type: str
+        self,
+        package_name: str,
+        version: str,
+        dependency_type: str,
     ):
         """Updates package management ontology with new package."""
         pkg_uri = PKG[package_name.replace("-", "_")]
@@ -310,7 +326,9 @@ class PackageManager:
             # Run tests
             logger.info("Running test suite...")
             result = subprocess.run(
-                ["pytest"], check=True, capture_output=True
+                ["pytest"],
+                check=True,
+                capture_output=True,
             )
             if result.returncode != 0:
                 logger.error("Test suite failed")
@@ -320,7 +338,8 @@ class PackageManager:
             logger.info("Checking for security vulnerabilities...")
             try:
                 result = subprocess.run(
-                    ["safety", "check"], capture_output=True
+                    ["safety", "check"],
+                    capture_output=True,
                 )
                 if result.returncode != 0:
                     # Log warnings but don't fail for security issues
@@ -332,7 +351,7 @@ class PackageManager:
                 # Safety command not found - this is a bootstrap dependency
                 logger.warning(
                     "Safety package not found. This is a bootstrap dependency "
-                    "that needs to be installed first."
+                    "that needs to be installed first.",
                 )
                 logger.warning("Installing safety package...")
                 subprocess.run(
@@ -341,7 +360,8 @@ class PackageManager:
                 )
                 # Retry security check
                 result = subprocess.run(
-                    ["safety", "check"], capture_output=True
+                    ["safety", "check"],
+                    capture_output=True,
                 )
                 if result.returncode != 0:
                     logger.warning(
@@ -363,7 +383,10 @@ class PackageManager:
         return (pkg_uri, RDF.type, PKG.Package) in self.graph
 
     def update_package(
-        self, package_name: str, version: str, use_conda: bool = True
+        self,
+        package_name: str,
+        version: str,
+        use_conda: bool = True,
     ) -> bool:
         """Updates an existing package to a new version."""
         logger.info(f"Updating package {package_name} to version {version}")
@@ -381,8 +404,10 @@ class PackageManager:
             # Get current dependency type
             pkg_uri = PKG[package_name.replace("-", "_")]
             dependency_type = str(
-                self.graph.value(pkg_uri, PKG.dependencyType)
-            ).split("#")[-1]
+                self.graph.value(pkg_uri, PKG.dependencyType),
+            ).split(
+                "#"
+            )[-1]
 
             if use_conda:
                 self._add_conda_package(package_name, version)
@@ -418,10 +443,14 @@ def main():
         help="Dependency type",
     )
     parser.add_argument(
-        "--no-conda", action="store_true", help="Use pip instead of conda"
+        "--no-conda",
+        action="store_true",
+        help="Use pip instead of conda",
     )
     parser.add_argument(
-        "--debug", action="store_true", help="Enable debug logging"
+        "--debug",
+        action="store_true",
+        help="Enable debug logging",
     )
 
     args = parser.parse_args()
@@ -442,12 +471,17 @@ def main():
 
     if args.action == "add":
         success = manager.add_package(
-            args.package, args.version, type_map[args.type], not args.no_conda
+            args.package,
+            args.version,
+            type_map[args.type],
+            not args.no_conda,
         )
         sys.exit(0 if success else 1)
     elif args.action == "update":
         success = manager.update_package(
-            args.package, args.version, not args.no_conda
+            args.package,
+            args.version,
+            not args.no_conda,
         )
         sys.exit(0 if success else 1)
     else:

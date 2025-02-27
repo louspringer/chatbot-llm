@@ -156,7 +156,13 @@ def test_context_filter():
     """Test context filter functionality."""
     context_filter = ContextFilter()
     record = logging.LogRecord(
-        "test", logging.INFO, "test.py", 10, "Test message", None, None
+        "test",
+        logging.INFO,
+        "test.py",
+        10,
+        "Test message",
+        None,
+        None,
     )
 
     # Test without context
@@ -174,7 +180,13 @@ def test_teams_log_formatter():
     """Test Teams log formatter."""
     formatter = TeamsLogFormatter()
     record = logging.LogRecord(
-        "test", logging.INFO, "test.py", 10, "Test message", None, None
+        "test",
+        logging.INFO,
+        "test.py",
+        10,
+        "Test message",
+        None,
+        None,
     )
 
     # Test basic formatting

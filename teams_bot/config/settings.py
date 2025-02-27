@@ -6,7 +6,7 @@ import asyncio
 import logging
 import os
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Optional
 
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
@@ -83,7 +83,9 @@ def get_snowflake_private_key() -> Optional[bytes]:
         key_path = Path(SNOWFLAKE_PRIVATE_KEY_PATH)
         with key_path.open("rb") as key:
             p_key = serialization.load_pem_private_key(
-                key.read(), password=None, backend=default_backend()
+                key.read(),
+                password=None,
+                backend=default_backend(),
             )
 
         pkb = p_key.private_bytes(

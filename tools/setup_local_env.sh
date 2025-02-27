@@ -137,7 +137,7 @@ STAGED_SESSION_FILES=$(git diff --cached --name-only --diff-filter=d | grep "ses
 
 # Check for absolute paths in all staged files
 echo -e "\n${YELLOW}Checking for absolute paths...${NC}"
-ABSOLUTE_PATHS=$(git diff --cached | grep -E "file:///|/Users/|/home/" || true)
+ABSOLUTE_PATHS=$(git diff --cached | grep -E "^[+].*(?:file:///|^/(?!usr|etc|var/lib)|[A-Z]:\\\\)" || true)
 if [ ! -z "$ABSOLUTE_PATHS" ]; then
     echo -e "${RED}Error: Found absolute paths in changes!${NC}"
     echo "Please use relative paths. Found in:"
@@ -221,6 +221,12 @@ fi
 # Validate session and checkpoint if session.ttl changed
 if [ ! -z "$STAGED_SESSION_FILES" ]; then
     echo -e "\n${YELLOW}Validating session and checkpoint state...${NC}"
+
+    # Run session-specific validation
+    if ! python tools/validate_session_state.py --allow-absolute-paths; then
+        echo -e "${RED}Session state validation failed!${NC}"
+        ERROR=1
+    fi
 
     # Run checkpoint tests
     if ! python -m pytest tools/tests/test_get_checkpoint.py -v; then

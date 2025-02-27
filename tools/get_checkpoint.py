@@ -9,9 +9,11 @@ Tool to query and display checkpoint information from session.ttl
 # Description: Tools for managing and querying session checkpoints
 """
 
-import logging
+import os
 import re
 from pathlib import Path
+from typing import Optional
+from urllib.parse import urlparse
 
 import rdflib
 from rdflib import Namespace, URIRef
@@ -39,11 +41,18 @@ def clean_uri(uri):
     if any(re.match(pattern, uri) for pattern in uuid_matches):
         return "<internal-reference>"
 
-    # Warn about absolute paths - they should never be used
+    # Convert absolute paths to relative
     if uri.startswith("file:///"):
-        logging.warning(
-            "Found absolute path URI - these should be relative to project root"
-        )
+        # Extract the path part after file:///
+        path = uri[8:]
+        # Convert to relative path
+        try:
+            rel_path = os.path.relpath(path, os.getcwd())
+            uri = f"./{rel_path}"
+        except ValueError:
+            # If path is on different drive, keep it but warn
+            msg = f"Cannot convert absolute path to relative: {uri}"
+            raise ValueError(msg)
 
     # Handle paths - always use relative paths
     if "#" in uri:
@@ -137,7 +146,7 @@ def collect_requirements(g, task, predicate):
     for _, _, req_node in g.triples((task, predicate, None)):
         # Get the requirement text directly from the requirement node
         req_predicate = URIRef(
-            str(predicate).replace("promptRequirements", "requirement")
+            str(predicate).replace("promptRequirements", "requirement"),
         )
         req_text = g.value(req_node, req_predicate)
         if req_text:
@@ -187,7 +196,8 @@ def get_checkpoint_components(g, namespace):
         return {}
 
     # Get all components linked to the checkpoint
-    for _, _, component in g.triples((checkpoint, namespace.hasComponent, None)):
+    component_query = (checkpoint, namespace.hasComponent, None)
+    for _, _, component in g.triples(component_query):
         # Get component label
         label = g.value(component, RDFS.label)
         if not label:
@@ -275,6 +285,46 @@ def get_checkpoint_prompt(g, namespace):
         return None
 
     return str(prompt)
+
+
+def is_local_path(uri: str) -> bool:
+    """Check if URI is a local file path."""
+    parsed = urlparse(uri)
+    return not parsed.scheme or parsed.scheme == "file"
+
+
+def get_checkpoint_path(uri: str, base_dir: Optional[Path] = None) -> Path:
+    """Get local path for a model checkpoint.
+
+    Args:
+        uri: URI or path to checkpoint
+        base_dir: Optional base directory for relative paths
+
+    Returns:
+        Local path to checkpoint
+    """
+    if not base_dir:
+        base_dir = Path.cwd()
+
+    # Handle relative paths
+    if uri.startswith("./") or uri.startswith("../"):
+        return (base_dir / uri).resolve()
+
+    # Handle absolute paths
+    if os.path.isabs(uri):
+        return Path(uri)
+
+    # Handle file URIs
+    parsed = urlparse(uri)
+    if parsed.scheme == "file":
+        # Convert to relative path
+        path = parsed.path.lstrip("/")
+        return (base_dir / path).resolve()
+
+    msg = (
+        f"Invalid checkpoint URI: {uri}. Must be a relative path or file:// URI"  # noqa
+    )
+    raise ValueError(msg)
 
 
 def main():

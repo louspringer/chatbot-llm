@@ -10,9 +10,9 @@ Azure Cosmos DB storage implementation for the Teams bot.
 """
 
 import logging
-from typing import Any, Dict, List, Optional, cast
+from typing import Any, Dict, List
 
-from azure.cosmos.aio import ContainerProxy, CosmosClient, DatabaseProxy
+from azure.cosmos.aio import CosmosClient
 from botbuilder.core import Storage
 
 logger = logging.getLogger(__name__)
@@ -58,7 +58,8 @@ class CosmosStorage(Storage):
             for key in keys:
                 try:
                     response = await self.container.read_item(
-                        item=key, partition_key=key
+                        item=key,
+                        partition_key=key,
                     )
                     if response:
                         result[key] = response

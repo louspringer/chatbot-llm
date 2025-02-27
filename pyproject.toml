@@ -14,7 +14,7 @@ version = "0.1.0"
 description = "Ontology-driven LLM chatbot framework"
 readme = "README.md"
 requires-python = ">=3.10,<3.12"
-dependencies = [ "rdflib==7.1.3", "azure-monitor-opentelemetry==1.0.0", "requests==2.31.0", "aiohttp==3.10.11", "rich==13.7.0", "click==8.1.7", "pyyaml==6.0.1", "toml==0.10.2",]
+dependencies = [ "rdflib==7.1.3", "azure-monitor-opentelemetry==1.0.0", "requests==2.31.0", "aiohttp==3.10.11", "rich==13.7.0", "click==8.1.7", "pyyaml==6.0.1", "toml==0.10.2", "ruff==0.9.2", "tomli_w==1.0.0", "tomli==2.0.1",]
 classifiers = [ "Development Status :: 3 - Alpha", "Intended Audience :: Developers", "License :: OSI Approved :: MIT License", "Operating System :: OS Independent", "Programming Language :: Python :: 3", "Programming Language :: Python :: 3.10", "Programming Language :: Python :: 3.11",]
 [[project.authors]]
 name = "Lou Springer"
@@ -40,9 +40,158 @@ use_parentheses = true
 ensure_newline_before_comments = true
 line_length = 88
 
+[tool.ruff]
+# Core configuration
+line-length = 88
+target-version = "py310"
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".hg",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "venv",
+    ".ontologies",  # Exclude ontology files
+    "**/*.ttl",     # Exclude all Turtle files
+]
+
+[tool.ruff.format]
+quote-style = "single"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+docstring-code-format = true
+docstring-code-line-length = 88
+
+[tool.ruff.lint]
+# Enable comprehensive set of rules including all recommended and optional extensions
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "N",   # pep8-naming
+    "B",   # flake8-bugbear
+    "COM", # flake8-commas
+    "C4",  # flake8-comprehensions
+    "DTZ", # flake8-datetimez
+    "EM",  # flake8-errmsg
+    "EXE", # flake8-executable
+    "ISC", # flake8-implicit-str-concat
+    "ICN", # flake8-import-conventions
+    "G",   # flake8-logging-format
+    "PIE", # flake8-pie
+    "PL",  # pylint
+    "PT",  # flake8-pytest-style
+    "PTH", # flake8-use-pathlib
+    "RET", # flake8-return
+    "RUF", # Ruff-specific rules
+    "SIM", # flake8-simplify
+    "T20", # flake8-print
+    "TCH", # flake8-type-checking
+    "TID", # flake8-tidy-imports
+    "UP",  # pyupgrade
+    "YTT", # flake8-2020
+    "S",   # flake8-bandit
+    "BLE", # flake8-blind-except
+    "FBT", # flake8-boolean-trap
+    "A",   # flake8-builtins
+    "ERA", # eradicate
+    "PD",  # pandas-vet
+    "NPY"  # NumPy-specific rules
+]
+
+# Ignore specific rules that conflict with our ontology-driven approach
+ignore = [
+    "S101",    # Use of assert detected (ok in tests)
+    "PLR0913", # Too many arguments to function call
+    "PLR2004", # Magic number used in comparison
+    "ERA001",  # Found commented-out code (we use this for documentation)
+]
+
+# Allow autofix for all enabled rules (when `--fix`) is provided
+fixable = ["ALL"]
+unfixable = []
+
+[tool.ruff.lint.mccabe]
+max-complexity = 10
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401", "E402"]  # Ignore unused imports and imports not at top
+"tests/**/*" = [
+    "S101",    # Allow assertions in tests
+    "PLR2004", # Allow magic numbers in tests
+    "ANN",     # Skip annotation checks in tests
+]
+"examples/**/*" = ["T201"]  # Allow print in examples
+"tools/**/*" = ["T201"]    # Allow print in tools
+
+[tool.ruff.lint.isort]
+known-first-party = ["chatbot_llm"]
+known-third-party = ["rdflib", "azure", "requests", "aiohttp", "rich", "click", "yaml", "toml"]
+section-order = ["future", "standard-library", "third-party", "first-party", "local-folder"]
+combine-as-imports = true
+lines-after-imports = 2
+force-wrap-aliases = true
+
+[tool.ruff.lint.flake8-tidy-imports]
+ban-relative-imports = "all"
+
+[tool.ruff.lint.flake8-quotes]
+docstring-quotes = "double"
+inline-quotes = "single"
+multiline-quotes = "double"
+avoid-escape = true
+
+[tool.ruff.lint.flake8-import-conventions.aliases]
+numpy = "np"
+pandas = "pd"
+rdflib = "rdf"
+matplotlib = "plt"
+seaborn = "sns"
+
+[tool.ruff.lint.flake8-annotations]
+allow-star-arg-any = true
+suppress-dummy-args = true
+
+[tool.ruff.lint.pycodestyle]
+max-doc-length = 88
+ignore-overlong-task-comments = true
+
+[tool.ruff.lint.pep8-naming]
+classmethod-decorators = ["classmethod", "pydantic.validator", "validator", "root_validator"]
+ignore-names = ["setUp", "tearDown", "setUpClass", "tearDownClass"]
+
+[tool.ruff.lint.pylint]
+max-args = 8
+max-returns = 6
+max-branches = 12
+max-statements = 50
+max-locals = 15
+
 [tool.pytest.ini_options]
 # Note: src/chatbot_llm/tests contains shell scripts, not Python tests
 testpaths = ["tests", "teams_bot/tests", "tools/tests"]
 python_files = ["test_*.py"]
 addopts = "-ra -q"
 markers = [ "integration: marks tests that interact with real packages and external services",]
+pythonpath = ["."]
+norecursedirs = ["botbuilder-python/*"]

@@ -1,29 +1,34 @@
 #!/usr/bin/env python3
 """
-Command-line tool to get comprehensive project status from ontology files.
+# Ontology: tools:StatusComponent
+# Implements: status:StatusRetrieval
+# Requirement: REQ-STAT-001 System Status Retrieval
+# Guidance: guidance:ModelFirstPrinciple#status
+# Description: Tool for retrieving and reporting system status information
+
+This module provides functionality to get the current status of various system components
+and report them in a structured format.
 """
 
 import argparse
-from pathlib import Path
 
 from jena_tools import JenaTools
 
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description="Get project status from ontology files"
+        description="Get project status from ontology files",
     )
     parser.add_argument(
         "--files",
         nargs="+",
-        help=(
-            "List of TTL files to query "
-            "(default: session.ttl deployment.ttl)"
-        ),
+        help=("List of TTL files to query (default: session.ttl deployment.ttl)"),
         default=["session.ttl", "deployment.ttl"],
     )
     parser.add_argument(
-        "--json", action="store_true", help="Output in JSON format"
+        "--json",
+        action="store_true",
+        help="Output in JSON format",
     )
     return parser.parse_args()
 

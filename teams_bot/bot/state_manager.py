@@ -9,31 +9,14 @@
 State management for the Teams bot using transitions FSM.
 """
 import base64
-import json
 import logging
 import os
-from dataclasses import asdict, dataclass, field
-from datetime import datetime, timedelta
-from typing import (
-    Any,
-    AsyncIterator,
-    Awaitable,
-    Callable,
-    Dict,
-    List,
-    MutableMapping,
-    Optional,
-    Protocol,
-    Sequence,
-    Type,
-    TypeVar,
-    Union,
-    cast,
-)
+from dataclasses import asdict, dataclass
+from datetime import datetime
+from typing import Any, Dict, Optional, Protocol, Sequence, TypeVar, Union
 
-from botbuilder.core import Storage, StoreItem, TurnContext
+from botbuilder.core import Storage, TurnContext
 from cryptography.fernet import Fernet
-from transitions.extensions.asyncio import AsyncMachine
 
 from .conversation_data import ConversationData
 from .conversation_state import ConversationState
@@ -143,13 +126,14 @@ class StateManager:
 
         if self._error_count >= MAX_ERROR_COUNT:
             logger.warning(
-                f"Max error count ({MAX_ERROR_COUNT}) reached, resetting state"
+                f"Max error count ({MAX_ERROR_COUNT}) reached, resetting state",
             )
             await self.clear_state(context)
             self._error_count = 0
 
     async def save_parameters(
-        self, parameters: Optional[Sequence[Dict[str, Any]]] = None
+        self,
+        parameters: Optional[Sequence[Dict[str, Any]]] = None,
     ) -> None:
         """Save conversation parameters."""
         if not parameters:
@@ -206,7 +190,9 @@ class StateManager:
             return ConversationData(conversation_id=conversation_id)
 
     async def save_conversation_data(
-        self, context: TurnContext, data: ConversationData
+        self,
+        context: TurnContext,
+        data: ConversationData,
     ) -> None:
         """Save conversation data to storage."""
         if not context.activity or not context.activity.conversation:
@@ -246,7 +232,9 @@ class StateManager:
         return UserProfile()
 
     async def save_user_profile(
-        self, context: TurnContext, profile: UserProfile
+        self,
+        context: TurnContext,
+        profile: UserProfile,
     ) -> None:
         """Save user profile to storage."""
         if not context.activity or not context.activity.from_property:
@@ -305,7 +293,7 @@ class StateManager:
                 await self.save_conversation_data(context, conversation_data)
 
             logger.info(
-                f"Triggered transition {transition} for conversation {conversation_id}"
+                f"Triggered transition {transition} for conversation {conversation_id}",
             )
         except Exception as e:
             logger.error(f"Failed to trigger transition: {str(e)}")

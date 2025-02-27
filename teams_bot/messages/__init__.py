@@ -135,7 +135,9 @@ async def main(req: func.HttpRequest) -> func.HttpResponse:
         # Process the activity
         if activity.type == "message":
             response = await ADAPTER.process_activity(
-                activity, "", process_message_activity
+                activity,
+                "",
+                process_message_activity,
             )
             if response:
                 return func.HttpResponse(
@@ -163,7 +165,7 @@ if __name__ == "__main__":
             # For local testing, just echo back
             if activity.type == "message":
                 return web.json_response(
-                    {"type": "message", "text": f"Echo: {activity.text}"}
+                    {"type": "message", "text": f"Echo: {activity.text}"},
                 )
             return web.Response(status=200)
 

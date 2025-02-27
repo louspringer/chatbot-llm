@@ -35,7 +35,7 @@ SCAN_TIMEOUT = 30
 PACKAGE_INSTALL_TIMEOUT = 300  # 5 minutes for package installation
 
 # Define namespaces
-SEC = Namespace("file://security#")
+SEC = Namespace("./security#")
 
 # Test data
 MOCK_SAFETY_OUTPUT = {
@@ -49,8 +49,8 @@ MOCK_SAFETY_OUTPUT = {
             "fixed_versions": ["2.0.0"],
             "cvss_score": 7.5,
             "mitigation": "Pending",
-        }
-    ]
+        },
+    ],
 }
 
 MOCK_PIP_AUDIT_OUTPUT = {
@@ -66,10 +66,10 @@ MOCK_PIP_AUDIT_OUTPUT = {
                     "affected_versions": ["1.0.0"],
                     "fixed_version": "1.1.0",
                     "cvss_score": 5.0,
-                }
+                },
             ],
-        }
-    ]
+        },
+    ],
 }
 
 
@@ -124,9 +124,9 @@ def mock_subprocess():
                             {
                                 **MOCK_SAFETY_OUTPUT["vulnerabilities"][0],
                                 "package_name": "test-pkg",
-                            }
-                        ]
-                    }
+                            },
+                        ],
+                    },
                 )
             elif "pip-audit" in cmd:
                 mock_result.stdout = json.dumps(MOCK_PIP_AUDIT_OUTPUT)
@@ -200,7 +200,7 @@ def test_mock_scanner():
             affected_versions="<1.0.0",
             fixed_version="1.0.0",
             source="mock",
-        )
+        ),
     ]
     scanner = MockScanner("mock", True, issues)
 
@@ -239,15 +239,13 @@ async def test_safety_scanner():
 
 
 @pytest.mark.asyncio
-@pytest.mark.skip(
-    reason="Test disabled due to timeout issues - tracked in issue #15"
-)
+@pytest.mark.skip(reason="Timeout issues - see issue #15")
 async def test_safety_scanner_with_debug(caplog_debug, mock_subprocess):
     """Test SafetyScanner with detailed logging."""
     scanner = SafetyScanner()
     mock_subprocess.return_value.returncode = 1
     mock_subprocess.return_value.stdout = json.dumps(
-        {"vulnerabilities": MOCK_SAFETY_OUTPUT["vulnerabilities"]}
+        {"vulnerabilities": MOCK_SAFETY_OUTPUT["vulnerabilities"]},
     )
 
     results = scanner.scan_package("vuln-pkg", "1.0.0")
@@ -262,9 +260,7 @@ async def test_safety_scanner_with_debug(caplog_debug, mock_subprocess):
 
 
 @pytest.mark.asyncio
-@pytest.mark.skip(
-    reason="Test failing due to pip-audit type checking issues - tracked in issue #15"
-)
+@pytest.mark.skip(reason="Type checking issues - see issue #15")
 async def test_pip_audit_scanner():
     """Test PipAuditScanner functionality."""
     scanner = PipAuditScanner()
@@ -319,7 +315,7 @@ def test_security_checker_scanning(mock_graph, mock_workspace):
                     affected_versions="<1.0.0",
                     fixed_version="1.0.0",
                     source="scanner1",
-                )
+                ),
             ],
         ),
         MockScanner(
@@ -333,7 +329,7 @@ def test_security_checker_scanning(mock_graph, mock_workspace):
                     affected_versions="<2.0.0",
                     fixed_version="2.0.0",
                     source="scanner2",
-                )
+                ),
             ],
         ),
     ]
@@ -363,7 +359,7 @@ def test_security_checker_deduplication(mock_graph, mock_workspace):
                     affected_versions="<1.0.0",
                     fixed_version="1.0.0",
                     source="scanner1",
-                )
+                ),
             ],
         ),
         MockScanner(
@@ -377,7 +373,7 @@ def test_security_checker_deduplication(mock_graph, mock_workspace):
                     affected_versions="<1.0.0",
                     fixed_version="1.0.0",
                     source="scanner2",
-                )
+                ),
             ],
         ),
     ]
@@ -458,7 +454,10 @@ def test_security_ontology_loading(caplog):
         logger.debug("Checking class: %s", cls)
         class_uri = SEC[cls]
         logger.debug(
-            "Looking for triple: (%s, %s, %s)", class_uri, RDF.type, RDFS.Class
+            "Looking for triple: (%s, %s, %s)",
+            class_uri,
+            RDF.type,
+            RDFS.Class,
         )
         assert (
             class_uri,
@@ -512,8 +511,8 @@ def test_safety_scanner_scan_package(mock_subprocess, mock_temp_file, caplog):
             {
                 **MOCK_SAFETY_OUTPUT["vulnerabilities"][0],
                 "package_name": "test-pkg",
-            }
-        ]
+            },
+        ],
     }
     mock_subprocess.return_value.stdout = json.dumps(mock_data)
 
@@ -544,11 +543,11 @@ def test_pip_audit_scanner_initialization(mock_subprocess, caplog):
 
 
 @pytest.mark.timeout(SCAN_TIMEOUT)
-@pytest.mark.skip(
-    reason="Test failing due to pip-audit type checking issues - tracked in issue #15"
-)
+@pytest.mark.skip(reason="Type checking issues - see issue #15")
 def test_pip_audit_scanner_scan_package(
-    mock_subprocess, mock_temp_file, caplog
+    mock_subprocess: MagicMock,
+    mock_temp_file: str,
+    caplog: pytest.LogCaptureFixture,
 ):
     """Test PipAuditScanner package scanning."""
     logger.debug("Starting PipAuditScanner package scan test")
@@ -589,7 +588,7 @@ def test_security_checker_with_mock_scanners(mock_graph, caplog):
                 affected_versions="<1.0.0",
                 fixed_version="1.0.0",
                 source="mock1",
-            )
+            ),
         ],
     )
     mock_scanner2 = MockScanner(
@@ -603,7 +602,7 @@ def test_security_checker_with_mock_scanners(mock_graph, caplog):
                 affected_versions="<2.0.0",
                 fixed_version="2.0.0",
                 source="mock2",
-            )
+            ),
         ],
     )
 

@@ -1,11 +1,42 @@
 #!/usr/bin/env python3
-from rdflib import Graph, Namespace, URIRef
+# Ontology: tools:OntologyDebugger
+# Implements: debug:OntologyInspector
+# Requirement: REQ-DBG-001 Ontology Debugging
+# Guidance: guidance:ModelFirstPrinciple#debuggingTools
+# Description: Debug tool for inspecting ontology relationships and dependencies
 
-g = Graph()
-# Bind the namespace to prevent file:/// URIs
-DEPLOY = Namespace("deployment#")
-g.bind("deploy", DEPLOY)
-g.parse("deployment.ttl", format="turtle")
+from typing import Optional
+
+from rdflib import Graph, Namespace
+
+# Define namespaces
+DEPLOY = Namespace("./deployment#")
+
+
+def load_ontology(file_path: str, base_uri: Optional[str] = None) -> Graph:
+    """Load an ontology file with proper namespace binding.
+
+    Args:
+        file_path: Path to the ontology file
+        base_uri: Optional base URI for relative paths
+
+    Returns:
+        Loaded RDF graph
+    """
+    g = Graph()
+
+    # Use relative paths by default
+    if base_uri is None:
+        base_uri = "./"
+
+    # Bind common namespaces
+    g.bind("", Namespace(f"{base_uri}#"))
+    g.bind("chatbot", Namespace(f"{base_uri}chatbot#"))
+    g.bind("guidance", Namespace(f"{base_uri}guidance#"))
+    g.bind("deploy", DEPLOY)
+
+    g.parse(file_path, format="turtle")
+    return g
 
 
 def get_local_name(uri):
@@ -15,6 +46,9 @@ def get_local_name(uri):
         return uri_str.split("#")[1]
     return uri_str.split("/")[-1]
 
+
+# Load the ontology
+g = load_ontology("deployment_validation.ttl")
 
 print("Dependencies:")
 for s, p, o in g.triples((None, DEPLOY.dependsOn, None)):

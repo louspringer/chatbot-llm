@@ -1,10 +1,14 @@
+# Ontology: query:PolicyStructureQuery
+# Implements: query:PolicyAnalysis
+# Requirement: REQ-QRY-001 Policy Structure Analysis
+# Guidance: guidance:ModelFirstPrinciple#queries
+# Description: SPARQL query to analyze policy structure and decision relationships
 
-    PREFIX pdi: <file:///ontologies/policy_driven_implementation.ttl#>
-    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-    
-    SELECT ?policy ?req ?decision WHERE {
-        ?policy rdf:type pdi:Policy ;
-                pdi:drivesRequirement ?req .
-        ?req pdi:influencesDecision ?decision .
-    }
-    
+PREFIX pdi: <./policy_driven_implementation.ttl#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+
+SELECT ?policy ?req ?decision WHERE {
+    ?policy rdf:type pdi:Policy ;
+            pdi:drivesRequirement ?req .
+    ?req pdi:influencesDecision ?decision .
+}

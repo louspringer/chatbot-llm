@@ -1,3 +1,4 @@
+@prefix : <./chatbot#> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
@@ -11,6 +12,7 @@
 @prefix metameta: <./metameta#> .
 @prefix dc: <http://purl.org/dc/elements/1.1/> .
 @prefix dct: <http://purl.org/dc/terms/> .
+@prefix chatbot: <./chatbot#> .
 
 # Ontology Definition
 guidance:TeamsBotGuidanceOntology rdf:type owl:Ontology ;
@@ -22,60 +24,83 @@ guidance:TeamsBotGuidanceOntology rdf:type owl:Ontology ;
     dct:description "Guidance and validation rules for Teams Bot implementation" ;
     dct:type dct:Dataset ;
     dct:conformsTo <http://www.w3.org/2002/07/owl> ;
-    dct:requires <./meta>, <./problem>, <./solution>, <./conversation> ;
-    owl:imports <./meta>, <./problem>, <./solution>, <./conversation> .
+    owl:imports meta:, problem:, solution:, conversation:, chatbot:ChatbotLLMOntology ;
+    :belongsToCluster chatbot:DeploymentCluster .
 
 # Core Framework Classes
 guidance:Interpretation rdf:type owl:Class ;
     rdfs:label "Interpretation" ;
     rdfs:comment "Guidance on how to interpret an ontology element" ;
-    rdfs:subClassOf metameta:AbstractionDimension .
+    rdfs:subClassOf metameta:AbstractionDimension ;
+    owl:versionInfo "0.1.0" .
 
 guidance:Action rdf:type owl:Class ;
     rdfs:label "Action" ;
-    rdfs:comment "An action that can be taken based on interpretation" .
+    rdfs:comment "An action that can be taken based on interpretation" ;
+    owl:versionInfo "0.1.0" .
 
 guidance:DomainAnalogy rdf:type owl:Class ;
     rdfs:label "Domain Analogy" ;
-    rdfs:subClassOf guidance:Interpretation .
+    rdfs:comment "A domain-specific analogy for understanding concepts" ;
+    rdfs:subClassOf guidance:Interpretation ;
+    owl:versionInfo "0.1.0" .
 
 # Core Framework Properties
 guidance:hasAction rdf:type owl:ObjectProperty ;
+    rdfs:label "Has Action" ;
+    rdfs:comment "Links an interpretation to its recommended actions" ;
     rdfs:domain guidance:Interpretation ;
     rdfs:range guidance:Action .
 
 guidance:analogySource rdf:type owl:DatatypeProperty ;
+    rdfs:label "Analogy Source" ;
+    rdfs:comment "The source domain of an analogy" ;
     rdfs:domain guidance:DomainAnalogy ;
     rdfs:range xsd:string .
 
 guidance:analogyTarget rdf:type owl:DatatypeProperty ;
+    rdfs:label "Analogy Target" ;
+    rdfs:comment "The target domain of an analogy" ;
     rdfs:domain guidance:DomainAnalogy ;
     rdfs:range xsd:string .
 
 guidance:complexity rdf:type owl:DatatypeProperty ;
+    rdfs:label "Complexity" ;
+    rdfs:comment "The complexity level of an interpretation" ;
     rdfs:domain guidance:Interpretation ;
     rdfs:range xsd:integer .
 
 # Teams Bot Specific Classes
-guidance:ErrorHandlingPractice a rdfs:Class ;
+guidance:ErrorHandlingPractice a owl:Class ;
     rdfs:label "Error Handling Practice" ;
     rdfs:comment "Best practices for error handling" ;
-    rdfs:subClassOf guidance:Action .
+    rdfs:subClassOf guidance:Action ;
+    owl:versionInfo "0.1.0" .
 
-guidance:LoggingPractice a rdfs:Class ;
+guidance:LoggingPractice a owl:Class ;
     rdfs:label "Logging Practice" ;
     rdfs:comment "Best practices for logging" ;
-    rdfs:subClassOf guidance:Action .
+    rdfs:subClassOf guidance:Action ;
+    owl:versionInfo "0.1.0" .
 
-guidance:SecurityPractice a rdfs:Class ;
+guidance:SecurityPractice a owl:Class ;
     rdfs:label "Security Practice" ;
     rdfs:comment "Best practices for security" ;
-    rdfs:subClassOf guidance:Action .
+    rdfs:subClassOf guidance:Action ;
+    owl:versionInfo "0.1.0" .
 
-guidance:PerformancePractice a rdfs:Class ;
+guidance:PerformancePractice a owl:Class ;
     rdfs:label "Performance Practice" ;
     rdfs:comment "Best practices for performance" ;
-    rdfs:subClassOf guidance:Action .
+    rdfs:subClassOf guidance:Action ;
+    owl:versionInfo "0.1.0" .
+
+# Additional Properties
+guidance:hasExample rdf:type owl:DatatypeProperty ;
+    rdfs:label "Has Example" ;
+    rdfs:comment "Links a practice to its example code" ;
+    rdfs:domain guidance:Action ;
+    rdfs:range xsd:string .
 
 # Core Validation Rules
 guidance:RequestValidation a sh:NodeShape ;

@@ -1,3 +1,11 @@
+# Ontology: dv:DeploymentValidationOntology
+# Implements: validation:DeploymentValidation
+# Requirement: REQ-VAL-001 Deployment Validation
+# Guidance: guidance:ModelFirstPrinciple#deploymentValidation
+# Description: SHACL shapes and validation rules for deployment configurations
+# Cluster: :DeploymentCluster
+
+@prefix : <./chatbot#> .
 @prefix dv: <./deployment_validation#> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
@@ -6,13 +14,188 @@
 @prefix chatbot: <./chatbot#> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
 @prefix deploy: <./deployment#> .
+@prefix meta: <./meta#> .
+@prefix metameta: <./metameta#> .
+@prefix problem: <./problem#> .
+@prefix solution: <./solution#> .
+@prefix conversation: <./conversation#> .
+@prefix guidance: <./guidance#> .
 
 # Ontology metadata
 dv:DeploymentValidationOntology a owl:Ontology ;
     rdfs:label "Deployment Validation Ontology" ;
     rdfs:comment "SHACL shapes and validation rules for deployment configurations" ;
     owl:versionInfo "0.1.0" ;
-    owl:imports deploy: .
+    owl:imports deploy:, chatbot:ChatbotLLMOntology ;
+    :belongsToCluster chatbot:DeploymentCluster .
+
+# Class Definitions
+dv:InfrastructureComponent a owl:Class ;
+    rdfs:label "Infrastructure Component" ;
+    rdfs:comment "A deployable infrastructure component" ;
+    owl:versionInfo "0.1.0" .
+
+dv:DatabaseSystem a owl:Class ;
+    rdfs:label "Database System" ;
+    rdfs:comment "A database system component" ;
+    owl:versionInfo "0.1.0" .
+
+dv:MonitoringSystem a owl:Class ;
+    rdfs:label "Monitoring System" ;
+    rdfs:comment "A monitoring system component" ;
+    owl:versionInfo "0.1.0" .
+
+dv:SecurityControl a owl:Class ;
+    rdfs:label "Security Control" ;
+    rdfs:comment "A security control measure" ;
+    owl:versionInfo "0.1.0" .
+
+dv:Encryption a owl:Class ;
+    rdfs:label "Encryption" ;
+    rdfs:comment "Encryption configuration" ;
+    owl:versionInfo "0.1.0" .
+
+dv:CostModel a owl:Class ;
+    rdfs:label "Cost Model" ;
+    rdfs:comment "Cost modeling for infrastructure components" ;
+    owl:versionInfo "0.1.0" .
+
+# Property Definitions
+dv:scalingType a owl:DatatypeProperty ;
+    rdfs:label "Scaling Type" ;
+    rdfs:comment "Type of scaling for the component" ;
+    rdfs:domain dv:InfrastructureComponent ;
+    rdfs:range xsd:string .
+
+dv:availabilityZones a owl:DatatypeProperty ;
+    rdfs:label "Availability Zones" ;
+    rdfs:comment "Availability zone configuration" ;
+    rdfs:domain dv:InfrastructureComponent ;
+    rdfs:range xsd:string .
+
+dv:hosts a owl:ObjectProperty ;
+    rdfs:label "Hosts" ;
+    rdfs:comment "Components hosted by this infrastructure" ;
+    rdfs:domain dv:InfrastructureComponent ;
+    rdfs:range chatbot:Component .
+
+dv:dependsOn a owl:ObjectProperty ;
+    rdfs:label "Depends On" ;
+    rdfs:comment "Dependencies on other components" ;
+    rdfs:domain dv:InfrastructureComponent ;
+    rdfs:range dv:InfrastructureComponent .
+
+dv:usagePattern a owl:DatatypeProperty ;
+    rdfs:label "Usage Pattern" ;
+    rdfs:comment "Database usage pattern" ;
+    rdfs:domain dv:DatabaseSystem ;
+    rdfs:range xsd:string .
+
+dv:dataModel a owl:DatatypeProperty ;
+    rdfs:label "Data Model" ;
+    rdfs:comment "Database data model" ;
+    rdfs:domain dv:DatabaseSystem ;
+    rdfs:range xsd:string .
+
+dv:latencyTarget a owl:DatatypeProperty ;
+    rdfs:label "Latency Target" ;
+    rdfs:comment "Target latency for the database" ;
+    rdfs:domain dv:DatabaseSystem ;
+    rdfs:range xsd:string .
+
+dv:scalingModel a owl:DatatypeProperty ;
+    rdfs:label "Scaling Model" ;
+    rdfs:comment "Database scaling model" ;
+    rdfs:domain dv:DatabaseSystem ;
+    rdfs:range xsd:string .
+
+dv:rationale a owl:DatatypeProperty ;
+    rdfs:label "Rationale" ;
+    rdfs:comment "Rationale for component selection" ;
+    rdfs:domain owl:Thing ;
+    rdfs:range xsd:string .
+
+dv:monitoringType a owl:DatatypeProperty ;
+    rdfs:label "Monitoring Type" ;
+    rdfs:comment "Type of monitoring" ;
+    rdfs:domain dv:MonitoringSystem ;
+    rdfs:range xsd:string .
+
+dv:dataRetention a owl:DatatypeProperty ;
+    rdfs:label "Data Retention" ;
+    rdfs:comment "Data retention period" ;
+    rdfs:domain dv:MonitoringSystem ;
+    rdfs:range xsd:string .
+
+dv:implementedBy a owl:ObjectProperty ;
+    rdfs:label "Implemented By" ;
+    rdfs:comment "Component implementing the security control" ;
+    rdfs:domain dv:SecurityControl ;
+    rdfs:range dv:InfrastructureComponent .
+
+dv:encryptionType a owl:DatatypeProperty ;
+    rdfs:label "Encryption Type" ;
+    rdfs:comment "Type of encryption" ;
+    rdfs:domain dv:Encryption ;
+    rdfs:range xsd:string .
+
+# Additional Instances
+dv:webAppServer a dv:InfrastructureComponent ;
+    rdfs:label "Web App Server" ;
+    dv:scalingType "Horizontal" ;
+    dv:availabilityZones "Multi-region" ;
+    dv:hosts chatbot:WebInterface ;
+    dv:rationale "1. High availability requirement\n2. Global user base" .
+
+dv:apiServer a dv:InfrastructureComponent ;
+    rdfs:label "API Server" ;
+    dv:scalingType "Horizontal" ;
+    dv:availabilityZones "Multi-region" ;
+    dv:hosts chatbot:APIEndpoint ;
+    dv:dependsOn dv:webAppServer ;
+    dv:rationale "1. API service requirements\n2. Load distribution" .
+
+dv:primaryDB a dv:DatabaseSystem ;
+    rdfs:label "Primary Database" ;
+    dv:usagePattern "Operational" ;
+    dv:dataModel "Document" ;
+    dv:latencyTarget "sub-millisecond" ;
+    dv:scalingModel "Horizontal" ;
+    dv:rationale "1. High performance requirements\n2. Document-based data model" .
+
+dv:analyticsDB a dv:DatabaseSystem ;
+    rdfs:label "Analytics Database" ;
+    dv:usagePattern "Analytical" ;
+    dv:dataModel "Columnar" ;
+    dv:latencyTarget "sub-second" ;
+    dv:scalingModel "Vertical" ;
+    dv:rationale "1. Analytics workload\n2. Column-oriented queries" .
+
+dv:appMonitoring a dv:MonitoringSystem ;
+    rdfs:label "Application Monitoring" ;
+    dv:monitoringType "Application Performance" ;
+    dv:dataRetention "90 days" .
+
+dv:infraMonitoring a dv:MonitoringSystem ;
+    rdfs:label "Infrastructure Monitoring" ;
+    dv:monitoringType "Infrastructure Health" ;
+    dv:dataRetention "180 days" .
+
+dv:dataEncryption a dv:SecurityControl ;
+    rdfs:label "Data Encryption" ;
+    dv:implementedBy dv:primaryDB, dv:analyticsDB .
+
+dv:apiEncryption a dv:SecurityControl ;
+    rdfs:label "API Encryption" ;
+    dv:implementedBy dv:apiServer .
+
+dv:standardEncryption a dv:Encryption ;
+    rdfs:label "Standard Encryption" ;
+    dv:encryptionType "Data at rest and in transit encryption" .
+
+dv:enhancedEncryption a dv:Encryption ;
+    rdfs:label "Enhanced Encryption" ;
+    dv:encryptionType "End-to-end encryption at rest and in transit" .
 
 # Cloud Environment Validation
 dv:CloudEnvironmentShape a sh:NodeShape ;
@@ -26,66 +209,66 @@ dv:CloudEnvironmentShape a sh:NodeShape ;
     ] .
 
 # Infrastructure Component Validation
-:InfrastructureComponentShape a sh:NodeShape ;
-    sh:targetClass :InfrastructureComponent ;
+dv:InfrastructureComponentShape a sh:NodeShape ;
+    sh:targetClass dv:InfrastructureComponent ;
     sh:property [
-        sh:path :scalingType ;
+        sh:path dv:scalingType ;
         sh:datatype xsd:string ;
         sh:in ("Horizontal" "Vertical" "None") ;
         sh:minCount 1 ;
         sh:message "Infrastructure component must specify a valid scaling type."
     ] ;
     sh:property [
-        sh:path :availabilityZones ;
+        sh:path dv:availabilityZones ;
         sh:datatype xsd:string ;
         sh:pattern "^(Single-region|Multi-region).*" ;
         sh:minCount 1 ;
         sh:message "Infrastructure component must specify availability zones configuration."
     ] ;
     sh:property [
-        sh:path :hosts ;
+        sh:path dv:hosts ;
         sh:nodeKind sh:IRI ;
         sh:class chatbot:Component ;
         sh:message "If hosting is specified, it must reference valid chatbot components."
     ] ;
     sh:property [
-        sh:path :dependsOn ;
+        sh:path dv:dependsOn ;
         sh:nodeKind sh:IRI ;
-        sh:class :InfrastructureComponent ;
+        sh:class dv:InfrastructureComponent ;
         sh:message "Dependencies must reference valid infrastructure components."
     ] .
 
 # Database System Validation
-:DatabaseSystemShape a sh:NodeShape ;
-    sh:targetClass :DatabaseSystem ;
+dv:DatabaseSystemShape a sh:NodeShape ;
+    sh:targetClass dv:DatabaseSystem ;
     sh:property [
-        sh:path :usagePattern ;
+        sh:path dv:usagePattern ;
         sh:datatype xsd:string ;
         sh:in ("Operational" "Analytical" "Mixed") ;
         sh:minCount 1 ;
         sh:message "Database system must specify a valid usage pattern."
     ] ;
     sh:property [
-        sh:path :dataModel ;
+        sh:path dv:dataModel ;
         sh:datatype xsd:string ;
         sh:in ("Document" "Columnar" "Relational" "Graph") ;
         sh:minCount 1 ;
         sh:message "Database system must specify a valid data model."
     ] ;
     sh:property [
-        sh:path :latencyTarget ;
+        sh:path dv:latencyTarget ;
         sh:datatype xsd:string ;
         sh:minCount 1 ;
         sh:message "Database system must specify latency target."
     ] ;
     sh:property [
-        sh:path :scalingModel ;
+        sh:path dv:scalingModel ;
         sh:datatype xsd:string ;
         sh:minCount 1 ;
         sh:message "Database system must specify scaling model."
     ] ;
     sh:property [
-        sh:path :rationale ;
+        sh:path dv:rationale ;
         sh:datatype xsd:string ;
         sh:minCount 1 ;
         sh:pattern "^[\\s\\S]*\\d+\\..*" ;  # Ensures numbered list format
@@ -93,16 +276,16 @@ dv:CloudEnvironmentShape a sh:NodeShape ;
     ] .
 
 # Monitoring System Validation
-:MonitoringSystemShape a sh:NodeShape ;
-    sh:targetClass :MonitoringSystem ;
+dv:MonitoringSystemShape a sh:NodeShape ;
+    sh:targetClass dv:MonitoringSystem ;
     sh:property [
-        sh:path :monitoringType ;
+        sh:path dv:monitoringType ;
         sh:datatype xsd:string ;
         sh:minCount 1 ;
         sh:message "Monitoring system must specify monitoring type."
     ] ;
     sh:property [
-        sh:path :dataRetention ;
+        sh:path dv:dataRetention ;
         sh:datatype xsd:string ;
         sh:pattern "^\\d+\\s+(days|years|months)$" ;
         sh:minCount 1 ;
@@ -110,37 +293,37 @@ dv:CloudEnvironmentShape a sh:NodeShape ;
     ] .
 
 # Security Control Validation
-:SecurityControlShape a sh:NodeShape ;
-    sh:targetClass :SecurityControl ;
+dv:SecurityControlShape a sh:NodeShape ;
+    sh:targetClass dv:SecurityControl ;
     sh:property [
-        sh:path :implementedBy ;
+        sh:path dv:implementedBy ;
         sh:nodeKind sh:IRI ;
         sh:minCount 1 ;
         sh:message "Security control must specify at least one implementing component."
     ] .
 
 # Cross-Component Validation
-:CrossComponentValidation a sh:NodeShape ;
-    sh:targetClass :InfrastructureComponent ;
+dv:CrossComponentValidation a sh:NodeShape ;
+    sh:targetClass dv:InfrastructureComponent ;
     sh:rule [
         a sh:SPARQLRule ;
         sh:construct """
             CONSTRUCT {
-                ?this :validationError "Component with high availability must have multi-region deployment."
+                ?this dv:validationError "Component with high availability must have multi-region deployment."
             }
             WHERE {
-                ?this :scalingType "Horizontal" .
-                ?this :availabilityZones ?zones .
+                ?this dv:scalingType "Horizontal" .
+                ?this dv:availabilityZones ?zones .
                 FILTER (!CONTAINS(LCASE(?zones), "multi-region"))
             }
         """
     ] .
 
 # Encryption Validation
-:EncryptionShape a sh:NodeShape ;
-    sh:targetClass :Encryption ;
+dv:EncryptionShape a sh:NodeShape ;
+    sh:targetClass dv:Encryption ;
     sh:property [
-        sh:path :encryptionType ;
+        sh:path dv:encryptionType ;
         sh:datatype xsd:string ;
         sh:pattern "^.*at rest.*in transit.*$|^.*in transit.*at rest.*$" ;
         sh:minCount 1 ;
@@ -148,139 +331,129 @@ dv:CloudEnvironmentShape a sh:NodeShape ;
     ] .
 
 # Database Deployment Validation
-:DatabaseDeploymentValidation a sh:NodeShape ;
-    sh:targetClass :DatabaseSystem ;
+dv:DatabaseDeploymentValidation a sh:NodeShape ;
+    sh:targetClass dv:DatabaseSystem ;
     sh:rule [
         a sh:SPARQLRule ;
         sh:construct """
             CONSTRUCT {
-                ?this :validationError "Operational databases must have sub-millisecond latency target."
+                ?this dv:validationError "Operational databases must have sub-millisecond latency target."
             }
             WHERE {
-                ?this :usagePattern "Operational" .
-                ?this :latencyTarget ?latency .
+                ?this dv:usagePattern "Operational" .
+                ?this dv:latencyTarget ?latency .
                 FILTER (!CONTAINS(LCASE(?latency), "sub-millisecond"))
             }
         """
     ] .
 
 # Cost Modeling
-:CostModel a owl:Class ;
-    rdfs:label "Cost Model" ;
-    rdfs:comment "Cost modeling for infrastructure components" .
-
-:CostModelShape a sh:NodeShape ;
-    sh:targetClass :CostModel ;
+dv:CostModelShape a sh:NodeShape ;
+    sh:targetClass dv:CostModel ;
     sh:property [
-        sh:path :baselineCost ;
+        sh:path dv:baselineCost ;
         sh:datatype xsd:decimal ;
         sh:minCount 1 ;
         sh:message "Must specify baseline monthly cost."
     ] ;
     sh:property [
-        sh:path :scalingFactor ;
+        sh:path dv:scalingFactor ;
         sh:datatype xsd:decimal ;
         sh:minInclusive 1.0 ;
         sh:maxInclusive 10.0 ;
         sh:message "Scaling factor must be between 1.0 and 10.0."
     ] ;
     sh:property [
-        sh:path :costComponents ;
-        sh:node :CostComponentShape ;
+        sh:path dv:costComponents ;
+        sh:node dv:CostComponentShape ;
         sh:minCount 1 ;
         sh:message "Must specify at least one cost component."
     ] .
 
-:CostComponentShape a sh:NodeShape ;
+dv:CostComponentShape a sh:NodeShape ;
     sh:property [
-        sh:path :componentType ;
+        sh:path dv:componentType ;
         sh:in ("Compute" "Storage" "Network" "License" "Support") ;
         sh:minCount 1 ;
         sh:message "Must specify valid cost component type."
     ] ;
     sh:property [
-        sh:path :unitCost ;
+        sh:path dv:unitCost ;
         sh:datatype xsd:decimal ;
         sh:minCount 1 ;
         sh:message "Must specify unit cost."
     ] ;
     sh:property [
-        sh:path :billingUnit ;
+        sh:path dv:billingUnit ;
         sh:in ("Hour" "GB" "Transaction" "User" "Month") ;
         sh:minCount 1 ;
         sh:message "Must specify valid billing unit."
     ] .
 
 # Implementation Cost Rules
-:ImplementationCostValidation a sh:NodeShape ;
-    sh:targetClass :InfrastructureComponent ;
+dv:ImplementationCostValidation a sh:NodeShape ;
+    sh:targetClass dv:InfrastructureComponent ;
     sh:rule [
         a sh:SPARQLRule ;
         sh:construct """
             CONSTRUCT {
-                ?this :costWarning "High-availability components must include redundancy costs."
+                ?this dv:costWarning "High-availability components must include redundancy costs."
             }
             WHERE {
-                ?this :scalingType "Horizontal" .
-                ?this :costModel ?model .
-                FILTER NOT EXISTS { ?model :costComponents [ :componentType "Redundancy" ] }
+                ?this dv:scalingType "Horizontal" .
+                ?this dv:costModel ?model .
+                FILTER NOT EXISTS { ?model dv:costComponents [ dv:componentType "Redundancy" ] }
             }
         """
     ] .
 
 # Operational Cost Model
-:OperationalCostShape a sh:NodeShape ;
-    sh:targetClass :InfrastructureComponent ;
+dv:OperationalCostShape a sh:NodeShape ;
+    sh:targetClass dv:InfrastructureComponent ;
     sh:property [
-        sh:path :operationalCosts ;
+        sh:path dv:operationalCosts ;
         sh:node [
             sh:property [
-                sh:path :maintenanceCost ;
+                sh:path dv:maintenanceCost ;
                 sh:datatype xsd:decimal ;
                 sh:minCount 1 ;
                 sh:message "Must specify monthly maintenance cost."
             ] ;
             sh:property [
-                sh:path :supportTier ;
+                sh:path dv:supportTier ;
                 sh:in ("Basic" "Standard" "Premium" "Enterprise") ;
                 sh:minCount 1 ;
                 sh:message "Must specify valid support tier."
             ] ;
             sh:property [
-                sh:path :slaRequirement ;
-                sh:pattern "^[0-9]{2,3}\\.[0-9]{1,2}%$" ;
+                sh:path dv:slaRequirement ;
+                sh:pattern "^\\d{2}\\.\\d{2}%$" ;
                 sh:minCount 1 ;
-                sh:message "Must specify SLA requirement (e.g., 99.99%)."
-            ] ;
-            sh:property [
-                sh:path :backupCost ;
-                sh:datatype xsd:decimal ;
-                sh:minCount 1 ;
-                sh:message "Must specify monthly backup cost."
+                sh:message "Must specify SLA requirement in format XX.XX%."
             ]
         ]
     ] .
 
 # Database Cost Validation
-:DatabaseCostValidation a sh:NodeShape ;
-    sh:targetClass :DatabaseSystem ;
+dv:DatabaseCostValidation a sh:NodeShape ;
+    sh:targetClass dv:DatabaseSystem ;
     sh:property [
-        sh:path :storageCosts ;
+        sh:path dv:storageCosts ;
         sh:node [
             sh:property [
-                sh:path :storageType ;
+                sh:path dv:storageType ;
                 sh:in ("Standard" "Premium" "Archive") ;
                 sh:minCount 1 ;
                 sh:message "Must specify storage type."
             ] ;
             sh:property [
-                sh:path :replicaCost ;
+                sh:path dv:replicaCost ;
                 sh:datatype xsd:decimal ;
                 sh:minCount 1 ;
                 sh:message "Must specify replica cost."
             ] ;
             sh:property [
-                sh:path :backupRetention ;
+                sh:path dv:backupRetention ;
                 sh:pattern "^\\d+\\s+(days|months|years)$" ;
                 sh:minCount 1 ;
                 sh:message "Must specify backup retention period."
@@ -289,31 +462,31 @@ dv:CloudEnvironmentShape a sh:NodeShape ;
     ] .
 
 # Cost Optimization Rules
-:CostOptimizationValidation a sh:NodeShape ;
-    sh:targetClass :InfrastructureComponent ;
+dv:CostOptimizationValidation a sh:NodeShape ;
+    sh:targetClass dv:InfrastructureComponent ;
     sh:rule [
         a sh:SPARQLRule ;
         sh:construct """
             CONSTRUCT {
-                ?this :optimizationWarning "Consider reserved instances for stable workloads."
+                ?this dv:optimizationWarning "Consider reserved instances for stable workloads."
             }
             WHERE {
-                ?this :scalingType "None" .
-                ?this :costModel ?model .
-                ?model :baselineCost ?cost .
+                ?this dv:scalingType "None" .
+                ?this dv:costModel ?model .
+                ?model dv:baselineCost ?cost .
                 FILTER (?cost > 1000.0)
             }
         """
     ] .
 
 # Resource Utilization Cost
-:ResourceUtilizationShape a sh:NodeShape ;
-    sh:targetClass :InfrastructureComponent ;
+dv:ResourceUtilizationShape a sh:NodeShape ;
+    sh:targetClass dv:InfrastructureComponent ;
     sh:property [
-        sh:path :utilizationMetrics ;
+        sh:path dv:utilizationMetrics ;
         sh:node [
             sh:property [
-                sh:path :targetUtilization ;
+                sh:path dv:targetUtilization ;
                 sh:datatype xsd:decimal ;
                 sh:minInclusive 0.0 ;
                 sh:maxInclusive 1.0 ;
@@ -321,14 +494,14 @@ dv:CloudEnvironmentShape a sh:NodeShape ;
                 sh:message "Must specify target utilization (0.0-1.0)."
             ] ;
             sh:property [
-                sh:path :peakMultiplier ;
+                sh:path dv:peakMultiplier ;
                 sh:datatype xsd:decimal ;
                 sh:minInclusive 1.0 ;
                 sh:minCount 1 ;
                 sh:message "Must specify peak load multiplier."
             ] ;
             sh:property [
-                sh:path :costPerUnit ;
+                sh:path dv:costPerUnit ;
                 sh:datatype xsd:decimal ;
                 sh:minCount 1 ;
                 sh:message "Must specify cost per resource unit."
@@ -337,25 +510,25 @@ dv:CloudEnvironmentShape a sh:NodeShape ;
     ] .
 
 # Compliance Cost Requirements
-:ComplianceCostShape a sh:NodeShape ;
-    sh:targetClass :SecurityControl ;
+dv:ComplianceCostShape a sh:NodeShape ;
+    sh:targetClass dv:SecurityControl ;
     sh:property [
-        sh:path :complianceCosts ;
+        sh:path dv:complianceCosts ;
         sh:node [
             sh:property [
-                sh:path :auditCost ;
+                sh:path dv:auditCost ;
                 sh:datatype xsd:decimal ;
                 sh:minCount 1 ;
                 sh:message "Must specify annual audit cost."
             ] ;
             sh:property [
-                sh:path :certificationCost ;
+                sh:path dv:certificationCost ;
                 sh:datatype xsd:decimal ;
                 sh:minCount 1 ;
                 sh:message "Must specify certification cost."
             ] ;
             sh:property [
-                sh:path :complianceType ;
+                sh:path dv:complianceType ;
                 sh:in ("SOC2" "HIPAA" "PCI" "GDPR" "Internal") ;
                 sh:minCount 1 ;
                 sh:message "Must specify compliance type."

@@ -1,3 +1,11 @@
+# Ontology: depinst:DeploymentInstanceOntology
+# Implements: deployment:InstanceManagement
+# Requirement: REQ-DEP-001 Deployment Configuration
+# Guidance: guidance:ModelFirstPrinciple#deployment
+# Description: Specific deployment instances and configurations for the Teams bot
+# Cluster: :DeploymentCluster
+
+@prefix : <./chatbot#> .
 @prefix depinst: <./deployment_instance#> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
@@ -6,14 +14,180 @@
 @prefix chatbot: <./chatbot#> .
 @prefix solution: <./solution#> .
 @prefix deploy: <./deployment#> .
+@prefix meta: <./meta#> .
+@prefix metameta: <./metameta#> .
+@prefix problem: <./problem#> .
+@prefix conversation: <./conversation#> .
+@prefix guidance: <./guidance#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
 
 # Ontology metadata
 depinst:DeploymentInstanceOntology a owl:Ontology ;
     rdfs:label "Deployment Instance Ontology" ;
     rdfs:comment "Specific deployment instances and configurations for the Teams bot" ;
     owl:versionInfo "0.1.0" ;
-    owl:imports deploy: ;
-    owl:imports chatbot: .
+    owl:imports deploy:, chatbot:ChatbotLLMOntology ;
+    :belongsToCluster chatbot:DeploymentCluster .
+
+# Class Definitions
+depinst:KeyVault a owl:Class ;
+    rdfs:label "Key Vault" ;
+    rdfs:comment "Azure Key Vault instance for secret management" ;
+    owl:versionInfo "0.1.0" .
+
+depinst:ApplicationInsights a owl:Class ;
+    rdfs:label "Application Insights" ;
+    rdfs:comment "Azure Application Insights instance for monitoring" ;
+    owl:versionInfo "0.1.0" .
+
+depinst:CostModel a owl:Class ;
+    rdfs:label "Cost Model" ;
+    rdfs:comment "Cost model for deployment components" ;
+    owl:versionInfo "0.1.0" .
+
+depinst:CostComponentShape a owl:Class ;
+    rdfs:label "Cost Component Shape" ;
+    rdfs:comment "Shape defining cost components" ;
+    owl:versionInfo "0.1.0" .
+
+# Property Definitions
+depinst:securityLevel a owl:DatatypeProperty ;
+    rdfs:label "Security Level" ;
+    rdfs:comment "Security level of the component" ;
+    rdfs:domain depinst:KeyVault ;
+    rdfs:range xsd:string .
+
+depinst:managementType a owl:DatatypeProperty ;
+    rdfs:label "Management Type" ;
+    rdfs:comment "Type of access management" ;
+    rdfs:domain depinst:KeyVault ;
+    rdfs:range xsd:string .
+
+depinst:monitoringType a owl:DatatypeProperty ;
+    rdfs:label "Monitoring Type" ;
+    rdfs:comment "Type of monitoring" ;
+    rdfs:domain depinst:ApplicationInsights ;
+    rdfs:range xsd:string .
+
+depinst:dataRetention a owl:DatatypeProperty ;
+    rdfs:label "Data Retention" ;
+    rdfs:comment "Data retention period" ;
+    rdfs:domain depinst:ApplicationInsights ;
+    rdfs:range xsd:string .
+
+depinst:baselineCost a owl:DatatypeProperty ;
+    rdfs:label "Baseline Cost" ;
+    rdfs:comment "Base cost for the component" ;
+    rdfs:domain depinst:CostModel ;
+    rdfs:range xsd:decimal .
+
+depinst:scalingFactor a owl:DatatypeProperty ;
+    rdfs:label "Scaling Factor" ;
+    rdfs:comment "Cost scaling factor" ;
+    rdfs:domain depinst:CostModel ;
+    rdfs:range xsd:decimal .
+
+depinst:componentType a owl:DatatypeProperty ;
+    rdfs:label "Component Type" ;
+    rdfs:comment "Type of cost component" ;
+    rdfs:domain depinst:CostComponentShape ;
+    rdfs:range xsd:string .
+
+depinst:unitCost a owl:DatatypeProperty ;
+    rdfs:label "Unit Cost" ;
+    rdfs:comment "Cost per unit" ;
+    rdfs:domain depinst:CostComponentShape ;
+    rdfs:range xsd:decimal .
+
+depinst:billingUnit a owl:DatatypeProperty ;
+    rdfs:label "Billing Unit" ;
+    rdfs:comment "Unit for billing" ;
+    rdfs:domain depinst:CostComponentShape ;
+    rdfs:range xsd:string .
+
+depinst:maintenanceCost a owl:DatatypeProperty ;
+    rdfs:label "Maintenance Cost" ;
+    rdfs:comment "Cost for maintenance" ;
+    rdfs:domain owl:Thing ;
+    rdfs:range xsd:decimal .
+
+depinst:supportTier a owl:DatatypeProperty ;
+    rdfs:label "Support Tier" ;
+    rdfs:comment "Level of support" ;
+    rdfs:domain owl:Thing ;
+    rdfs:range xsd:string .
+
+depinst:slaRequirement a owl:DatatypeProperty ;
+    rdfs:label "SLA Requirement" ;
+    rdfs:comment "Required service level agreement" ;
+    rdfs:domain owl:Thing ;
+    rdfs:range xsd:string .
+
+depinst:backupCost a owl:DatatypeProperty ;
+    rdfs:label "Backup Cost" ;
+    rdfs:comment "Cost for backup services" ;
+    rdfs:domain owl:Thing ;
+    rdfs:range xsd:decimal .
+
+# SHACL Shapes
+depinst:KeyVaultShape a sh:NodeShape ;
+    sh:targetClass depinst:KeyVault ;
+    sh:property [
+        sh:path depinst:securityLevel ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+    ], [
+        sh:path depinst:managementType ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+    ] .
+
+depinst:ApplicationInsightsShape a sh:NodeShape ;
+    sh:targetClass depinst:ApplicationInsights ;
+    sh:property [
+        sh:path depinst:monitoringType ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+    ], [
+        sh:path depinst:dataRetention ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+    ] .
+
+depinst:CostModelShape a sh:NodeShape ;
+    sh:targetClass depinst:CostModel ;
+    sh:property [
+        sh:path depinst:baselineCost ;
+        sh:minCount 1 ;
+        sh:datatype xsd:decimal ;
+    ], [
+        sh:path depinst:scalingFactor ;
+        sh:minCount 1 ;
+        sh:datatype xsd:decimal ;
+    ] .
+
+# Additional Instances
+depinst:BackupKeyVault a depinst:KeyVault ;
+    rdfs:label "Backup Key Vault" ;
+    depinst:securityLevel "Standard" ;
+    depinst:managementType "RBAC" ;
+    depinst:operationalCosts [
+        depinst:maintenanceCost "25.00"^^xsd:decimal ;
+        depinst:supportTier "Basic" ;
+        depinst:slaRequirement "99.9%" ;
+        depinst:backupCost "10.00"^^xsd:decimal
+    ] .
+
+depinst:DevAppInsights a depinst:ApplicationInsights ;
+    rdfs:label "Development Application Insights" ;
+    depinst:monitoringType "Development" ;
+    depinst:dataRetention "30 days" ;
+    depinst:operationalCosts [
+        depinst:maintenanceCost "25.00"^^xsd:decimal ;
+        depinst:supportTier "Basic" ;
+        depinst:slaRequirement "99.9%" ;
+        depinst:backupCost "0.00"^^xsd:decimal
+    ] .
 
 # Teams Bot Azure Function Instance
 depinst:TeamsBotFunction a deploy:InfrastructureComponent ;
@@ -28,66 +202,66 @@ depinst:TeamsBotFunction a deploy:InfrastructureComponent ;
         deploy:configModule "config.py" ;
         deploy:functionRoot "teams-bot/function_app.py"
     ] ;
-    deploy:dependsOn :KeyVault ;
+    deploy:dependsOn depinst:KeyVault ;
     deploy:operationalCosts [
-        :maintenanceCost "100.00"^^xsd:decimal ;
-        :supportTier "Standard" ;
-        :slaRequirement "99.95%" ;
-        :backupCost "50.00"^^xsd:decimal
+        depinst:maintenanceCost "100.00"^^xsd:decimal ;
+        depinst:supportTier "Standard" ;
+        depinst:slaRequirement "99.95%" ;
+        depinst:backupCost "50.00"^^xsd:decimal
     ] ;
     deploy:utilizationMetrics [
-        :targetUtilization "0.7"^^xsd:decimal ;
-        :peakMultiplier "2.0"^^xsd:decimal ;
-        :costPerUnit "0.10"^^xsd:decimal
+        depinst:targetUtilization "0.7"^^xsd:decimal ;
+        depinst:peakMultiplier "2.0"^^xsd:decimal ;
+        depinst:costPerUnit "0.10"^^xsd:decimal
     ] .
 
 # Key Vault Instance
-:BotKeyVault a :KeyVault ;
+depinst:BotKeyVault a depinst:KeyVault ;
     rdfs:label "Bot Key Vault" ;
-    :securityLevel "HSM-backed" ;
-    :managementType "RBAC" ;
-    :operationalCosts [
-        :maintenanceCost "50.00"^^xsd:decimal ;
-        :supportTier "Standard" ;
-        :slaRequirement "99.99%" ;
-        :backupCost "25.00"^^xsd:decimal
+    depinst:securityLevel "HSM-backed" ;
+    depinst:managementType "RBAC" ;
+    depinst:operationalCosts [
+        depinst:maintenanceCost "50.00"^^xsd:decimal ;
+        depinst:supportTier "Standard" ;
+        depinst:slaRequirement "99.99%" ;
+        depinst:backupCost "25.00"^^xsd:decimal
     ] .
 
 # Application Insights Instance
-:BotAppInsights a :ApplicationInsights ;
+depinst:BotAppInsights a depinst:ApplicationInsights ;
     rdfs:label "Bot Application Insights" ;
-    :monitoringType "Application Performance" ;
-    :dataRetention "90 days" ;
-    :operationalCosts [
-        :maintenanceCost "75.00"^^xsd:decimal ;
-        :supportTier "Standard" ;
-        :slaRequirement "99.95%" ;
-        :backupCost "0.00"^^xsd:decimal
+    depinst:monitoringType "Application Performance" ;
+    depinst:dataRetention "90 days" ;
+    depinst:operationalCosts [
+        depinst:maintenanceCost "75.00"^^xsd:decimal ;
+        depinst:supportTier "Standard" ;
+        depinst:slaRequirement "99.95%" ;
+        depinst:backupCost "0.00"^^xsd:decimal
     ] .
 
 # Cost Model
-:TeamsBotCostModel a :CostModel ;
+depinst:TeamsBotCostModel a depinst:CostModel ;
     rdfs:label "Teams Bot Cost Model" ;
-    :baselineCost "500.00"^^xsd:decimal ;
-    :scalingFactor "1.5"^^xsd:decimal ;
-    :costComponents [
-        a :CostComponentShape ;
-        :componentType "Compute" ;
-        :unitCost "0.10"^^xsd:decimal ;
-        :billingUnit "Hour"
+    depinst:baselineCost "500.00"^^xsd:decimal ;
+    depinst:scalingFactor "1.5"^^xsd:decimal ;
+    depinst:costComponents [
+        a depinst:CostComponentShape ;
+        depinst:componentType "Compute" ;
+        depinst:unitCost "0.10"^^xsd:decimal ;
+        depinst:billingUnit "Hour"
     ], [
-        a :CostComponentShape ;
-        :componentType "Storage" ;
-        :unitCost "0.05"^^xsd:decimal ;
-        :billingUnit "GB"
+        a depinst:CostComponentShape ;
+        depinst:componentType "Storage" ;
+        depinst:unitCost "0.05"^^xsd:decimal ;
+        depinst:billingUnit "GB"
     ], [
-        a :CostComponentShape ;
-        :componentType "Network" ;
-        :unitCost "0.01"^^xsd:decimal ;
-        :billingUnit "Transaction"
+        a depinst:CostComponentShape ;
+        depinst:componentType "Network" ;
+        depinst:unitCost "0.01"^^xsd:decimal ;
+        depinst:billingUnit "Transaction"
     ], [
-        a :CostComponentShape ;
-        :componentType "Support" ;
-        :unitCost "100.00"^^xsd:decimal ;
-        :billingUnit "Month"
+        a depinst:CostComponentShape ;
+        depinst:componentType "Support" ;
+        depinst:unitCost "100.00"^^xsd:decimal ;
+        depinst:billingUnit "Month"
     ] .

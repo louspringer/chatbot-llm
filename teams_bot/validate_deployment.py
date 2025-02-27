@@ -12,7 +12,8 @@ from rdflib import Graph, Namespace
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s",
 )
 logger = logging.getLogger(__name__)
 
@@ -48,7 +49,9 @@ def load_ontologies(base_path: Path) -> tuple[Graph, Graph, Graph]:
 
 
 def validate_deployment(
-    data_graph: Graph, shacl_graph: Graph, ont_graph: Graph
+    data_graph: Graph,
+    shacl_graph: Graph,
+    ont_graph: Graph,
 ) -> tuple[bool, Graph, str]:
     """
     Validate deployment data against SHACL rules.
@@ -90,7 +93,7 @@ def check_required_components(data_graph: Graph) -> bool:
 
     all_present = True
     for component, name in required_components:
-        if not (None, None, component) in data_graph:
+        if (None, None, component) not in data_graph:
             logger.error(f"Missing required component: {name}")
             all_present = False
 
@@ -115,7 +118,9 @@ def main():
         # Validate against SHACL rules
         logger.info("Validating against SHACL rules...")
         is_valid, results_graph, results_text = validate_deployment(
-            data_graph, shacl_graph, ont_graph
+            data_graph,
+            shacl_graph,
+            ont_graph,
         )
 
         if not is_valid:

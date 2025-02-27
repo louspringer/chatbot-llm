@@ -15,8 +15,11 @@ from unittest.mock import Mock, patch
 import pytest
 from rdflib import Graph, Namespace
 
-from tools.chatbot_llm.session_context_manager import SessionContextManager
-from tools.chatbot_llm.session_context_manager import main as session_manager_main
+from tools.chatbot_llm.session_context_manager import (
+    SessionContextManager,
+    main as session_manager_main,
+)
+
 
 # Constants for testing
 TEST_DIR = Path(__file__).parent / "fixtures"
@@ -60,10 +63,10 @@ SAMPLE_LOG_TTL = """
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 :entry_2024_03_20_001 a guidance:SessionLogEntry ;
-    rdfs:label "Initial Session Log Entry" ;
+    rdfs:label "Initial Session Log Entry"^^xsd:string ;
     guidance:hasActor :ClaudeAI ;
     guidance:hasTimestamp "2024-03-20T18:30:00Z"^^xsd:dateTime ;
-    guidance:hasChangeReason "Initial state" .
+    guidance:hasChangeReason "Initial state"^^xsd:string .
 """
 
 
@@ -158,7 +161,8 @@ def test_save_graphs(context_manager, setup_test_files):
 
     # Add some test data
     SESSION = Namespace("./session#")
-    context_manager.session_graph.add((SESSION.test, SESSION.property, SESSION.value))
+    test_triple = (SESSION.test, SESSION.property, SESSION.value)
+    context_manager.session_graph.add(test_triple)
 
     # Save and verify
     context_manager.save_graphs()
@@ -166,9 +170,9 @@ def test_save_graphs(context_manager, setup_test_files):
     assert log_file.exists()
 
 
-def test_get_current_context(context_manager, mock_anthropic):
+def test_get_current_context(dry_run_manager, mock_anthropic):
     """Test getting current context"""
-    result = context_manager.get_current_context()
+    result = dry_run_manager.get_current_context()
     assert isinstance(result, str)
     assert ":test_context" in result
     assert "session:Context" in result
@@ -182,27 +186,27 @@ def test_list_contexts(context_manager, mock_anthropic):
     assert "current_state" in result
 
 
-def test_pop_context(context_manager, mock_anthropic):
+def test_pop_context(dry_run_manager, mock_anthropic):
     """Test popping context"""
-    result = context_manager.pop_context()
+    result = dry_run_manager.pop_context()
     assert isinstance(result, str)
     assert ":test_context" in result
     assert "session:Context" in result
 
 
-def test_search_contexts(context_manager, mock_anthropic):
+def test_search_contexts(dry_run_manager, mock_anthropic):
     """Test searching contexts"""
     query = "test query"
-    result = context_manager.search_contexts(query)
+    result = dry_run_manager.search_contexts(query)
     assert isinstance(result, str)
     assert ":test_context" in result
     assert "session:Context" in result
 
 
-def test_restore_context(context_manager, mock_anthropic):
+def test_restore_context(dry_run_manager, mock_anthropic):
     """Test restoring context"""
     context_id = "test_context_id"
-    result = context_manager.restore_context(context_id)
+    result = dry_run_manager.restore_context(context_id)
     assert isinstance(result, str)
     assert ":test_context" in result
     assert "session:Context" in result
@@ -264,7 +268,9 @@ def test_cli_interface():
         with patch.object(mock_instance, "format_output") as mock_format:
             session_manager_main()
             mock_format.assert_called_with(
-                {"test": "contexts"}, pretty=False, color=True
+                {"test": "contexts"},
+                pretty=False,
+                color=True,
             )
 
 
@@ -299,5 +305,7 @@ def test_cli_commands(command, expected_method):
                 mock_format.assert_called_with(mock_result, pretty=False, color=True)
             else:
                 mock_format.assert_called_with(
-                    {"formatted": mock_result}, pretty=False, color=True
+                    {"formatted": mock_result},
+                    pretty=False,
+                    color=True,
                 )

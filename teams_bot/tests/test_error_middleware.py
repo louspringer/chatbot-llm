@@ -104,7 +104,9 @@ async def test_error_handling_with_state_transition(mock_storage, mock_context):
     await middleware.on_turn(mock_context, next_mock)
 
     state_manager.trigger_transition.assert_called_once_with(
-        mock_context, "error", None
+        mock_context,
+        "error",
+        None,
     )
 
 

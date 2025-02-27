@@ -7,7 +7,6 @@ configuration files.
 
 import argparse
 from pathlib import Path
-from typing import Dict, Optional
 
 import tomli
 import tomli_w
@@ -20,17 +19,16 @@ class DependencyManager:
         self.pyproject_path = workspace_root / "pyproject.toml"
         self.environment_path = workspace_root / "environment.yml"
 
-    def read_pyproject(self) -> Dict:
+    def read_pyproject(self) -> dict:
         """Read pyproject.toml configuration."""
         if not self.pyproject_path.exists():
-            raise FileNotFoundError(
-                f"pyproject.toml not found at {self.pyproject_path}"
-            )
+            error_msg = f"pyproject.toml not found at {self.pyproject_path}"
+            raise FileNotFoundError(error_msg)
 
-        with open(self.pyproject_path, "rb") as f:
+        with self.pyproject_path.open("rb") as f:
             return tomli.load(f)
 
-    def read_environment(self) -> Dict:
+    def read_environment(self) -> dict:
         """Read environment.yml configuration."""
         if not self.environment_path.exists():
             return {
@@ -39,30 +37,32 @@ class DependencyManager:
                 "dependencies": [],
             }
 
-        with open(self.environment_path) as f:
+        with self.environment_path.open() as f:
             return yaml.safe_load(f)
 
-    def write_pyproject(self, config: Dict):
+    def write_pyproject(self, config: dict):
         """Write pyproject.toml configuration."""
-        with open(self.pyproject_path, "wb") as f:
+        with self.pyproject_path.open("wb") as f:
             tomli_w.dump(config, f)
 
-    def write_environment(self, config: Dict):
+    def write_environment(self, config: dict):
         """Write environment.yml configuration."""
-        with open(self.environment_path, "w") as f:
+        with self.environment_path.open("w") as f:
             yaml.safe_dump(config, f, sort_keys=False)
 
     def add_dependency(
         self,
         package: str,
-        version: Optional[str] = None,
+        version: str | None = None,
+        *,
         dev: bool = False,
         conda_only: bool = False,
         pip_only: bool = False,
     ):
         """Add a dependency to both pyproject.toml and environment.yml."""
         if conda_only and pip_only:
-            raise ValueError("Cannot be both conda_only and pip_only")
+            error_msg = "Cannot be both conda_only and pip_only"
+            raise ValueError(error_msg)
 
         # Update pyproject.toml
         if not pip_only:
@@ -78,14 +78,15 @@ class DependencyManager:
                 deps.append(dep_str)
                 (
                     pyproject.setdefault("project", {}).setdefault(
-                        "optional-dependencies", {}
+                        "optional-dependencies",
+                        {},
                     )["dev"]
                 ) = sorted(set(deps))
             else:
                 deps = pyproject.get("project", {}).get("dependencies", [])
                 deps.append(dep_str)
                 pyproject.setdefault("project", {})["dependencies"] = sorted(
-                    set(deps)
+                    set(deps),
                 )
 
             self.write_pyproject(pyproject)
@@ -107,17 +108,13 @@ class DependencyManager:
                 )
                 if pip_deps is None:
                     env.setdefault("dependencies", []).append(
-                        {"pip": [dep_str]}
+                        {"pip": [dep_str]},
                     )
                 else:
                     pip_deps.append(dep_str)
             else:
                 # Add to conda dependencies
-                deps = [
-                    d
-                    for d in env.get("dependencies", [])
-                    if isinstance(d, str)
-                ]
+                deps = [d for d in env.get("dependencies", []) if isinstance(d, str)]
                 deps.append(dep_str)
                 env["dependencies"] = sorted(set(deps))
 
@@ -126,13 +123,15 @@ class DependencyManager:
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Manage project dependencies"
+        description="Manage project dependencies",
     )
     parser.add_argument("action", choices=["add"], help="Action to perform")
     parser.add_argument("package", help="Package name")
     parser.add_argument("--version", help="Package version constraint")
     parser.add_argument(
-        "--dev", action="store_true", help="Add as development dependency"
+        "--dev",
+        action="store_true",
+        help="Add as development dependency",
     )
     parser.add_argument(
         "--conda-only",
@@ -140,7 +139,9 @@ def main():
         help="Only add to environment.yml",
     )
     parser.add_argument(
-        "--pip-only", action="store_true", help="Only add to pip dependencies"
+        "--pip-only",
+        action="store_true",
+        help="Only add to pip dependencies",
     )
 
     args = parser.parse_args()
@@ -150,9 +151,9 @@ def main():
         manager.add_dependency(
             args.package,
             args.version,
-            args.dev,
-            args.conda_only,
-            args.pip_only,
+            dev=args.dev,
+            conda_only=args.conda_only,
+            pip_only=args.pip_only,
         )
 
 

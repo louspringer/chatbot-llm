@@ -29,7 +29,7 @@ dependencies = []
 
 [project.optional-dependencies]
 dev = []
-"""
+""",
         )
 
         (workspace / "environment.yml").write_text(
@@ -39,7 +39,7 @@ channels:
   - conda-forge
   - defaults
 dependencies: []
-"""
+""",
         )
 
         # Create test ontology
@@ -67,23 +67,31 @@ def test_validate_package_request(package_manager):
     """Tests package request validation."""
     # Test valid core dependency
     assert package_manager.validate_package_request(
-        "test-package", "1.0.0", "CoreDependency"
+        "test-package",
+        "1.0.0",
+        "CoreDependency",
     )
 
     # Test valid development dependency
     assert package_manager.validate_package_request(
-        "test-package", "1.0.0", "DevelopmentDependency"
+        "test-package",
+        "1.0.0",
+        "DevelopmentDependency",
     )
 
     # Test invalid dependency type
     assert not package_manager.validate_package_request(
-        "test-package", "1.0.0", "InvalidDependency"
+        "test-package",
+        "1.0.0",
+        "InvalidDependency",
     )
 
     # Test duplicate package
     package_manager._update_ontology("test-package", "1.0.0", "CoreDependency")
     assert not package_manager.validate_package_request(
-        "test-package", "2.0.0", "CoreDependency"
+        "test-package",
+        "2.0.0",
+        "CoreDependency",
     )
 
 
@@ -129,7 +137,10 @@ def test_add_package(mock_run, package_manager):
     """Tests the complete package addition process."""
     # Test successful conda package addition
     assert package_manager.add_package(
-        "test-package", "1.0.0", "CoreDependency", use_conda=True
+        "test-package",
+        "1.0.0",
+        "CoreDependency",
+        use_conda=True,
     )
 
     # Check ontology was updated
@@ -137,12 +148,18 @@ def test_add_package(mock_run, package_manager):
 
     # Test failed package addition (duplicate)
     assert not package_manager.add_package(
-        "test-package", "2.0.0", "CoreDependency", use_conda=True
+        "test-package",
+        "2.0.0",
+        "CoreDependency",
+        use_conda=True,
     )
 
     # Test failed package addition (invalid type)
     assert not package_manager.add_package(
-        "other-package", "1.0.0", "InvalidDependency", use_conda=True
+        "other-package",
+        "1.0.0",
+        "InvalidDependency",
+        use_conda=True,
     )
 
 

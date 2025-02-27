@@ -68,7 +68,7 @@ def test_graph():
             checkpoint,
             SESSION.resumptionPrompt,
             Literal(VALID_CHECKPOINT_DATA["prompt"]),
-        )  # noqa: E501
+        ),  # noqa: E501
     )
 
     # Add prompt state with current timestamp
@@ -80,7 +80,7 @@ def test_graph():
             prompt_state,
             SESSION.lastUpdated,
             Literal(datetime.now(timezone.utc).isoformat()),
-        )
+        ),
     )
 
     # Add current task
@@ -121,9 +121,7 @@ def format_expected_output(data: Dict) -> str:
     for label, details in data["components"].items():
         # Format each detail line
         detail_template = EXPECTED_OUTPUT_TEMPLATES["component_detail"]
-        detail_lines = [
-            detail_template.format(detail=detail[1]) for detail in details
-        ]
+        detail_lines = [detail_template.format(detail=detail[1]) for detail in details]
 
         # Format section with details
         section = EXPECTED_OUTPUT_TEMPLATES["component_section"].format(
@@ -143,14 +141,8 @@ def format_expected_output(data: Dict) -> str:
 def test_clean_uri():
     """Test URI cleaning function with LLM guidance."""
     # Test UUID cleaning
-    assert (
-        clean_uri("n123e4567890123456789012345678901b1")
-        == "<internal-reference>"
-    )
-    assert (
-        clean_uri("123e4567-e89b-12d3-a456-426614174000")
-        == "<internal-reference>"
-    )
+    assert clean_uri("n123e4567890123456789012345678901b1") == "<internal-reference>"
+    assert clean_uri("123e4567-e89b-12d3-a456-426614174000") == "<internal-reference>"
 
     # Test relative path cleaning
     assert clean_uri("./path/to/file#component") == "component"
@@ -265,9 +257,7 @@ def test_get_checkpoint_components(test_graph):
     components = get_checkpoint_components(g, SESSION)
 
     # Verify against expected data
-    for label, expected_details in VALID_CHECKPOINT_DATA[
-        "components"
-    ].items():
+    for label, expected_details in VALID_CHECKPOINT_DATA["components"].items():
         assert label in components
 
         # Check priorities
@@ -282,7 +272,8 @@ def test_get_checkpoint_components(test_graph):
 
 
 def test_output_format(
-    test_graph: Tuple[Graph, Namespace], capsys: Any
+    test_graph: Tuple[Graph, Namespace],
+    capsys: Any,
 ) -> None:  # noqa: E501
     """Test the complete output format with LLM guidance."""
     g, SESSION = test_graph

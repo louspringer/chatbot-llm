@@ -1,4 +1,12 @@
-@prefix : <./documentation#> .
+# Ontology: doc:DocumentationOntology
+# Implements: documentation:Documentation
+# Requirement: REQ-DOC-001 Documentation
+# Guidance: guidance:ModelFirstPrinciple#documentation
+# Description: Ontology for Teams Bot documentation and validation process
+# Cluster: :DeploymentCluster
+
+@prefix : <./chatbot#> .
+@prefix doc: <./documentation#> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
@@ -6,13 +14,20 @@
 @prefix deployment: <./deployment#> .
 @prefix meta: <./meta#> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix chatbot: <./chatbot#> .
+@prefix metameta: <./metameta#> .
+@prefix problem: <./problem#> .
+@prefix solution: <./solution#> .
+@prefix conversation: <./conversation#> .
+@prefix guidance: <./guidance#> .
 
 # Documentation Ontology
-:DocumentationOntology a owl:Ontology ;
+doc:DocumentationOntology a owl:Ontology ;
     rdfs:label "Documentation Ontology" ;
     rdfs:comment "Ontology for Teams Bot documentation and validation process" ;
-    owl:imports <./deployment>, <./meta> ;
-    owl:versionInfo "1.0" .
+    owl:imports deployment:, meta:, chatbot:ChatbotLLMOntology ;
+    owl:versionInfo "1.0" ;
+    :belongsToCluster chatbot:DeploymentCluster .
 
 # Documentation Classes
 :Documentation a owl:Class ;

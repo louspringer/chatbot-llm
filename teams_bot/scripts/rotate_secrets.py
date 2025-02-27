@@ -72,7 +72,7 @@ async def rotate_snowflake_keys() -> bool:
         # Extract and format public key for Snowflake
         logger.info("Extracting and formatting public key...")
         returncode, stdout, stderr = run_command(
-            f"openssl rsa -in {new_key_path} -pubout -outform PEM"
+            f"openssl rsa -in {new_key_path} -pubout -outform PEM",
         )
         if returncode != 0:
             raise Exception(f"Failed to extract public key: {stderr}")

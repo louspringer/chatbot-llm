@@ -1,46 +1,70 @@
-@prefix : <#> .
+# Ontology: ctr:CortexTeamsRisksOntology
+# Implements: risks:RiskManagement
+# Requirement: REQ-RISK-001 Risk Assessment
+# Guidance: guidance:ModelFirstPrinciple#riskManagement
+# Description: Defines risks and controls for Teams integration
+# Cluster: :RiskManagementCluster
+
+@prefix : <./chatbot#> .
+@prefix ctr: <./cortexteamsrisks#> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 @prefix risks: <./ontology-framework/risks#> .
 @prefix teams: <./cortexteams#> .
+@prefix meta: <./meta#> .
+@prefix metameta: <./metameta#> .
+@prefix problem: <./problem#> .
+@prefix solution: <./solution#> .
+@prefix conversation: <./conversation#> .
+@prefix guidance: <./guidance#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix chatbot: <./chatbot#> .
 
-# Import base risk ontology
-owl:imports risks: .
+# Ontology metadata
+ctr:CortexTeamsRisksOntology a owl:Ontology ;
+    rdfs:label "Teams Risk Ontology" ;
+    rdfs:comment "Ontology for Teams integration risks" ;
+    owl:imports risks:, chatbot:ChatbotLLMOntology ;
+    owl:versionInfo "0.1.0" ;
+    :belongsToCluster chatbot:RiskManagementCluster .
 
 # Teams-specific Risk Categories
-:TeamsIntegrationRisk a owl:Class ;
+ctr:TeamsIntegrationRisk a owl:Class ;
     rdfs:subClassOf risks:SecurityRisk ;
     rdfs:label "Teams Integration Risk" ;
-    rdfs:comment "Risks specific to Microsoft Teams integration" .
+    rdfs:comment "Risks specific to Microsoft Teams integration" ;
+    owl:versionInfo "0.1.0" .
 
-:MLModelRisk a owl:Class ;
+ctr:MLModelRisk a owl:Class ;
     rdfs:subClassOf risks:OperationalRisk ;
     rdfs:label "ML Model Risk" ;
-    rdfs:comment "Risks related to ML model operations and performance" .
+    rdfs:comment "Risks related to ML model operations and performance" ;
+    owl:versionInfo "0.1.0" .
 
-:DataAccessRisk a owl:Class ;
+ctr:DataAccessRisk a owl:Class ;
     rdfs:subClassOf risks:SecurityRisk ;
     rdfs:label "Data Access Risk" ;
-    rdfs:comment "Risks related to data access and permissions" .
+    rdfs:comment "Risks related to data access and permissions" ;
+    owl:versionInfo "0.1.0" .
 
 # Risk Instances
-:teamsAuthFailure a :TeamsIntegrationRisk ;
+ctr:teamsAuthFailure a ctr:TeamsIntegrationRisk ;
     rdfs:label "Teams Authentication Failure" ;
     rdfs:comment "Risk of Teams authentication mechanism failure" ;
     risks:severity "High" ;
     risks:probability "Medium" ;
     risks:mitigation "Implement robust error handling and fallback authentication" .
 
-:modelDrift a :MLModelRisk ;
+ctr:modelDrift a ctr:MLModelRisk ;
     rdfs:label "Model Drift" ;
     rdfs:comment "Risk of ML model performance degradation over time" ;
     risks:severity "Medium" ;
     risks:probability "High" ;
     risks:mitigation "Regular model retraining and performance monitoring" .
 
-:unauthorizedDataAccess a :DataAccessRisk ;
+ctr:unauthorizedDataAccess a ctr:DataAccessRisk ;
     rdfs:label "Unauthorized Data Access" ;
     rdfs:comment "Risk of unauthorized access to sensitive data" ;
     risks:severity "High" ;
@@ -48,75 +72,193 @@ owl:imports risks: .
     risks:mitigation "Implement zero-trust security model and continuous monitoring" .
 
 # Risk Properties
-:affectsComponent a owl:ObjectProperty ;
+ctr:affectsComponent a owl:ObjectProperty ;
     rdfs:domain risks:Risk ;
     rdfs:range teams:Component ;
     rdfs:label "Affects Component" ;
     rdfs:comment "Links a risk to affected Teams component" .
 
-:requiresControl a owl:ObjectProperty ;
+ctr:requiresControl a owl:ObjectProperty ;
     rdfs:domain risks:Risk ;
-    rdfs:range :SecurityControl ;
+    rdfs:range ctr:SecurityControl ;
     rdfs:label "Requires Control" ;
     rdfs:comment "Links a risk to required security controls" .
 
+ctr:implements a owl:DatatypeProperty ;
+    rdfs:domain ctr:SecurityControl ;
+    rdfs:range xsd:string ;
+    rdfs:label "Implements" ;
+    rdfs:comment "Implementation details of the security control" .
+
+ctr:assessmentDate a owl:DatatypeProperty ;
+    rdfs:domain ctr:RiskAssessment ;
+    rdfs:range xsd:date ;
+    rdfs:label "Assessment Date" ;
+    rdfs:comment "Date when the risk assessment was performed" .
+
+ctr:assessedRisks a owl:ObjectProperty ;
+    rdfs:domain ctr:RiskAssessment ;
+    rdfs:range risks:Risk ;
+    rdfs:label "Assessed Risks" ;
+    rdfs:comment "Risks that were assessed" .
+
+ctr:overallRiskLevel a owl:DatatypeProperty ;
+    rdfs:domain ctr:RiskAssessment ;
+    rdfs:range xsd:string ;
+    rdfs:label "Overall Risk Level" ;
+    rdfs:comment "Overall risk level assessment" .
+
+ctr:severity a owl:DatatypeProperty ;
+    rdfs:domain risks:Risk ;
+    rdfs:range xsd:string ;
+    rdfs:label "Severity" ;
+    rdfs:comment "Severity level of the risk" .
+
+ctr:probability a owl:DatatypeProperty ;
+    rdfs:domain risks:Risk ;
+    rdfs:range xsd:string ;
+    rdfs:label "Probability" ;
+    rdfs:comment "Probability of risk occurrence" .
+
+ctr:mitigation a owl:DatatypeProperty ;
+    rdfs:domain risks:Risk ;
+    rdfs:range xsd:string ;
+    rdfs:label "Mitigation" ;
+    rdfs:comment "Risk mitigation strategy" .
+
 # Security Controls
-:SecurityControl a owl:Class ;
+ctr:SecurityControl a owl:Class ;
     rdfs:label "Security Control" ;
-    rdfs:comment "Security control measure for risk mitigation" .
+    rdfs:comment "Security control measure for risk mitigation" ;
+    owl:versionInfo "0.1.0" .
 
-:authenticationControl a :SecurityControl ;
-    rdfs:label "Authentication Control" ;
-    rdfs:comment "Controls for authentication and authorization" ;
-    :implements "Azure AD integration" .
+# SHACL Shapes
+ctr:RiskShape a sh:NodeShape ;
+    sh:targetClass risks:Risk ;
+    sh:property [
+        sh:path ctr:severity ;
+        sh:datatype xsd:string ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+    ] ,
+    [
+        sh:path ctr:probability ;
+        sh:datatype xsd:string ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+    ] ,
+    [
+        sh:path ctr:mitigation ;
+        sh:datatype xsd:string ;
+        sh:minCount 1 ;
+    ] ,
+    [
+        sh:path ctr:requiresControl ;
+        sh:class ctr:SecurityControl ;
+        sh:minCount 1 ;
+    ] .
 
-:modelMonitoring a :SecurityControl ;
-    rdfs:label "Model Monitoring" ;
-    rdfs:comment "Controls for ML model monitoring" ;
-    :implements "Performance metrics and alerts" .
+ctr:SecurityControlShape a sh:NodeShape ;
+    sh:targetClass ctr:SecurityControl ;
+    sh:property [
+        sh:path ctr:implements ;
+        sh:datatype xsd:string ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+    ] .
 
-:dataAccessControl a :SecurityControl ;
-    rdfs:label "Data Access Control" ;
-    rdfs:comment "Controls for data access and protection" ;
-    :implements "RBAC and encryption" .
+ctr:RiskAssessmentShape a sh:NodeShape ;
+    sh:targetClass ctr:RiskAssessment ;
+    sh:property [
+        sh:path ctr:assessmentDate ;
+        sh:datatype xsd:date ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+    ] ,
+    [
+        sh:path ctr:assessedRisks ;
+        sh:class risks:Risk ;
+        sh:minCount 1 ;
+    ] ,
+    [
+        sh:path ctr:overallRiskLevel ;
+        sh:datatype xsd:string ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+    ] .
+
+# Additional Risk Instances
+ctr:modelBias a ctr:MLModelRisk ;
+    rdfs:label "Model Bias" ;
+    rdfs:comment "Risk of ML model exhibiting bias in responses" ;
+    ctr:severity "High" ;
+    ctr:probability "Medium" ;
+    ctr:mitigation "Regular bias testing and model retraining" ;
+    ctr:requiresControl ctr:modelMonitoring .
+
+ctr:dataLeakage a ctr:DataAccessRisk ;
+    rdfs:label "Data Leakage" ;
+    rdfs:comment "Risk of sensitive data exposure" ;
+    ctr:severity "High" ;
+    ctr:probability "Low" ;
+    ctr:mitigation "Data encryption and access controls" ;
+    ctr:requiresControl ctr:dataAccessControl .
+
+# Additional Security Control Instances
+ctr:biasMonitoring a ctr:SecurityControl ;
+    rdfs:label "Bias Monitoring" ;
+    rdfs:comment "Controls for monitoring and mitigating model bias" ;
+    ctr:implements "Bias detection and mitigation framework" .
+
+ctr:encryptionControl a ctr:SecurityControl ;
+    rdfs:label "Encryption Control" ;
+    rdfs:comment "Controls for data encryption" ;
+    ctr:implements "End-to-end encryption" .
+
+# Additional Risk Assessment Instance
+ctr:modelRiskAssessment a ctr:RiskAssessment ;
+    rdfs:label "ML Model Risk Assessment" ;
+    ctr:assessmentDate "2024-03-15"^^xsd:date ;
+    ctr:assessedRisks ctr:modelBias, ctr:modelDrift ;
+    ctr:overallRiskLevel "Medium-High" .
 
 # Risk Relationships
-:teamsAuthFailure
-    :affectsComponent teams:AuthenticationComponent ;
-    :requiresControl :authenticationControl .
+ctr:teamsAuthFailure
+    ctr:affectsComponent teams:AuthenticationComponent ;
+    ctr:requiresControl ctr:authenticationControl .
 
-:modelDrift
-    :affectsComponent teams:MLComponent ;
-    :requiresControl :modelMonitoring .
+ctr:modelDrift
+    ctr:affectsComponent teams:MLComponent ;
+    ctr:requiresControl ctr:modelMonitoring .
 
-:unauthorizedDataAccess
-    :affectsComponent teams:DataAccessComponent ;
-    :requiresControl :dataAccessControl .
+ctr:unauthorizedDataAccess
+    ctr:affectsComponent teams:DataAccessComponent ;
+    ctr:requiresControl ctr:dataAccessControl .
 
 # Validation Rules
-:RiskValidation a owl:Class ;
+ctr:RiskValidation a owl:Class ;
     rdfs:label "Risk Validation" ;
     rdfs:comment "Validation rules for risk assessment" .
 
-:requiresMitigation a owl:DatatypeProperty ;
+ctr:requiresMitigation a owl:DatatypeProperty ;
     rdfs:domain risks:Risk ;
     rdfs:range xsd:boolean ;
     rdfs:label "Requires Mitigation" ;
     rdfs:comment "Indicates if risk requires active mitigation" .
 
-:lastAssessment a owl:DatatypeProperty ;
+ctr:lastAssessment a owl:DatatypeProperty ;
     rdfs:domain risks:Risk ;
     rdfs:range xsd:dateTime ;
     rdfs:label "Last Assessment" ;
     rdfs:comment "Date of last risk assessment" .
 
 # Risk Assessment
-:RiskAssessment a owl:Class ;
+ctr:RiskAssessment a owl:Class ;
     rdfs:label "Risk Assessment" ;
     rdfs:comment "Assessment of identified risks" .
 
-:teamsRiskAssessment a :RiskAssessment ;
+ctr:teamsRiskAssessment a ctr:RiskAssessment ;
     rdfs:label "Teams Integration Risk Assessment" ;
-    :assessmentDate "2024-01-26"^^xsd:date ;
-    :assessedRisks :teamsAuthFailure, :modelDrift, :unauthorizedDataAccess ;
-    :overallRiskLevel "Medium" .
+    ctr:assessmentDate "2024-01-26"^^xsd:date ;
+    ctr:assessedRisks ctr:teamsAuthFailure, ctr:modelDrift, ctr:unauthorizedDataAccess ;
+    ctr:overallRiskLevel "Medium" .

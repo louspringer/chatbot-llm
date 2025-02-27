@@ -91,7 +91,7 @@ def main() -> None:
 
     if not ontology_framework_dir.exists():
         print(
-            f"Error: ontology-framework directory not found at {ontology_framework_dir}"
+            f"Error: ontology-framework directory not found at {ontology_framework_dir}",
         )
         return
 
@@ -105,7 +105,7 @@ def main() -> None:
 
     print("\nSymlink creation complete!")
     print(
-        "Note: Make sure to add these symlinks to your version control system's ignore file."
+        "Note: Make sure to add these symlinks to your version control system's ignore file.",
     )
 
 

@@ -1,8 +1,6 @@
+PREFIX cog: <./cognition_patterns.ttl#>
 
-    PREFIX cog: <file:///ontologies/cognition_patterns.ttl#>
-    
-    SELECT ?pattern ?complexity WHERE {
-        ?pattern cog:hasComplexity ?complexity .
-        FILTER (?complexity >= 1 && ?complexity <= 5)
-    }
-    
+SELECT ?pattern ?complexity WHERE {
+    ?pattern cog:hasComplexity ?complexity .
+    FILTER (?complexity >= 1 && ?complexity <= 5)
+}

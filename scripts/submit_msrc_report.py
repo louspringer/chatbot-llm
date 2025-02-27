@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
 """Submit security report to Microsoft Security Response Center."""
 
-import os
 import logging
+import os
 from pathlib import Path
-from typing import Dict, Any
+from typing import Any, Dict
 
 import requests
 from dotenv import load_dotenv
-
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -63,10 +62,7 @@ def load_report(report_path: Path) -> Dict[str, Any]:
                 "description": "Project tracking issue",
             },
             {
-                "url": (
-                    "https://github.com/aio-libs/aiohttp/releases/"
-                    "tag/v3.10.11"
-                ),
+                "url": ("https://github.com/aio-libs/aiohttp/releases/" "tag/v3.10.11"),
                 "description": "aiohttp Security Fixes",
             },
         ],
@@ -82,7 +78,9 @@ def submit_report(report_data: Dict[str, Any]) -> Dict[str, Any]:
     headers = {"Content-Type": "application/json", "api-key": api_key}
 
     response = requests.post(
-        MSRC_SUBMIT_ENDPOINT, headers=headers, json=report_data
+        MSRC_SUBMIT_ENDPOINT,
+        headers=headers,
+        json=report_data,
     )
 
     if response.status_code != 201:
@@ -108,7 +106,7 @@ def update_github_issue(submission_id: str, status: str) -> None:
     issue.create_comment(
         "MSRC Report submitted:\n"
         f"- Submission ID: {submission_id}\n"
-        f"- Status: {status}"
+        f"- Status: {status}",
     )
 
 

@@ -87,7 +87,7 @@ dependencies = []
 
 [project.optional-dependencies]
 dev = []
-"""
+""",
             )
 
         # Create minimal environment.yml
@@ -100,7 +100,7 @@ channels:
 dependencies:
   - python>=3.8
   - pip
-"""
+""",
             )
 
         # Create package_management.ttl with required classes and properties
@@ -145,7 +145,7 @@ pkg:CondaSource a rdfs:Class ;
 pkg:PipSource a rdfs:Class ;
     rdfs:label "Pip Source" ;
     rdfs:comment "Package from PyPI" .
-"""
+""",
             )
 
         # Create security.ttl
@@ -166,7 +166,7 @@ sec:severity a rdf:Property ;
 sec:cvssScore a rdf:Property ;
     rdfs:label "CVSS Score" ;
     rdfs:domain sec:Vulnerability .
-"""
+""",
             )
 
         yield workspace
@@ -187,11 +187,15 @@ def process_timeout():
 @pytest.mark.integration
 @pytest.mark.timeout(SCAN_TIMEOUT)
 @pytest.mark.skip(
-    reason="Test failing due to safety scanner authentication and timeout issues - tracked in issue #15"
+    reason="Test failing due to safety scanner authentication and timeout issues - tracked in issue #15",
 )
 @pytest.mark.parametrize("package,version,known_cves", VULNERABLE_PACKAGES)
 def test_vulnerable_package_detection(
-    checker, package, version, known_cves, caplog
+    checker,
+    package,
+    version,
+    known_cves,
+    caplog,
 ):
     """Test detection of known vulnerabilities in real packages."""
     caplog.set_level(logging.DEBUG)
@@ -213,7 +217,7 @@ def test_vulnerable_package_detection(
         # Check if safety scanner requires auth
         if "Safety scanner requires authentication" in caplog.text:
             logger.info(
-                "Safety scanner requires auth, checking pip-audit results"
+                "Safety scanner requires auth, checking pip-audit results",
             )
             # In this case, we should still find issues with pip-audit
             assert (
@@ -227,9 +231,7 @@ def test_vulnerable_package_detection(
                 assert (
                     issue.fixed_version is not None
                 ), "Fixed version should be provided by pip-audit"
-                assert (
-                    issue.description
-                ), "Issue description should not be empty"
+                assert issue.description, "Issue description should not be empty"
             return
 
         # First check if the package is considered unsafe
@@ -252,7 +254,9 @@ def test_vulnerable_package_detection(
             )
         else:
             logger.info(
-                "Found %d matching CVEs: %s", len(matching_cves), matching_cves
+                "Found %d matching CVEs: %s",
+                len(matching_cves),
+                matching_cves,
             )
 
             # Verify properties of matching issues
@@ -273,7 +277,7 @@ def test_vulnerable_package_detection(
 
 @pytest.mark.integration
 @pytest.mark.skip(
-    reason="Test failing due to safety scanner authentication issues - tracked in issue #15"
+    reason="Test failing due to safety scanner authentication issues - tracked in issue #15",
 )
 @pytest.mark.parametrize("package,version", SECURE_PACKAGES)
 def test_secure_package_validation(checker, package, version):
@@ -288,7 +292,7 @@ def test_secure_package_validation(checker, package, version):
 
 @pytest.mark.integration
 @pytest.mark.skip(
-    reason="Test failing due to insufficient number of available scanners - tracked in issue #15"
+    reason="Test failing due to insufficient number of available scanners - tracked in issue #15",
 )
 def test_multiple_scanners_consistency(checker):
     """Test that different scanners provide consistent results."""
@@ -299,9 +303,7 @@ def test_multiple_scanners_consistency(checker):
     results_by_scanner = {}
     for scanner in checker.scanners:
         issues = scanner.scan_package(package, version)
-        results_by_scanner[scanner.name] = {
-            issue.cve_id: issue for issue in issues
-        }
+        results_by_scanner[scanner.name] = {issue.cve_id: issue for issue in issues}
 
     # Skip if fewer than 2 scanners available
     if len(results_by_scanner) < 2:
@@ -309,7 +311,7 @@ def test_multiple_scanners_consistency(checker):
 
     # Compare severity ratings for common CVEs
     common_cves = set.intersection(
-        *(set(results.keys()) for results in results_by_scanner.values())
+        *(set(results.keys()) for results in results_by_scanner.values()),
     )
 
     for cve in common_cves:
@@ -326,7 +328,7 @@ def test_multiple_scanners_consistency(checker):
 
 @pytest.mark.integration
 @pytest.mark.skip(
-    reason="Test failing due to ontology integration issues - tracked in issue #15"
+    reason="Test failing due to ontology integration issues - tracked in issue #15",
 )
 def test_ontology_integration(checker):
     """Test that security issues are properly added to the ontology."""
@@ -351,16 +353,14 @@ def test_ontology_integration(checker):
             if str(obj) == package:
                 found_package = True
 
-        assert (
-            found_severity
-        ), f"Severity {issue.severity} not found in ontology"
+        assert found_severity, f"Severity {issue.severity} not found in ontology"
         assert found_package, f"Package {package} not found in ontology"
 
 
 @pytest.mark.integration
 @pytest.mark.timeout(PACKAGE_INSTALL_TIMEOUT)
 @pytest.mark.skip(
-    reason="Test disabled due to conda installation timeout issues - needs investigation and fixing"
+    reason="Test disabled due to conda installation timeout issues - needs investigation and fixing",
 )
 def test_package_addition_regression(temp_workspace, caplog):
     """Regression test for package addition workflow."""
@@ -377,7 +377,10 @@ def test_package_addition_regression(temp_workspace, caplog):
 
     try:
         result = pkg_mgr.add_package(
-            test_package, test_version, "core", use_conda=True
+            test_package,
+            test_version,
+            "core",
+            use_conda=True,
         )
         assert result, "Package addition failed"
 

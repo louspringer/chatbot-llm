@@ -31,9 +31,7 @@ def check_package(package: str, min_version: str) -> Tuple[bool, str]:
             # botbuilder.integration.aiohttp -> botbuilder-integration-aiohttp
             module_path = package.split(".")
             if module_path[1] == "integration":
-                dist_name = (
-                    f"{module_path[0]}-{module_path[1]}-{module_path[2]}"
-                )
+                dist_name = f"{module_path[0]}-{module_path[1]}-{module_path[2]}"
             else:
                 dist_name = f"{module_path[0]}-{module_path[1]}"
             version = pkg_resources.get_distribution(dist_name).version
@@ -87,7 +85,7 @@ def check_snowflake_dependencies() -> List[Tuple[bool, str]]:
     results.extend(
         [
             check_package("snowflake-snowpark-python", "1.0.0"),
-        ]
+        ],
     )
 
     # Validate Snowpark session
@@ -99,7 +97,7 @@ def check_snowflake_dependencies() -> List[Tuple[bool, str]]:
 
         # Run test query
         result = session.sql(
-            "SELECT CURRENT_WAREHOUSE() as warehouse"
+            "SELECT CURRENT_WAREHOUSE() as warehouse",
         ).collect()
         if result and result[0]["WAREHOUSE"]:
             warehouse = result[0]["WAREHOUSE"]

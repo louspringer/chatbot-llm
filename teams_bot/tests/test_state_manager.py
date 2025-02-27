@@ -12,19 +12,16 @@ Tests for the state management implementation.
 # pylint: disable=too-many-lines
 # pylint: disable=too-many-locals
 
-from base64 import b64decode
 from datetime import datetime, timedelta
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 from botbuilder.core import MemoryStorage, Storage, TurnContext
-from cryptography.fernet import Fernet
 
 from ..bot.conversation_data import MAX_ERROR_COUNT, ConversationData
 from ..bot.conversation_state import ConversationState
 from ..bot.cosmos_storage import CosmosStorage
 from ..bot.state_manager import StateManager
-from ..bot.user_profile import UserProfile
 
 
 @pytest.fixture
@@ -297,7 +294,7 @@ async def test_state_history(mock_storage, mock_context):
             "from_state": ConversationState.INITIALIZED.value,
             "to_state": ConversationState.AUTHENTICATING.value,
             "timestamp": datetime.utcnow().isoformat(),
-        }
+        },
     )
     await manager.save_conversation_data(mock_context, conv_data)
 
@@ -375,13 +372,15 @@ async def test_cosmos_storage():
         result = await storage.read(["test_id"])
         assert result == {"test_id": test_data}
         mock_container.read_item.assert_called_with(
-            item="test_id", partition_key="test_id"
+            item="test_id",
+            partition_key="test_id",
         )
 
         # Test delete operation
         await storage.delete(["test_id"])
         mock_container.delete_item.assert_called_with(
-            item="test_id", partition_key="test_id"
+            item="test_id",
+            partition_key="test_id",
         )
     finally:
         # Clean up

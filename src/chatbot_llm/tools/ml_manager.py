@@ -98,7 +98,9 @@ class QueryTranslator:
         self.context: Dict = {}
 
     def translate(
-        self, query: str, context: Optional[Dict] = None
+        self,
+        query: str,
+        context: Optional[Dict] = None,
     ) -> Tuple[str, float]:
         """
         Translate natural language query to SQL.
@@ -129,7 +131,9 @@ class QueryTranslator:
         if success:
             # Add to training data if translation was successful
             self.model_manager.add_training_example(
-                natural_query, sql_query, self.context
+                natural_query,
+                sql_query,
+                self.context,
             )
 
         # Log feedback

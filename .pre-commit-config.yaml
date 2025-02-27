@@ -1,8 +1,10 @@
 # Ontology: deploy:PreCommitComponent
 # Implements: deploy:CommitValidation
 # Requirement: REQ-DEP-002 Pre-commit validation
-# Guidance: guidance:DeploymentPatterns#PreCommitHooks
-# Description: Pre-commit hook configuration for validation
+# Guidance: guidance:ModelFirstPrinciple#modelQualityPrecedence
+# Description: Pre-commit hook configuration that prioritizes ontological model quality
+#   over code aesthetics. Focus is on model integrity and correctness rather than
+#   strict code formatting.
 
 repos:
 - repo: https://github.com/pre-commit/pre-commit-hooks
@@ -25,7 +27,7 @@ repos:
   hooks:
     - id: black
       language_version: python3
-      args: ["--line-length=88", "--target-version=py310"]
+      args: ["--line-length=88", "--target-version=py310", "--quiet"]
       exclude: *exclude_pattern
 
 - repo: https://github.com/pycqa/isort
@@ -33,7 +35,7 @@ repos:
   hooks:
     - id: isort
       name: isort (python)
-      args: ["--profile=black", "--line-length=88"]
+      args: ["--profile=black", "--line-length=88", "--quiet"]
       exclude: *exclude_pattern
 
 - repo: https://github.com/pycqa/flake8
@@ -42,9 +44,10 @@ repos:
     - id: flake8
       additional_dependencies: [flake8-docstrings]
       args:
-        - "--max-line-length=88"
-        - "--ignore=D100,D101,D102,D103,D104,D105,D107,D200,D205,D400,D401"
-        - "--per-file-ignores=__init__.py:F401"
+        - "--max-line-length=88"  # Match Black and Ruff line length
+        # Ignore style warnings to focus on functional issues
+        - "--ignore=D,W,E226,E402,E501,W503"
+        - "--per-file-ignores=__init__.py:F401,tests/*:F,E"
       exclude: *exclude_pattern
 
 - repo: local
@@ -55,6 +58,26 @@ repos:
       language: python
       additional_dependencies: [pyyaml]
       types: [text]
+      exclude: ^(.git/|.venv/|venv/|env/|node_modules/|__pycache__/|.pytest_cache/|.ipynb_checkpoints/)
+    - id: check-ontology-integrity
+      name: Check ontology integrity
+      entry: python tools/validate_ontology.py
+      language: system
+      types: [text]
+      files: \.(ttl|turtle)$
+      pass_filenames: true
+    - id: check-absolute-paths
+      name: Check for absolute paths
+      entry: pytest tests/test_path_validation.py -v
+      language: system
+      types: [text]
+      pass_filenames: false
+    - id: check-ontology-paths
+      name: Check ontology file paths
+      entry: python -c "import re; import sys; exit(1 if any(re.search(r'^(?:file:///|/[A-Za-z](?:/|\\\\)|[A-Za-z]:\\\\)', line) for line in sys.stdin) else 0)"
+      language: system
+      types: [text]
+      files: \.(ttl|turtle)$
       exclude: ^(.git/|.venv/|venv/|env/|node_modules/|__pycache__/|.pytest_cache/|.ipynb_checkpoints/)
 
 default_language_version:

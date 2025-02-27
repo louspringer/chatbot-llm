@@ -1,4 +1,12 @@
-@prefix : <./development_workflow#> .
+# Ontology: devwf:DevelopmentWorkflowOntology
+# Implements: workflow:DevelopmentWorkflow
+# Requirement: REQ-DEV-001 Development Workflow
+# Guidance: guidance:ModelFirstPrinciple#development
+# Description: Models the development workflow, CI/CD processes, and validation stages for the Teams Bot project
+# Cluster: :DeploymentCluster
+
+@prefix : <./chatbot#> .
+@prefix devwf: <./development_workflow#> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
@@ -8,16 +16,23 @@
 @prefix deployment: <./deployment#> .
 @prefix doc: <./documentation#> .
 @prefix dct: <http://purl.org/dc/terms/> .
+@prefix chatbot: <./chatbot#> .
+@prefix metameta: <./metameta#> .
+@prefix problem: <./problem#> .
+@prefix solution: <./solution#> .
+@prefix conversation: <./conversation#> .
+@prefix guidance: <./guidance#> .
 
-# Development Workflow Ontology
-:DevelopmentWorkflowOntology a owl:Ontology ;
+# Ontology metadata
+devwf:DevelopmentWorkflowOntology a owl:Ontology ;
     rdfs:label "Development Workflow Ontology" ;
     rdfs:comment "Ontology for Teams Bot development workflow and CI/CD process" ;
-    owl:imports <./deployment>, <./meta>, <./documentation> ;
+    owl:imports deployment:, meta:, doc:, chatbot:ChatbotLLMOntology ;
     owl:versionInfo "1.0" ;
     dct:created "2024-03-19"^^xsd:date ;
     dct:creator "Teams Bot Development Team" ;
-    dct:description "Models the development workflow, CI/CD processes, and validation stages for the Teams Bot project." .
+    dct:description "Models the development workflow, CI/CD processes, and validation stages for the Teams Bot project" ;
+    :belongsToCluster chatbot:DeploymentCluster .
 
 # Core Classes
 :DevelopmentPhase a owl:Class ;
@@ -125,7 +140,9 @@
     rdfs:range :WorkflowProcess .
 
 :hasValidationCheck a owl:ObjectProperty ;
-    rdfs:domain [:WorkflowProcess, :DevelopmentPhase] ;
+    rdfs:domain [ a owl:Class ;
+        owl:unionOf (:WorkflowProcess :DevelopmentPhase)
+    ] ;
     rdfs:range :ValidationCheck .
 
 :hasBranchProtection a owl:ObjectProperty ;

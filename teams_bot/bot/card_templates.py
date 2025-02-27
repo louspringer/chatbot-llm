@@ -190,7 +190,7 @@ class QueryResultCard(AdaptiveCardTemplate):
                             "type": "TextBlock",
                             "text": str(row.get(col, "")),
                             "wrap": True,
-                        }
+                        },
                     ],
                 }
                 for col in columns
@@ -213,7 +213,7 @@ class QueryResultCard(AdaptiveCardTemplate):
                         "type": "Action.Submit",
                         "title": "Export Results",
                         "data": {"action": "export_results"},
-                    }
+                    },
                 ],
             },
         ]
@@ -225,7 +225,9 @@ class ErrorCard(AdaptiveCardTemplate):
 
     @classmethod
     def create(
-        cls, error_message: str, error_id: Optional[str] = None
+        cls,
+        error_message: str,
+        error_id: Optional[str] = None,
     ) -> Dict[str, Any]:
         """Create an error card."""
         body = [
@@ -246,7 +248,7 @@ class ErrorCard(AdaptiveCardTemplate):
                     "text": f"Reference ID: {error_id}",
                     "size": "Small",
                     "isSubtle": True,
-                }
+                },
             )
 
         body.append(
@@ -264,7 +266,7 @@ class ErrorCard(AdaptiveCardTemplate):
                         "url": "https://support.example.com",
                     },
                 ],
-            }
+            },
         )
 
         return cls.create_base_card(body)

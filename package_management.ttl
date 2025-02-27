@@ -1,11 +1,23 @@
-@prefix owl: <http://www.w3.org/2002/07/owl#> .
-@prefix pkg: <file://package_management#> .
-@prefix pkg1: <file:///Users/lou/Documents/chatbot-llm/package_management.ttl#> .
+# Ontology: package:PackageManagementOntology
+# Implements: package:DependencyManagement
+# Requirement: REQ-PKG-001 Package Management
+# Guidance: guidance:ModelFirstPrinciple#packaging
+# Description: Ontology for managing Python package dependencies
+
+@prefix : <./package_management#> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix sec: <file:///Users/lou/Documents/chatbot-llm/security.ttl#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix meta: <./meta#> .
+@prefix metameta: <./metameta#> .
+@prefix problem: <./problem#> .
+@prefix solution: <./solution#> .
+@prefix conversation: <./conversation#> .
+@prefix guidance: <./guidance#> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix pkg: <./package_management#> .
+@prefix sec: <./security#> .
 
 sec:Severity a rdfs:Class ;
     rdfs:label "Severity Level" ;
@@ -15,15 +27,15 @@ sec:Vulnerability a rdfs:Class ;
     rdfs:label "Security Vulnerability" ;
     rdfs:comment "Represents a security vulnerability in a package" .
 
-<file:///Users/lou/Documents/chatbot-llm/package_management.ttl##rdflib> a pkg1:Package ;
-    pkg1:dependencyType pkg1:CoreDependency ;
-    pkg1:hasSource pkg1:CondaSource ;
-    pkg1:hasVersion "7.1.3" .
+pkg:rdflib a pkg:Package ;
+    pkg:dependencyType pkg:CoreDependency ;
+    pkg:hasSource pkg:CondaSource ;
+    pkg:hasVersion "7.1.3" .
 
-pkg1:rdflib a pkg1:Package ;
-    pkg1:dependencyType pkg1:CoreDependency ;
-    pkg1:hasSource pkg1:CondaSource ;
-    pkg1:hasVersion "7.1.3" .
+pkg:rdflib a pkg:Package ;
+    pkg:dependencyType pkg:CoreDependency ;
+    pkg:hasSource pkg:CondaSource ;
+    pkg:hasVersion "7.1.3" .
 
 sec:Critical a sec:Severity ;
     rdfs:label "Critical" ;
@@ -79,17 +91,21 @@ sec:source a rdf:Property ;
 
 pkg:DependencyValidation a pkg:ValidationStep ;
     rdfs:label "Dependency Validation" ;
-    rdfs:comment "Check dependency compatibility" .
+    rdfs:comment "Check dependency compatibility" ;
+    owl:versionInfo "1.0.0" .
 
 pkg:LowImpact a pkg:SecurityImpact ;
-    rdfs:label "Low Impact" .
+    rdfs:label "Low Impact" ;
+    owl:versionInfo "1.0.0" .
 
 pkg:LowLikelihood a pkg:SecurityLikelihood ;
-    rdfs:label "Low Likelihood" .
+    rdfs:label "Low Likelihood" ;
+    owl:versionInfo "1.0.0" .
 
 pkg:OptionalDependency a pkg:DependencyType ;
     rdfs:label "Optional Dependency" ;
-    rdfs:comment "Feature-specific dependency" .
+    rdfs:comment "Feature-specific dependency" ;
+    owl:versionInfo "1.0.0" .
 
 pkg:PackageManagementOntology a owl:Ontology ;
     rdfs:label "Package Management Ontology" ;
@@ -114,11 +130,13 @@ pkg:SecurityCheck a pkg:ValidationStep ;
 
 pkg:SecurityValidation a pkg:ValidationStep ;
     rdfs:label "Security Validation" ;
-    rdfs:comment "Check for security vulnerabilities" .
+    rdfs:comment "Check for security vulnerabilities" ;
+    owl:versionInfo "1.0.0" .
 
 pkg:TestValidation a pkg:ValidationStep ;
     rdfs:label "Test Validation" ;
-    rdfs:comment "Run test suite" .
+    rdfs:comment "Run test suite" ;
+    owl:versionInfo "1.0.0" .
 
 pkg:azure_monitor_opentelemetry a pkg:Package ;
     rdfs:label "azure-monitor-opentelemetry" ;
@@ -136,7 +154,7 @@ pkg:cvssScore a owl:DatatypeProperty ;
     rdfs:range xsd:decimal .
 
 pkg:dependencyType a owl:ObjectProperty ;
-    rdfs:label "dependency type" ;
+    rdfs:label "Dependency Type" ;
     rdfs:comment "Type of the dependency" ;
     rdfs:domain pkg:Package ;
     rdfs:range pkg:DependencyType .
@@ -150,10 +168,10 @@ pkg:hasLikelihood a owl:ObjectProperty ;
     rdfs:range pkg:SecurityLikelihood .
 
 pkg:hasVersion a owl:DatatypeProperty ;
-    rdfs:label "has version" ;
+    rdfs:label "Has Version" ;
     rdfs:comment "Version of the package" ;
     rdfs:domain pkg:Package ;
-    rdfs:range rdfs:Literal .
+    rdfs:range xsd:string .
 
 pkg:hasVulnerability a owl:ObjectProperty ;
     rdfs:domain pkg:Package ;
@@ -203,21 +221,16 @@ pkg:pyyaml a pkg:Package ;
     pkg:hasSource pkg:CondaSource ;
     pkg:hasVersion "6.0.1" .
 
-pkg:rdflib a pkg:Package ;
-    pkg:dependencyType pkg:CoreDependency ;
-    pkg:hasSource pkg:CondaSource ;
-    pkg:hasVersion "7.1.3" .
-
 pkg:requests a pkg:Package ;
     rdfs:label "requests" ;
     pkg:dependencyType pkg:CoreDependency ;
     pkg:hasVersion "2.31.0" .
 
 pkg:requiresApproval a owl:DatatypeProperty ;
-    rdfs:label "requires approval" ;
+    rdfs:label "Requires Approval" ;
     rdfs:comment "Whether the package requires approval" ;
     rdfs:domain pkg:Package ;
-    rdfs:range rdfs:Literal .
+    rdfs:range xsd:boolean .
 
 pkg:rich a pkg:Package ;
     pkg:dependencyType pkg:CoreDependency ;
@@ -294,7 +307,13 @@ pkg:vuln_CVE_2024_52304 a pkg:SecurityVulnerability ;
     pkg:mitigationStatus "Pending upstream fix in botbuilder-core" ;
     rdfs:comment "HTTP Request Smuggling vulnerability in aiohttp" .
 
-pkg1:Package rdfs:subClassOf [ a owl:Restriction ;
+pkg:Package rdfs:subClassOf [ a owl:Restriction ;
+            owl:allValuesFrom sec:Vulnerability ;
+            owl:onProperty sec:hasVulnerability ],
+        [ a owl:Restriction ;
+            owl:allValuesFrom sec:Vulnerability ;
+            owl:onProperty sec:hasVulnerability ],
+        [ a owl:Restriction ;
             owl:allValuesFrom sec:Vulnerability ;
             owl:onProperty sec:hasVulnerability ],
         [ a owl:Restriction ;
@@ -405,4 +424,70 @@ pkg:CondaSource a pkg:PackageSource ;
 
 pkg:Package a owl:Class ;
     rdfs:label "Package" ;
-    rdfs:comment "A Python package dependency" .
+    rdfs:comment "A Python package dependency" ;
+    owl:versionInfo "0.1.0" .
+
+:DependencyGroup a owl:Class ;
+    rdfs:label "Dependency Group" ;
+    rdfs:comment "A group of related dependencies" ;
+    owl:versionInfo "0.1.0" .
+
+:SecurityRequirement a owl:Class ;
+    rdfs:label "Security Requirement" ;
+    rdfs:comment "Security requirements for packages" ;
+    owl:versionInfo "0.1.0" .
+
+:hasVersion a owl:DatatypeProperty ;
+    rdfs:label "has version" ;
+    rdfs:comment "The version of the package" ;
+    rdfs:domain :Package ;
+    rdfs:range xsd:string .
+
+:hasDependency a owl:ObjectProperty ;
+    rdfs:label "has dependency" ;
+    rdfs:comment "Links a package to its dependencies" ;
+    rdfs:domain :Package ;
+    rdfs:range :Package .
+
+:inGroup a owl:ObjectProperty ;
+    rdfs:label "in group" ;
+    rdfs:comment "Links a package to its dependency group" ;
+    rdfs:domain :Package ;
+    rdfs:range :DependencyGroup .
+
+:hasSecurityRequirement a owl:ObjectProperty ;
+    rdfs:label "has security requirement" ;
+    rdfs:comment "Links a package to its security requirements" ;
+    rdfs:domain :Package ;
+    rdfs:range :SecurityRequirement .
+
+:PackageShape a sh:NodeShape ;
+    sh:targetClass :Package ;
+    sh:property [
+        sh:path :hasVersion ;
+        sh:datatype xsd:string ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+    ] .
+
+:rdflib a :Package ;
+    rdfs:label "RDFLib" ;
+    :hasVersion "6.0.0" ;
+    :inGroup :core_dependencies .
+
+:anthropic a :Package ;
+    rdfs:label "Anthropic" ;
+    :hasVersion "0.8.0" ;
+    :inGroup :ai_dependencies .
+
+:core_dependencies a :DependencyGroup ;
+    rdfs:label "Core Dependencies" .
+
+:ai_dependencies a :DependencyGroup ;
+    rdfs:label "AI Dependencies" .
+
+:min_version_req a :SecurityRequirement ;
+    rdfs:label "Minimum Version Requirement" .
+
+:cve_free_req a :SecurityRequirement ;
+    rdfs:label "CVE Free Requirement" .

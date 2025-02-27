@@ -104,7 +104,7 @@ def scan_files(files: List[Path]) -> Dict[str, List[Dict]]:
         ]
         if missing:
             results["missing_headers"].append(
-                {"file": str(file_path), "missing": missing}
+                {"file": str(file_path), "missing": missing},
             )
 
     return results

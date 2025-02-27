@@ -4,12 +4,7 @@ import json
 
 import pytest
 
-from tools.test_messages import (
-    BotTester,
-    RequirementCoverage,
-    TestCase,
-    TestResult,
-)
+from tools.test_messages import BotTester, RequirementCoverage, TestCase, TestResult
 
 # Configure pytest-asyncio
 pytest_plugins = ("pytest_asyncio",)
@@ -26,13 +21,13 @@ def test_config_file(tmp_path):
                 "input_message": "hello",
                 "expected_patterns": ["hi", "hello"],
                 "requirements": ["REQ-001"],
-            }
+            },
         ],
         "requirement_traces": {
             "REQ-001": {
                 "description": "Test requirement",
                 "acceptance_criteria": ["Test criteria"],
-            }
+            },
         },
     }
 
@@ -45,7 +40,9 @@ def test_config_file(tmp_path):
 def test_test_case_creation():
     """Test creating a TestCase instance."""
     test_case = TestCase(
-        name="Test", input_message="hello", expected_patterns=["hi"]
+        name="Test",
+        input_message="hello",
+        expected_patterns=["hi"],
     )
     assert test_case.name == "Test"
     assert test_case.input_message == "hello"
@@ -59,10 +56,14 @@ def test_test_case_creation():
 def test_test_result_creation():
     """Test creating a TestResult instance."""
     test_case = TestCase(
-        name="Test", input_message="hello", expected_patterns=["hi"]
+        name="Test",
+        input_message="hello",
+        expected_patterns=["hi"],
     )
     result = TestResult(
-        test_case=test_case, success=True, actual_response="hi there"
+        test_case=test_case,
+        success=True,
+        actual_response="hi there",
     )
     assert result.success
     assert result.actual_response == "hi there"
@@ -139,7 +140,9 @@ async def test_run_test_case():
     """Test running a test case."""
     tester = BotTester()
     test_case = TestCase(
-        name="Test", input_message="hello", expected_patterns=["hi"]
+        name="Test",
+        input_message="hello",
+        expected_patterns=["hi"],
     )
     result = await tester.run_test_case(test_case)
 
@@ -167,7 +170,7 @@ def test_generate_report(tmp_path, test_config_file):
             success=True,
             actual_response="hi there",
             response_time=0.5,
-        )
+        ),
     )
 
     # Generate report

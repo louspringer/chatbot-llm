@@ -1,0 +1,210 @@
+# Ontology: workflow:CheckinWorkflowOntology
+# Implements: workflow:CheckinProcess
+# Requirement: REQ-WF-001 Checkin Workflow Management
+# Guidance: guidance:ModelFirstPrinciple#workflow
+# Description: Ontology for managing the check-in workflow process
+
+@prefix : <./checkin_workflow#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix meta: <./meta#> .
+@prefix metameta: <./metameta#> .
+@prefix problem: <./problem#> .
+@prefix solution: <./solution#> .
+@prefix conversation: <./conversation#> .
+@prefix guidance: <./guidance#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+# Class Definitions
+:CheckinStep a owl:Class ;
+    rdfs:label "Checkin Step" ;
+    rdfs:comment "A step in the checkin workflow" ;
+    owl:versionInfo "0.1.0" .
+
+:ValidationRule a owl:Class ;
+    rdfs:label "Validation Rule" ;
+    rdfs:comment "A rule to validate during checkin" ;
+    owl:versionInfo "0.1.0" .
+
+# Property Definitions
+:hasOrder a owl:DatatypeProperty ;
+    rdfs:label "has order" ;
+    rdfs:comment "The order of execution for the step" ;
+    rdfs:domain :CheckinStep ;
+    rdfs:range xsd:integer .
+
+:hasValidationRule a owl:ObjectProperty ;
+    rdfs:label "has validation rule" ;
+    rdfs:comment "Links a step to its validation rules" ;
+    rdfs:domain :CheckinStep ;
+    rdfs:range :ValidationRule .
+
+:requiresApproval a owl:DatatypeProperty ;
+    rdfs:label "requires approval" ;
+    rdfs:comment "Whether the step requires approval" ;
+    rdfs:domain :CheckinStep ;
+    rdfs:range xsd:boolean .
+
+# Instance Definitions
+:lintStep a :CheckinStep ;
+    rdfs:label "Lint Check" ;
+    :hasOrder 1 ;
+    :requiresApproval false .
+
+:testStep a :CheckinStep ;
+    rdfs:label "Test Run" ;
+    :hasOrder 2 ;
+    :requiresApproval true .
+
+:blackRule a :ValidationRule ;
+    rdfs:label "Black Formatting" .
+
+:flake8Rule a :ValidationRule ;
+    rdfs:label "Flake8 Check" .
+
+# Ontology metadata
+:CheckinWorkflowOntology a owl:Ontology ;
+    rdfs:label "Check-in Workflow Ontology" ;
+    rdfs:comment "Defines the workflow for checking in code changes" ;
+    owl:versionInfo "1.0.0" ;
+    owl:imports meta:, guidance: ;
+    :belongsToCluster :QualityAssuranceCluster .
+
+# Core Classes
+:WorkflowStep a owl:Class ;
+    rdfs:label "Workflow Step" ;
+    rdfs:comment "A step in the check-in workflow" .
+
+:ValidationStep a owl:Class ;
+    rdfs:subClassOf :WorkflowStep ;
+    rdfs:label "Validation Step" ;
+    rdfs:comment "A validation step in the workflow" .
+
+:FixStep a owl:Class ;
+    rdfs:subClassOf :WorkflowStep ;
+    rdfs:label "Fix Step" ;
+    rdfs:comment "A step to fix issues found in validation" .
+
+:CommitStep a owl:Class ;
+    rdfs:subClassOf :WorkflowStep ;
+    rdfs:label "Commit Step" ;
+    rdfs:comment "A step related to git operations" .
+
+# Properties
+:hasNextStep a owl:ObjectProperty ;
+    rdfs:domain :WorkflowStep ;
+    rdfs:range :WorkflowStep ;
+    rdfs:comment "Links a step to its next step in the workflow" .
+
+:hasCommand a owl:DatatypeProperty ;
+    rdfs:domain :WorkflowStep ;
+    rdfs:range xsd:string ;
+    rdfs:comment "The command to execute for this step" .
+
+:requiresClean a owl:DatatypeProperty ;
+    rdfs:domain :ValidationStep ;
+    rdfs:range xsd:boolean ;
+    rdfs:comment "Whether this validation step must pass clean" .
+
+:onFailure a owl:ObjectProperty ;
+    rdfs:domain :ValidationStep ;
+    rdfs:range :FixStep ;
+    rdfs:comment "Links a validation step to its fix step" .
+
+# Workflow Steps
+:GitAddStep a :CommitStep ;
+    rdfs:label "Git Add" ;
+    rdfs:comment "Stage all changes for commit" ;
+    :hasCommand "git add ." ;
+    :hasNextStep :PyTestStep .
+
+:PyTestStep a :ValidationStep ;
+    rdfs:label "PyTest" ;
+    rdfs:comment "Run all tests with verbose output" ;
+    :hasCommand "pytest . -v" ;
+    :requiresClean true ;
+    :onFailure :FixTestsStep ;
+    :hasNextStep :PreCommitStep .
+
+:FixTestsStep a :FixStep ;
+    rdfs:label "Fix Tests" ;
+    rdfs:comment "Fix failing tests" ;
+    :hasNextStep :PyTestStep .
+
+:PreCommitStep a :ValidationStep ;
+    rdfs:label "Pre-commit Checks" ;
+    rdfs:comment "Run pre-commit hooks" ;
+    :hasCommand "pre-commit run --all-files" ;
+    :requiresClean true ;
+    :onFailure :FixPreCommitStep ;
+    :hasNextStep :RuffStep .
+
+:FixPreCommitStep a :FixStep ;
+    rdfs:label "Fix Pre-commit Issues" ;
+    rdfs:comment "Fix issues found by pre-commit hooks" ;
+    :hasNextStep :PreCommitStep .
+
+:RuffStep a :ValidationStep ;
+    rdfs:label "Ruff Checks" ;
+    rdfs:comment "Run Ruff linter" ;
+    :hasCommand "ruff check ." ;
+    :requiresClean true ;
+    :onFailure :FixRuffStep ;
+    :hasNextStep :FinalPyTestStep .
+
+:FixRuffStep a :FixStep ;
+    rdfs:label "Fix Ruff Issues" ;
+    rdfs:comment "Fix issues found by Ruff" ;
+    :hasNextStep :RuffStep .
+
+:FinalPyTestStep a :ValidationStep ;
+    rdfs:label "Final PyTest" ;
+    rdfs:comment "Final test run to ensure fixes didn't break tests" ;
+    :hasCommand "pytest . -v" ;
+    :requiresClean true ;
+    :onFailure :FixTestsStep .
+
+# Workflow Instance
+:StandardCheckinWorkflow a :Workflow ;
+    rdfs:label "Standard Check-in Workflow" ;
+    rdfs:comment "Standard workflow for checking in code changes" ;
+    :startStep :GitAddStep ;
+    :description """
+    1. Git add all changes
+    2. Run pytest with verbose output
+    3. Fix and retest until clean
+    4. Run pre-commit checks
+    5. Fix and recheck until clean
+    6. Run Ruff linter
+    7. Fix and relint until clean
+    8. Final pytest run
+    """ .
+
+# SHACL Validation
+:WorkflowStepShape a sh:NodeShape ;
+    sh:targetClass :WorkflowStep ;
+    sh:property [
+        sh:path :hasCommand ;
+        sh:minCount 0 ;
+        sh:datatype xsd:string ;
+    ] ;
+    sh:property [
+        sh:path :hasNextStep ;
+        sh:minCount 0 ;
+        sh:maxCount 1 ;
+    ] .
+
+:ValidationStepShape a sh:NodeShape ;
+    sh:targetClass :ValidationStep ;
+    sh:property [
+        sh:path :requiresClean ;
+        sh:minCount 1 ;
+        sh:datatype xsd:boolean ;
+    ] ;
+    sh:property [
+        sh:path :onFailure ;
+        sh:minCount 1 ;
+        sh:class :FixStep ;
+    ] .

@@ -6,76 +6,80 @@
 
 import logging
 from pathlib import Path
-from typing import Dict, List
+from typing import cast
 
 import rdflib
+from rdflib.query import ResultRow
 
 
+# Core Classes, Properties, and Individuals
 class GuidanceValidator:
-    """Validates guidance compliance across the project."""
+    """Validator for guidance compliance."""
 
-    def __init__(self, session_file: Path):
-        self.g = rdflib.Graph()
-        self.g.parse(session_file, format="turtle")
+    def __init__(self, guidance_file: Path) -> None:
+        self.guidance_file = guidance_file
+        self.graph = rdflib.Graph()
+        self.graph.parse(guidance_file, format="turtle")
         self.logger = logging.getLogger(__name__)
 
-    def validate_traceability(self) -> List[Dict]:
+    def validate_traceability(self) -> list[dict[str, str]]:
         """Validates artifact traceability."""
         query = """
-        PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-        PREFIX session: <./session#>
-        PREFIX guidance: <./guidance#>
-
-        SELECT DISTINCT ?artifact ?missing
+        SELECT ?artifact ?issue
         WHERE {
-            ?artifact a owl:Class .
-            OPTIONAL { ?artifact session:hasTraceabilityHeader ?header }
-            BIND(IF(BOUND(?header), "", "Missing header") AS ?missing)
-            FILTER(BOUND(?missing))
+            ?artifact a ?type .
+            FILTER NOT EXISTS { ?artifact :hasRequirement ?req }
+            BIND("Missing requirement traceability" AS ?issue)
         }
         """
-        results = self.g.query(query)
-        return [{"artifact": str(row[0]), "issue": str(row[1])} for row in results]
-
-    def validate_pattern_compliance(self) -> List[Dict]:
-        """Validates guidance pattern compliance."""
-        query = """
-        PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-        PREFIX guidance: <./guidance#>
-
-        SELECT ?component ?pattern
-        WHERE {
-            ?component a owl:Class .
-            ?pattern a guidance:Pattern .
-            FILTER NOT EXISTS {
-                ?component guidance:implementsPattern ?pattern
-            }
-        }
-        """
-        results = self.g.query(query)
+        results = self.graph.query(query)
         return [
-            {"component": str(row[0]), "missing_pattern": str(row[1])}
+            {
+                "artifact": str(cast(ResultRow, row)[0]),
+                "issue": str(cast(ResultRow, row)[1]),
+            }
             for row in results
         ]
 
-    def validate_ontology_references(self) -> List[Dict]:
-        """Validates ontology references."""
+    def validate_pattern_compliance(self) -> list[dict[str, str]]:
+        """Validates guidance pattern compliance."""
         query = """
-        PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-        PREFIX session: <./session#>
-
-        SELECT ?artifact ?ref
+        SELECT ?pattern ?issue
         WHERE {
-            ?artifact session:hasOntologyReference ?ref .
-            FILTER NOT EXISTS { ?ref a owl:Class }
+            ?pattern a :Pattern .
+            FILTER NOT EXISTS { ?pattern :hasImplementation ?impl }
+            BIND("Pattern lacks implementation" AS ?issue)
         }
         """
-        results = self.g.query(query)
+        results = self.graph.query(query)
         return [
-            {"artifact": str(row[0]), "invalid_ref": str(row[1])} for row in results
+            {
+                "pattern": str(cast(ResultRow, row)[0]),
+                "issue": str(cast(ResultRow, row)[1]),
+            }
+            for row in results
         ]
 
-    def run_all_validations(self) -> Dict[str, List[Dict]]:
+    def validate_ontology_references(self) -> list[dict[str, str]]:
+        """Validates ontology references."""
+        query = """
+        SELECT ?ontology ?issue
+        WHERE {
+            ?ontology a owl:Ontology .
+            FILTER NOT EXISTS { ?ontology owl:imports ?imported }
+            BIND("Ontology missing imports" AS ?issue)
+        }
+        """
+        results = self.graph.query(query)
+        return [
+            {
+                "ontology": str(cast(ResultRow, row)[0]),
+                "issue": str(cast(ResultRow, row)[1]),
+            }
+            for row in results
+        ]
+
+    def run_all_validations(self) -> dict[str, list[dict[str, str]]]:
         """Runs all validation checks."""
         return {
             "traceability": self.validate_traceability(),
@@ -83,40 +87,28 @@ class GuidanceValidator:
             "ontology_references": self.validate_ontology_references(),
         }
 
-    def update_session_compliance(self, results: Dict[str, List[Dict]]) -> None:
+    def update_session_compliance(
+        self,
+        results: dict[str, list[dict[str, str]]],
+    ) -> None:
         """Updates session compliance status."""
-        has_issues = any(len(v) > 0 for v in results.values())
-        status = "incomplete" if has_issues else "complete"
+        # TODO: Update session.ttl with compliance status
 
-        update_query = """
-        PREFIX session: <./session#>
-        DELETE {
-            ?compliance session:hasTraceabilityStatus ?oldStatus
-        }
-        INSERT {
-            ?compliance session:hasTraceabilityStatus ?newStatus
-        }
-        WHERE {
-            ?compliance a session:GuidanceCompliance ;
-                       session:hasTraceabilityStatus ?oldStatus .
-        }
-        """
-        self.g.update(update_query, initBindings={"newStatus": status})
+
+def main() -> None:
+    """Main entry point."""
+    validator = GuidanceValidator(Path("guidance.ttl"))
+    results = validator.run_all_validations()
+
+    logger = logging.getLogger(__name__)
+    for check_type, issues in results.items():
+        if issues:
+            logger.warning("%s validation issues found:", check_type)
+            for issue in issues:
+                logger.warning("  %s", issue)
+        else:
+            logger.info("%s validation passed", check_type)
 
 
 if __name__ == "__main__":
-    validator = GuidanceValidator(Path("session.ttl"))
-    results = validator.run_all_validations()
-    validator.update_session_compliance(results)
-
-    # Log results
-    logging.basicConfig(level=logging.INFO)
-    logger = logging.getLogger(__name__)
-
-    for check_type, issues in results.items():
-        if issues:
-            logger.warning(f"{check_type} validation issues found:")
-            for issue in issues:
-                logger.warning(f"  {issue}")
-        else:
-            logger.info(f"{check_type} validation passed")
+    main()

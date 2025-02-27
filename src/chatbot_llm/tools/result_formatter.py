@@ -71,7 +71,7 @@ title Data Distribution
 
     def validate(self, formatted_output: str) -> bool:
         return formatted_output.startswith("@start") and formatted_output.endswith(
-            "@end"
+            "@end",
         )
 
     def generate_svg(self, formatted_output: str) -> Optional[Path]:

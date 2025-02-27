@@ -1,3 +1,11 @@
+# Ontology: depext:DeploymentExtensionsOntology
+# Implements: deployment:Extensions
+# Requirement: REQ-DEP-002 Deployment Extensions
+# Guidance: guidance:ModelFirstPrinciple#deployment
+# Description: Teams-specific extensions to the deployment ontology
+# Cluster: :DeploymentCluster
+
+@prefix : <./chatbot#> .
 @prefix depext: <./deployment_extensions#> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
@@ -7,30 +15,161 @@
 @prefix chatbot: <./chatbot#> .
 @prefix solution: <./solution#> .
 @prefix deploy: <./deployment#> .
+@prefix meta: <./meta#> .
+@prefix metameta: <./metameta#> .
+@prefix problem: <./problem#> .
+@prefix conversation: <./conversation#> .
+@prefix guidance: <./guidance#> .
 
 # Ontology metadata
 depext:DeploymentExtensionsOntology a owl:Ontology ;
     rdfs:label "Deployment Extensions Ontology" ;
     rdfs:comment "Teams-specific extensions to the deployment ontology" ;
     owl:versionInfo "0.1.0" ;
-    owl:imports deploy: ;
-    owl:imports chatbot: .
+    owl:imports deploy:, chatbot:ChatbotLLMOntology ;
+    :belongsToCluster chatbot:DeploymentCluster .
 
 # Teams Bot Specific Infrastructure
 depext:TeamsInfrastructure a owl:Class ;
     rdfs:subClassOf deploy:InfrastructureComponent ;
     rdfs:label "Teams Infrastructure" ;
-    rdfs:comment "Infrastructure components specific to Teams integration" .
+    rdfs:comment "Infrastructure components specific to Teams integration" ;
+    owl:versionInfo "0.1.0" .
 
-depext:TeamsAuthComponent a depext:TeamsInfrastructure ;
+depext:TeamsAuthComponent a owl:Class ;
+    rdfs:subClassOf depext:TeamsInfrastructure ;
     rdfs:label "Teams Authentication Component" ;
-    depext:authType "OAuth 2.0" ;
-    depext:requiredScopes "botframework.graph" .
+    rdfs:comment "Authentication component for Teams integration" ;
+    owl:versionInfo "0.1.0" .
 
-depext:TeamsChannelComponent a depext:TeamsInfrastructure ;
+depext:TeamsChannelComponent a owl:Class ;
+    rdfs:subClassOf depext:TeamsInfrastructure ;
     rdfs:label "Teams Channel Component" ;
-    deploy:channelType "MS Teams" ;
-    deploy:messageTypes "text,adaptive-card" .
+    rdfs:comment "Channel component for Teams integration" ;
+    owl:versionInfo "0.1.0" .
+
+depext:SourceStructure a owl:Class ;
+    rdfs:label "Source Code Structure" ;
+    rdfs:comment "Defines the structure of source code files" ;
+    owl:versionInfo "0.1.0" .
+
+# Property Definitions
+depext:authType a owl:DatatypeProperty ;
+    rdfs:label "Authentication Type" ;
+    rdfs:comment "Type of authentication used" ;
+    rdfs:domain depext:TeamsAuthComponent ;
+    rdfs:range xsd:string .
+
+depext:requiredScopes a owl:DatatypeProperty ;
+    rdfs:label "Required Scopes" ;
+    rdfs:comment "Required API scopes" ;
+    rdfs:domain depext:TeamsAuthComponent ;
+    rdfs:range xsd:string .
+
+depext:channelType a owl:DatatypeProperty ;
+    rdfs:label "Channel Type" ;
+    rdfs:comment "Type of messaging channel" ;
+    rdfs:domain depext:TeamsChannelComponent ;
+    rdfs:range xsd:string .
+
+depext:messageTypes a owl:DatatypeProperty ;
+    rdfs:label "Message Types" ;
+    rdfs:comment "Supported message types" ;
+    rdfs:domain depext:TeamsChannelComponent ;
+    rdfs:range xsd:string .
+
+depext:teamsAppId a owl:DatatypeProperty ;
+    rdfs:label "Teams App ID" ;
+    rdfs:comment "Microsoft Teams App ID" ;
+    rdfs:domain depext:TeamsInfrastructure ;
+    rdfs:range xsd:string .
+
+depext:teamsAppSecret a owl:DatatypeProperty ;
+    rdfs:label "Teams App Secret" ;
+    rdfs:comment "Microsoft Teams App Secret (reference only, not value)" ;
+    rdfs:domain depext:TeamsInfrastructure ;
+    rdfs:range xsd:string .
+
+depext:teamsManifest a owl:DatatypeProperty ;
+    rdfs:label "Teams Manifest" ;
+    rdfs:comment "Teams App Manifest location" ;
+    rdfs:domain depext:TeamsInfrastructure ;
+    rdfs:range xsd:string .
+
+depext:codeLocation a owl:DatatypeProperty ;
+    rdfs:label "Code Location" ;
+    rdfs:comment "Root directory containing the code" ;
+    rdfs:domain deploy:InfrastructureComponent ;
+    rdfs:range xsd:string .
+
+depext:sourceStructure a owl:ObjectProperty ;
+    rdfs:label "Source Structure" ;
+    rdfs:comment "Links to source code structure" ;
+    rdfs:domain deploy:InfrastructureComponent ;
+    rdfs:range depext:SourceStructure .
+
+depext:mainModule a owl:DatatypeProperty ;
+    rdfs:label "Main Module" ;
+    rdfs:comment "Path to main bot module" ;
+    rdfs:domain depext:SourceStructure ;
+    rdfs:range xsd:string .
+
+depext:configModule a owl:DatatypeProperty ;
+    rdfs:label "Config Module" ;
+    rdfs:comment "Path to configuration module" ;
+    rdfs:domain depext:SourceStructure ;
+    rdfs:range xsd:string .
+
+depext:functionRoot a owl:DatatypeProperty ;
+    rdfs:label "Function Root" ;
+    rdfs:comment "Path to Azure Function entry point" ;
+    rdfs:domain depext:SourceStructure ;
+    rdfs:range xsd:string .
+
+# Additional Instances
+depext:productionAuth a depext:TeamsAuthComponent ;
+    rdfs:label "Production Auth Component" ;
+    rdfs:comment "Production Teams authentication component" ;
+    depext:authType "OAuth 2.0" ;
+    depext:requiredScopes "botframework.graph,teams.bot" ;
+    depext:teamsAppId "prod-app-id" ;
+    depext:teamsAppSecret "op://teams-bot/prod/app-secret" ;
+    depext:teamsManifest "manifests/prod/manifest.json" .
+
+depext:stagingAuth a depext:TeamsAuthComponent ;
+    rdfs:label "Staging Auth Component" ;
+    rdfs:comment "Staging Teams authentication component" ;
+    depext:authType "OAuth 2.0" ;
+    depext:requiredScopes "botframework.graph,teams.bot" ;
+    depext:teamsAppId "staging-app-id" ;
+    depext:teamsAppSecret "op://teams-bot/staging/app-secret" ;
+    depext:teamsManifest "manifests/staging/manifest.json" .
+
+depext:productionChannel a depext:TeamsChannelComponent ;
+    rdfs:label "Production Channel Component" ;
+    rdfs:comment "Production Teams channel component" ;
+    depext:channelType "MS Teams" ;
+    depext:messageTypes "text,adaptive-card,hero-card" ;
+    depext:codeLocation "teams-bot/prod/" ;
+    depext:sourceStructure [
+        a depext:SourceStructure ;
+        depext:mainModule "bot/cortex_bot.py" ;
+        depext:configModule "config/prod.py" ;
+        depext:functionRoot "teams-bot/function_app.py"
+    ] .
+
+depext:stagingChannel a depext:TeamsChannelComponent ;
+    rdfs:label "Staging Channel Component" ;
+    rdfs:comment "Staging Teams channel component" ;
+    depext:channelType "MS Teams" ;
+    depext:messageTypes "text,adaptive-card" ;
+    depext:codeLocation "teams-bot/staging/" ;
+    depext:sourceStructure [
+        a depext:SourceStructure ;
+        depext:mainModule "bot/cortex_bot.py" ;
+        depext:configModule "config/staging.py" ;
+        depext:functionRoot "teams-bot/function_app.py"
+    ] .
 
 # Teams Bot Validation Rules
 depext:TeamsValidationShape a sh:NodeShape ;
@@ -64,22 +203,6 @@ depext:TeamsChannelValidation a sh:NodeShape ;
         sh:message "Must specify supported message types."
     ] .
 
-# Teams Bot Deployment Properties
-depext:teamsAppId a owl:DatatypeProperty ;
-    rdfs:domain depext:TeamsInfrastructure ;
-    rdfs:range xsd:string ;
-    rdfs:comment "Microsoft Teams App ID" .
-
-depext:teamsAppSecret a owl:DatatypeProperty ;
-    rdfs:domain depext:TeamsInfrastructure ;
-    rdfs:range xsd:string ;
-    rdfs:comment "Microsoft Teams App Secret (reference only, not value)" .
-
-depext:teamsManifest a owl:DatatypeProperty ;
-    rdfs:domain depext:TeamsInfrastructure ;
-    rdfs:range xsd:string ;
-    rdfs:comment "Teams App Manifest location" .
-
 # Teams Bot Security Requirements
 depext:TeamsSecurityShape a sh:NodeShape ;
     sh:targetClass depext:TeamsInfrastructure ;
@@ -94,35 +217,6 @@ depext:TeamsSecurityShape a sh:NodeShape ;
         sh:minCount 1 ;
         sh:message "Must specify Teams app manifest location."
     ] .
-
-# Code Location Properties
-depext:codeLocation a owl:DatatypeProperty ;
-    rdfs:domain deploy:InfrastructureComponent ;
-    rdfs:range xsd:string ;
-    rdfs:comment "Root directory containing the code" .
-
-depext:sourceStructure a owl:ObjectProperty ;
-    rdfs:domain deploy:InfrastructureComponent ;
-    rdfs:range deploy:SourceStructure .
-
-depext:SourceStructure a owl:Class ;
-    rdfs:label "Source Code Structure" ;
-    rdfs:comment "Defines the structure of source code files" .
-
-depext:mainModule a owl:DatatypeProperty ;
-    rdfs:domain deploy:SourceStructure ;
-    rdfs:range xsd:string ;
-    rdfs:comment "Path to main bot module" .
-
-depext:configModule a owl:DatatypeProperty ;
-    rdfs:domain deploy:SourceStructure ;
-    rdfs:range xsd:string ;
-    rdfs:comment "Path to configuration module" .
-
-depext:functionRoot a owl:DatatypeProperty ;
-    rdfs:domain deploy:SourceStructure ;
-    rdfs:range xsd:string ;
-    rdfs:comment "Path to Azure Function entry point" .
 
 # Add Source Structure Validation
 depext:SourceStructureShape a sh:NodeShape ;

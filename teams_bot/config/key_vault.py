@@ -31,25 +31,27 @@ class KeyVaultConfig:
         self.vault_url = vault_url or os.getenv("AZURE_KEY_VAULT_URL")
         if not self.vault_url:
             raise ValueError(
-                "Key Vault URL must be provided or set in AZURE_KEY_VAULT_URL"
+                "Key Vault URL must be provided or set in AZURE_KEY_VAULT_URL",
             )
 
         # Try managed identity first, fall back to default credential
         try:
             self.credential = ManagedIdentityCredential()
             self.client = SecretClient(
-                vault_url=self.vault_url, credential=self.credential
+                vault_url=self.vault_url,
+                credential=self.credential,
             )
             # Skip test connection in __init__ as it's synchronous
             # Connection will be tested on first secret retrieval
         except Exception as e:
             logger.info(
                 "Managed identity not available: "
-                f"{e}. Falling back to default credential."
+                f"{e}. Falling back to default credential.",
             )
             self.credential = DefaultAzureCredential()
             self.client = SecretClient(
-                vault_url=self.vault_url, credential=self.credential
+                vault_url=self.vault_url,
+                credential=self.credential,
             )
 
     async def get_secret(self, secret_name: str) -> str:

@@ -34,7 +34,7 @@ async def test_register_and_handle_action(turn_context, action_handler):
     """Test registering and handling an action."""
     # Create a mock handler
     mock_handler = AsyncMock(
-        return_value=Activity(type="message", text="Action handled")
+        return_value=Activity(type="message", text="Action handled"),
     )
 
     # Register the handler

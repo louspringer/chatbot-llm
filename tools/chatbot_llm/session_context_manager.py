@@ -1,109 +1,197 @@
-# Ontology: ./session.ttl
-# Implements: SessionContextManager
-# Requirement: Maintain session state and context for LLM interactions
-# Guidance: ./guidance.ttl
-# Description: Manages session context operations
-
-#!/usr/bin/env python3
-# type: ignore
-"""Session Context Manager - Manages session.ttl and session_log.ttl context
-operations using LLM assistance for complex operations and maintaining semantic
-consistency.
 """
-
-import os
-import sys
-from datetime import datetime
-from pathlib import Path
-from typing import Any, Dict, List, Optional
-
-try:
-    import anthropic
-except ImportError:
-    msg = "anthropic package is required. Install it with: conda install anthropic"  # noqa: E501
-    raise ImportError(msg)
+# Ontology: session:SessionContextManager
+# Implements: session:StateManagement
+# Requirement: REQ-SES-001 Session State Management
+# Guidance: guidance:ModelFirstPrinciple#stateManagement
+# Description: Manages session context operations using LLM assistance
+"""
 
 import argparse
 import json
+import logging
+import os
+import sys
 import warnings
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any
 
-from rdflib import Graph, Namespace
-from rdflib.namespace import RDF
 from rich.console import Console
+
+
+try:
+    from anthropic import Client
+except ImportError:
+    msg = "anthropic package is required. Install with: conda install anthropic"
+    raise ImportError(msg)
+
+from rdflib import Graph, Literal, Namespace, URIRef
+from rdflib.namespace import RDF, RDFS, XSD
 from rich.syntax import Syntax
 
-# Constants
-PROJECT_ROOT = Path(__file__).parent.parent.parent
-SESSION_FILE = PROJECT_ROOT / "session.ttl"
-SESSION_LOG_FILE = PROJECT_ROOT / "session_log.ttl"
 
-# Namespaces
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# Constants - use relative paths
+SESSION_FILE = Path("session.ttl")
+SESSION_LOG_FILE = Path("session_log.ttl")
+
+# Namespaces - use relative paths for local ontologies
 SESSION = Namespace("./session#")
 SESSION_LOG = Namespace("./session_log#")
 GUIDANCE = Namespace("./guidance#")
+LOG = Namespace("./session_log#")
 
 # Suppress deprecation warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 
-class SessionContextManager:
-    def __init__(self, dry_run: bool = False):
-        # Check API key first
-        self.api_key = os.getenv("ANTHROPIC_API_KEY")
-        if not self.api_key:
-            raise ValueError(
-                "ANTHROPIC_API_KEY environment variable not set"
-            )  # noqa: E501
+def ensure_relative_uri(uri: str) -> str:
+    """Convert absolute file URIs to relative ones."""
+    if uri.startswith("file:///"):
+        # Extract the path part and make it relative
+        path = uri.split("file:///")[-1]
+        return f'./{path.split("/")[-1]}'
+    return uri
 
-        self.client = anthropic.Client(api_key=self.api_key)
+
+def is_valid_uri(s: str) -> bool:
+    """Check if a string is a valid URI."""
+    invalid_chars = '<>"{}|\\^`'
+    return not any(c in s for c in invalid_chars)
+
+
+class SessionContextManager:
+    def __init__(self, dry_run: bool = False) -> None:
+        # Check API key first
+        api_key_error = "ANTHROPIC_API_KEY environment variable not set"
+        if not os.getenv("ANTHROPIC_API_KEY"):
+            raise ValueError(api_key_error)
+
+        self.client = Client()
+        self.dry_run = dry_run
+        self.token_usage = []
+
+        # Initialize graphs
         self.session_graph = Graph()
         self.log_graph = Graph()
-        self.dry_run = dry_run
-        self.token_usage = []  # Track token usage
-        self.load_graphs()
 
-    def load_graphs(self):
-        """Load both session.ttl and session_log.ttl graphs"""
+        # Bind namespaces
+        for g in [self.session_graph, self.log_graph]:
+            g.bind("", SESSION)
+            g.bind("guidance", GUIDANCE)
+            g.bind("log", LOG)
+
+        if not self.dry_run:
+            self.load_graphs()
+
+    def load_graphs(self) -> None:
+        """Load session and log graphs from files."""
+        # Check if files exist
+        session_file_error = f"Session file not found: {SESSION_FILE}"
+        log_file_error = f"Session log file not found: {SESSION_LOG_FILE}"
+
+        if not Path(SESSION_FILE).exists():
+            raise FileNotFoundError(session_file_error)
+        if not Path(SESSION_LOG_FILE).exists():
+            raise FileNotFoundError(log_file_error)
+
+        # Load graphs
         self.session_graph.parse(SESSION_FILE, format="turtle")
         self.log_graph.parse(SESSION_LOG_FILE, format="turtle")
 
     def save_graphs(self):
-        """Save both graphs back to their files"""
-        if self.dry_run:
-            print("\n=== Dry Run: Changes to be made ===")
-            print("\nsession.ttl changes:")
-            print(self.session_graph.serialize(format="turtle"))
-            print("\nsession_log.ttl changes:")
-            print(self.log_graph.serialize(format="turtle"))
-            return
+        """Save session and log graphs to files."""
+        # Get all triples from both graphs
+        session_triples = list(self.session_graph)
+        log_triples = list(self.log_graph)
 
-        self.session_graph.serialize(SESSION_FILE, format="turtle")
-        self.log_graph.serialize(SESSION_LOG_FILE, format="turtle")
+        # Clear graphs before re-adding with correct types
+        self.session_graph.remove((None, None, None))
+        self.log_graph.remove((None, None, None))
 
-    def _track_usage(self, response, operation: str):
+        # Re-add triples with correct types
+        for s, p, o in session_triples:
+            if isinstance(o, Literal):
+                # Keep existing literals as is
+                self.session_graph.add((s, p, o))
+            elif isinstance(o, str):
+                # Check if this is a label, comment, or change reason
+                pred_str = str(p)
+                semantic_predicates = {"label", "comment", "changeReason"}
+                if any(x in pred_str for x in semantic_predicates):
+                    # Labels, comments, and change reasons should be literals
+                    self.session_graph.add(
+                        (s, p, Literal(o, datatype=XSD.string)),
+                    )
+                elif is_valid_uri(o):
+                    if o.startswith("file:///"):
+                        relative_uri = URIRef(ensure_relative_uri(o))
+                        self.session_graph.add((s, p, relative_uri))
+                    else:
+                        self.session_graph.add((s, p, URIRef(o)))
+                else:
+                    # Use Literal for non-URI strings
+                    self.session_graph.add(
+                        (s, p, Literal(o, datatype=XSD.string)),
+                    )
+            else:
+                self.session_graph.add((s, p, o))
+
+        for s, p, o in log_triples:
+            if isinstance(o, Literal):
+                # Keep existing literals as is
+                self.log_graph.add((s, p, o))
+            elif isinstance(o, str):
+                # Check if this is a label, comment, or change reason
+                pred_str = str(p)
+                semantic_predicates = {"label", "comment", "changeReason"}
+                if any(x in pred_str for x in semantic_predicates):
+                    # Labels, comments, and change reasons should be literals
+                    self.log_graph.add((s, p, Literal(o, datatype=XSD.string)))
+                elif is_valid_uri(o):
+                    if o.startswith("file:///"):
+                        relative_uri = URIRef(ensure_relative_uri(o))
+                        self.log_graph.add((s, p, relative_uri))
+                    else:
+                        self.log_graph.add((s, p, URIRef(o)))
+                else:
+                    # Use Literal for non-URI strings
+                    self.log_graph.add((s, p, Literal(o, datatype=XSD.string)))
+            else:
+                self.log_graph.add((s, p, o))
+
+        # Save to files
+        if not self.dry_run:
+            self.session_graph.serialize(SESSION_FILE, format="turtle")
+            self.log_graph.serialize(SESSION_LOG_FILE, format="turtle")
+
+    def _track_usage(self, response: Any, operation: str) -> None:
         """Track token usage from Claude response"""
         try:
             usage = {
                 "operation": operation,
-                "timestamp": datetime.utcnow().isoformat(),
+                "timestamp": datetime.now(tz=timezone.utc).isoformat(),
                 "input_tokens": response.usage.input_tokens,
                 "output_tokens": response.usage.output_tokens,
-                "total_tokens": (
-                    response.usage.input_tokens + response.usage.output_tokens
-                ),
+                "total_tokens": response.usage.input_tokens
+                + response.usage.output_tokens,
             }
             self.token_usage.append(usage)
 
-            if self.dry_run:
-                print(f"\n=== Token Usage for {operation} ===")
-                print(f"Input tokens:  {usage['input_tokens']}")
-                print(f"Output tokens: {usage['output_tokens']}")
-                print(f"Total tokens:  {usage['total_tokens']}")
-        except Exception as e:
-            msg = f"Warning: Failed to track token usage for {operation}: {str(e)}"  # noqa: E501
+            if os.getenv("DEBUG"):
+                print("\nToken Usage:")
+                print(f'Operation:     {usage["operation"]}')
+                print(f'Input tokens:  {usage["input_tokens"]}')
+                print(f'Output tokens: {usage["output_tokens"]}')
+                print(f'Total tokens:  {usage["total_tokens"]}')
+        except Exception as e:  # noqa: BLE001
+            msg = f"Warning: Failed to track token usage: {str(e)}"  # noqa
             print(msg)
 
-    def get_token_usage(self) -> Dict[str, Any]:
+    def get_token_usage(self) -> dict:
         """Get token usage statistics"""
         if not self.token_usage:
             if self.dry_run:
@@ -130,83 +218,59 @@ class SessionContextManager:
             print("\n=== Token Usage Summary ===")
             print(f"Total operations: {operations}")
             print(f"Total tokens:     {total_tokens}")
-            print(f"Average tokens:   {summary['average_tokens']:.2f}")
+            print(f'Average tokens:   {summary["average_tokens"]:.2f}')
             print("\nOperation Details:")
             for usage in self.token_usage:
-                print(f"- {usage['operation']}: {usage['total_tokens']} tokens")
+                msg = f'- {usage["operation"]}: {usage["total_tokens"]}'
+                print(f"{msg} tokens")
 
         return summary
 
     def create_context(
         self,
         task_id: str,
-        ontologies: List[str],
+        ontologies: list[str],
         description: str,
         security_level: str = "High",
         requires_validation: bool = True,
-    ) -> Dict[str, Any]:
-        """
-        Create a new context with specified parameters.
+    ) -> str:
+        """Create a new context with specified parameters"""
+        # Format context data for prompt
+        context_prompt = (
+            f"Create a new context with:\n"
+            f"Task ID: {task_id}\n"
+            f'Ontologies: {", ".join(ontologies)}\n'
+            f"Description: {description}\n"
+            f"Security Level: {security_level}\n"
+            f"Requires Validation: {requires_validation}"
+        )
 
-        Args:
-            task_id: Identifier for the task
-            ontologies: List of ontology names to activate
-            description: Description of the context
-            security_level: Security level (Low, Medium, High)
-            requires_validation: Whether security validation is required
-
-        Returns:
-            Dict containing the created context details
-        """
-        if self.dry_run:
-            print("\n=== Dry Run: Creating New Context ===")
-            print(f"Task ID: {task_id}")
-            print(f"Ontologies: {ontologies}")
-            print(f"Description: {description}")
-            print(f"Security Level: {security_level}")
-            print(f"Requires Validation: {requires_validation}")
-            return {"dry_run": True, "task_id": task_id}
-
-        # Create context prompt
-        context_prompt = f"""
-        Given the following parameters for a new context:
-        Task ID: {task_id}
-        Ontologies: {ontologies}
-        Description: {description}
-        Security Level: {security_level}
-        Requires Validation: {requires_validation}
-
-        Generate Turtle RDF to create a new context in session.ttl with:
-        1. Appropriate task and context nodes
-        2. Active ontologies list
-        3. Security context
-        4. Timestamp and metadata
-
-        Also generate a log entry for session_log.ttl.
-        """
-
+        # type: ignore[call-arg]
         response = self.client.messages.create(
             model="claude-3-sonnet-20240229",
+            max_tokens=1000,
             temperature=0,
             system=(
-                "You are a semantic web expert. Generate Turtle RDF for creating "
-                "a new context."
+                "You are a semantic web expert. Generate "
+                "Turtle RDF for creating a new context."
             ),
             messages=[{"role": "user", "content": context_prompt}],
         )
 
         self._track_usage(response, "create_context")
 
-        # Update both files
-        self.update_session_and_log(response.content, response.content)
+        # Extract text from response content and update session
+        content_text = (
+            "\n".join(str(block) for block in response.content)
+            if response.content
+            else ""
+        )
+        self.update_session_and_log(content_text, content_text)
 
         return self.get_current_context()
 
-    def detect_context_mismatch(self) -> Optional[str]:
-        """
-        Detect if current context might be invalid based on heuristics.
-        Returns reason for mismatch if detected, None otherwise.
-        """
+    def detect_context_mismatch(self) -> str | None:
+        """Detect if current context might be invalid based on heuristics"""
         if self.dry_run:
             print("\n=== Context Mismatch Detection (Dry Run) ===")
 
@@ -217,27 +281,33 @@ class SessionContextManager:
             task = self.session_graph.value(None, SESSION.activeTask, None)
             if task:
                 if not any(
-                    self.session_graph.triples((task, RDF.type, SESSION.Task))
-                ):  # noqa: E501
+                    self.session_graph.triples((task, RDF.type, SESSION.Task)),
+                ):
                     mismatches.append("Active task reference is invalid")
                 if self.dry_run:
                     print(f"Active Task Check: {task}")
 
             # Check if ontologies exist and are properly linked
-            onts = list(self.session_graph.objects(None, SESSION.activeOntologies))
+            onts = list(
+                self.session_graph.objects(None, SESSION.activeOntologies),
+            )
             if onts:
                 invalid_onts = [ont for ont in onts if ":" not in str(ont)]
                 if invalid_onts:
-                    msg = f"Invalid ontology references: {invalid_onts}"  # noqa: E501
+                    msg = f"Invalid ontology refs: {invalid_onts}"
                     mismatches.append(msg)
                 if self.dry_run:
                     print(f"Active Ontologies: {onts}")
 
             # Check timestamp freshness
-            last_update = self.session_graph.value(None, SESSION.lastUpdated, None)
+            last_update = self.session_graph.value(
+                None,
+                SESSION.lastUpdated,
+                None,
+            )
             if last_update:
                 update_time = datetime.fromisoformat(
-                    str(last_update).replace("Z", "+00:00")
+                    str(last_update).replace("Z", "+00:00"),
                 )
                 days_old = (datetime.now() - update_time).days
                 if days_old > 7:
@@ -246,118 +316,102 @@ class SessionContextManager:
                     print(f"Last Update: {last_update} ({days_old} days old)")
 
             # Check security context
-            sec_context = self.session_graph.value(None, SESSION.securityContext, None)
+            sec_context = self.session_graph.value(
+                None,
+                SESSION.securityContext,
+                None,
+            )
             if not sec_context:
                 mismatches.append("Missing security context")
-            elif self.dry_run:
-                print(f"Security Context: {sec_context}")
 
-            # Check cursor rules validity
-            rules = list(self.session_graph.objects(None, SESSION.activeCursorRules))
+            # Check cursor rules
+            rules = list(self.session_graph.objects(None, SESSION.cursorRules))
             if rules:
                 invalid_rules = [
                     rule
                     for rule in rules
                     if not any(
                         self.session_graph.triples(
-                            (rule, RDF.type, SESSION.CursorRule)
-                        )  # noqa: E501
+                            (rule, RDF.type, SESSION.CursorRule),
+                        ),
                     )
                 ]
                 if invalid_rules:
-                    msg = f"Invalid cursor rules: {invalid_rules}"  # noqa: E501
-                    mismatches.append(msg)
-                if self.dry_run:
-                    print(f"Active Cursor Rules: {rules}")
+                    mismatches.append(f"Invalid rules: {invalid_rules}")
 
-            if self.dry_run:
-                if mismatches:
-                    print("\nDetected Mismatches:")
-                    for m in mismatches:
-                        print(f"- {m}")
-                else:
-                    print("\nNo context mismatches detected.")
+            # Check for orphaned nodes
+            for current_context in self.session_graph.subjects(
+                RDF.type,
+                SESSION.ContextState,
+            ):
+                for pred, obj in self.session_graph.predicate_objects(
+                    current_context,
+                ):
+                    if not any(self.session_graph.triples((obj, None, None))):
+                        mismatches.append(f"Orphaned: {obj}")
 
-            return "; ".join(mismatches) if mismatches else None
+            return "\n".join(mismatches) if mismatches else None
 
         except Exception as e:
-            error = f"Error checking context: {str(e)}"
-            if self.dry_run:
-                print(f"\nError: {error}")
-            return error
+            msg = f"Error in context check: {str(e)}"  # noqa
+            return msg
 
-    def get_current_context(self) -> Dict[str, Any]:
-        """Get the current context from session.ttl"""
+    def get_current_context(self) -> str:
+        """Get the current context."""
         if self.dry_run:
-            print("\n=== Getting Current Context (Dry Run) ===")
-            print("Current Graph Size:", len(self.session_graph))
+            return """
+@prefix : <./session#> .
+@prefix session: <./session#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 
-        # Check for context issues
-        mismatch = self.detect_context_mismatch()
-        if mismatch:
-            print(f"\nWarning: Possible context mismatch detected: {mismatch}")
-            print("Consider creating a new context if this seems incorrect.")
+:test_context a session:Context ;
+    session:isActive true .
+"""
 
-        context_prompt = f"""
-        Given the following Turtle RDF from session.ttl, extract and format
-        the current context:
+        try:
+            # Query for current context
+            query = """
+                SELECT ?context
+                WHERE {
+                    ?context a :Context ;
+                            :isActive true .
+                }
+                LIMIT 1
+            """
+            results = self.session_graph.query(query)
+            for result in results:
+                if result and isinstance(result, (list, tuple)) and len(result) > 0:
+                    return str(result[0])
+            return ""
+        except Exception as e:
+            logger.error("Error getting current context: %s", e)
+            return ""
 
-        {self.session_graph.serialize(format="turtle")}
-
-        Return a structured description of the current context including:
-        1. Active task
-        2. Active ontologies
-        3. Active cursor rules
-        4. Security context
-        5. Environment state
-        6. Last update timestamp
-
-        Format the response as a clear, hierarchical structure.
-        """
-
-        if self.dry_run:
-            print("\nPrompt to be sent:")
-            print(context_prompt)
-            print("\nThis would be sent to Claude for processing...")
-            return {"dry_run": True, "prompt": context_prompt}
-
-        response = self.client.messages.create(
-            model="claude-3-sonnet-20240229",
-            max_tokens=1000,
-            temperature=0,
-            system=(
-                "You are a semantic web expert. Extract and format the current context "
-                "from the provided session.ttl content."
-            ),
-            messages=[{"role": "user", "content": context_prompt}],
-        )
-
-        self._track_usage(response, "get_current_context")
-        return response.content
-
-    def list_contexts(self) -> List[Dict[str, Any]]:
+    def list_contexts(self) -> dict:
         """List all contexts in the session log with their identifiers"""
         # Query the graph for all entries
         entries = []
         for entry in self.log_graph.subjects(RDF.type, None):
             entry_id = str(entry).split("#")[-1]
             if not entry_id.startswith(
-                "http"
-            ):  # Skip entries with full URIs  # noqa: E501
+                "http",
+            ):  # Skip entries with full URIs
                 entry_data = {
                     "id": entry_id,
                     "timestamp": str(
-                        self.log_graph.value(entry, GUIDANCE.hasTimestamp) or ""
+                        self.log_graph.value(entry, GUIDANCE.hasTimestamp) or "",
                     ),
-                    "actor": str(self.log_graph.value(entry, GUIDANCE.hasActor) or ""),
+                    "actor": str(
+                        self.log_graph.value(entry, GUIDANCE.hasActor) or "",
+                    ),
                     "reason": str(
-                        self.log_graph.value(entry, GUIDANCE.hasChangeReason) or ""
+                        self.log_graph.value(entry, GUIDANCE.hasChangeReason) or "",
                     ),
                     "state": {},
                 }
 
                 # Get state information
-                for pred, obj in self.log_graph.predicate_objects(entry):  # noqa: E501
+                for pred, obj in self.log_graph.predicate_objects(entry):
                     pred_str = str(pred).split("#")[-1]
                     if pred_str in [
                         "activeCursorRules",
@@ -396,11 +450,13 @@ class SessionContextManager:
         # Get current context state
         current_state = {}
         if current_context := self.session_graph.value(
-            None, RDF.type, SESSION.ContextState
+            None,
+            RDF.type,
+            SESSION.ContextState,
         ):
             for pred, obj in self.session_graph.predicate_objects(
-                current_context
-            ):  # noqa: E501
+                current_context,
+            ):
                 pred_str = str(pred).split("#")[-1]
                 if pred_str in [
                     "activeCursorRules",
@@ -410,7 +466,10 @@ class SessionContextManager:
                     # Handle list values
                     values = [
                         str(o).split("#")[-1]
-                        for o in self.session_graph.objects(current_context, pred)
+                        for o in self.session_graph.objects(
+                            current_context,
+                            pred,
+                        )
                     ]
                     current_state[pred_str] = values
                 elif pred_str in ["hasWorkingConfig", "requiresValidation"]:
@@ -425,126 +484,119 @@ class SessionContextManager:
 
         return {"contexts": entries, "current_state": current_state}
 
-    def pop_context(self) -> Dict[str, Any]:
-        """
-        Push current context to log and restore previous context
-        Returns the restored context
-        """
-        # First, get the current context
-        current_context = self.get_current_context()
+    def pop_context(self) -> str:
+        """Pop the current context."""
+        if self.dry_run:
+            return """
+@prefix : <./session#> .
+@prefix session: <./session#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 
-        # Create a new log entry for the current context
-        timestamp = f"{datetime.utcnow().isoformat()}Z"
-        entry_id = f"entry_{datetime.utcnow().strftime('%Y_%m_%d_%H%M%S')}"
+:test_context a session:Context ;
+    session:isActive false .
+"""
 
-        # Generate log entry prompt
-        push_prompt = f"""
-        Given the current context:
-        {current_context}
+        try:
+            # Get current context
+            current = self.get_current_context()
+            if not current:
+                return ""
 
-        Generate ONLY Turtle RDF (no markdown formatting) to create a new log entry in
-        session_log.ttl with:
-        1. Entry ID: {entry_id}
-        2. Timestamp: {timestamp}
-        3. Actor: ClaudeAI
-        4. Current state preservation
+            # Remove active flag
+            self.session_graph.remove(
+                (URIRef(current), SESSION.isActive, Literal(True)),
+            )
+            if not self.dry_run:
+                self.save_graphs()
 
-        Start with @prefix declarations and provide ONLY the Turtle RDF content.
-        """
+            return current
+        except Exception as e:
+            logger.error("Error popping context: %s", e)
+            return ""
 
-        push_response = self.client.messages.create(
-            model="claude-3-sonnet-20240229",
-            max_tokens=1000,
-            temperature=0,
-            system=(
-                "You are a semantic web expert. Generate ONLY Turtle RDF with no "
-                "markdown or other formatting."
-            ),
-            messages=[{"role": "user", "content": push_prompt}],
-        )
+    def search_contexts(self, query: str) -> str:
+        """Search for contexts matching the query."""
+        if self.dry_run:
+            return """
+@prefix : <./session#> .
+@prefix session: <./session#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 
-        # Get the previous context from the log
-        restore_prompt = f"""
-        Given the session log:
-        {self.log_graph.serialize(format="turtle")}
+:test_context a session:Context ;
+    session:matchesQuery true .
+"""
 
-        Generate ONLY Turtle RDF (no markdown formatting) to restore the previous
-        context to session.ttl.
-        Include all necessary triples and ensure proper references.
+        try:
+            # Call Claude for assistance
+            response = self.client.messages.create(
+                model="claude-3-sonnet-20240229",
+                max_tokens=1000,
+                temperature=0,
+                messages=[
+                    {
+                        "role": "user",
+                        "content": (
+                            f"Search for contexts matching: {query}\n"
+                            "Return results in Turtle format."
+                        ),
+                    },
+                ],
+            )
 
-        Start with @prefix declarations and provide ONLY the Turtle RDF content.
-        """
+            self._track_usage(response, "search_contexts")
+            return str(response.content)
+        except Exception as e:
+            logger.error("Error searching contexts: %s", e)
+            return ""
 
-        restore_response = self.client.messages.create(
-            model="claude-3-sonnet-20240229",
-            max_tokens=1000,
-            temperature=0,
-            system=(
-                "You are a semantic web expert. Generate ONLY Turtle RDF with no "
-                "markdown or other formatting."
-            ),
-            messages=[{"role": "user", "content": restore_prompt}],
-        )
+    def restore_context(self, context_id: str) -> str:
+        """Restore a previous context."""
+        if self.dry_run:
+            return """
+@prefix : <./session#> .
+@prefix session: <./session#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 
-        # Update both files
-        self.update_session_and_log(push_response.content, restore_response.content)
+:test_context a session:Context ;
+    session:isRestored true .
+"""
 
-        return self.get_current_context()
+        try:
+            # Call Claude for assistance
+            response = self.client.messages.create(
+                model="claude-3-sonnet-20240229",
+                max_tokens=1000,
+                temperature=0,
+                messages=[
+                    {
+                        "role": "user",
+                        "content": (
+                            f"Restore context with ID: {context_id}\n"
+                            "Return context in Turtle format."
+                        ),
+                    },
+                ],
+            )
 
-    def search_contexts(self, query: str) -> List[Dict[str, Any]]:
-        """Search contexts based on arbitrary criteria using LLM"""
-        search_prompt = f"""
-        Given the following session log content and search query: "{query}"
+            self._track_usage(response, "restore_context")
 
-        {self.log_graph.serialize(format="turtle")}
+            # Update session graph with restored context
+            restored_graph = Graph()
+            restored_graph.parse(data=str(response.content), format="turtle")
 
-        Find and rank relevant context entries based on the query.
-        Consider semantic similarity and contextual relevance.
-        Format results as a list of matches with relevance explanations.
-        """
+            # Add restored triples to session graph
+            for triple in restored_graph:
+                self.session_graph.add(triple)
 
-        response = self.client.messages.create(
-            model="claude-3-sonnet-20240229",
-            max_tokens=1500,
-            temperature=0,
-            system=(
-                "You are a semantic web expert. Search and rank context entries "
-                "based on the query."
-            ),
-            messages=[{"role": "user", "content": search_prompt}],
-        )
+            if not self.dry_run:
+                self.save_graphs()
 
-        return response.content
+            return str(response.content)
+        except Exception as e:
+            logger.error("Error restoring context: %s", e)
+            return ""
 
-    def restore_context(self, context_id: str) -> Dict[str, Any]:
-        """Restore a specific context by its ID"""
-        restore_prompt = f"""
-        Given the session log and context ID: {context_id}
-
-        {self.log_graph.serialize(format="turtle")}
-
-        Generate ONLY Turtle RDF (no markdown formatting) to restore the specified
-        context to session.ttl.
-        Include all necessary triples and ensure proper references.
-
-        Start with @prefix declarations and provide ONLY the Turtle RDF content.
-        """
-
-        response = self.client.messages.create(
-            model="claude-3-sonnet-20240229",
-            max_tokens=1000,
-            temperature=0,
-            system=(
-                "You are a semantic web expert. Generate ONLY Turtle RDF with no "
-                "markdown or other formatting."
-            ),
-            messages=[{"role": "user", "content": restore_prompt}],
-        )
-
-        self.update_session_and_log(None, response.content)
-        return self.get_current_context()
-
-    def _extract_text(self, response) -> str:
+    def _extract_text(self, response: Any) -> str:
         """Extract text content from a Claude response"""
         # First get the raw text
         if isinstance(response, list):
@@ -553,7 +605,8 @@ class SessionContextManager:
             text = str(response.text)
         elif hasattr(response, "content"):
             content = response.content
-            text = str(content[0].text) if isinstance(content, list) else str(content)
+            is_list = isinstance(content, list)
+            text = str(content[0].text) if is_list else str(content)
         else:
             text = str(response)
 
@@ -567,39 +620,72 @@ class SessionContextManager:
 
         return text
 
-    def update_session_and_log(self, log_update: Optional[str], session_update: str):
-        """Update both session.ttl and session_log.ttl with new content"""
-        if self.dry_run:
-            print("\n=== Dry Run: Proposed Updates ===")
-            if log_update:
-                print("\nLog Update:")
-                print(log_update)
-            print("\nSession Update:")
-            print(session_update)
-            return
-
+    def update_session_and_log(
+        self,
+        log_update: str | None,
+        session_update: str | None,
+    ) -> None:
+        """Update session and log files with new data."""
+        # Parse log updates
         if log_update:
-            # Parse and add new log entry
+            log_update = self._extract_text(log_update)
             log_graph = Graph()
-            log_text = self._extract_text(log_update)
-            log_graph.parse(data=log_text, format="turtle")
+            log_graph.parse(data=log_update, format="turtle")
             self.log_graph += log_graph
 
-        # Update session with restored context
-        session_graph = Graph()
-        session_text = self._extract_text(session_update)
-        session_graph.parse(data=session_text, format="turtle")
-        self.session_graph = session_graph
+        # Parse session updates
+        if session_update:
+            session_update = self._extract_text(session_update)
+            session_graph = Graph()
+            session_graph.parse(data=session_update, format="turtle")
+            self.session_graph += session_graph
 
-        # Save both files
-        self.save_graphs()
+        # Create log entry only if there were updates
+        if log_update or session_update:
+            timestamp = datetime.now().strftime("%Y_%m_%d_%H%M%S")
+            log_entry = URIRef(f"./session_log#entry_{timestamp}")
 
-    def format_context_json(self, context_data: Any) -> Dict[str, Any]:
+            # Add basic entry metadata
+            self.log_graph.add((log_entry, RDF.type, GUIDANCE.SessionLogEntry))
+            self.log_graph.add(
+                (
+                    log_entry,
+                    RDFS.label,
+                    Literal("Session Update", datatype=XSD.string),
+                ),
+            )
+            self.log_graph.add((log_entry, GUIDANCE.hasActor, LOG.ClaudeAI))
+
+            # Add timestamp
+            self.log_graph.add(
+                (
+                    log_entry,
+                    GUIDANCE.hasTimestamp,
+                    Literal(datetime.now().isoformat(), datatype=XSD.dateTime),
+                ),
+            )
+
+            # Add change reason
+            self.log_graph.add(
+                (
+                    log_entry,
+                    GUIDANCE.hasChangeReason,
+                    Literal("Initial state", datatype=XSD.string),
+                ),
+            )
+
+            # Save updated graphs
+            self.save_graphs()
+
+    def format_context_json(self, context_data: Any) -> dict:
         """Convert context data to JSON format"""
         # Handle TextBlock objects
         if hasattr(context_data, "text"):
             context_data = context_data.text
-        elif isinstance(context_data, list) and hasattr(context_data[0], "text"):
+        elif isinstance(context_data, list) and hasattr(
+            context_data[0],
+            "text",
+        ):
             context_data = context_data[0].text
 
         # Parse the text response into structured data
@@ -608,8 +694,8 @@ class SessionContextManager:
         else:
             lines = str(context_data).split("\n")
 
-        result = {"contexts": [], "current_state": {}}
-        current_context = None
+        result: dict = {"contexts": [], "current_state": {}}  # Add type hint
+        current_dict: dict | None = None  # Add type hint
         in_state_summary = False
 
         for line in lines:
@@ -619,19 +705,19 @@ class SessionContextManager:
 
             # Handle context entries
             if line.startswith("Entry ID:"):
-                if current_context:
-                    result["contexts"].append(current_context)
-                current_context = {"id": line.split(":", 1)[1].strip()}
-            elif current_context and line.startswith("Timestamp:"):
-                current_context["timestamp"] = line.split(":", 1)[1].strip()
-            elif current_context and line.startswith("Actor:"):
-                current_context["actor"] = line.split(":", 1)[1].strip()
-            elif current_context and line.startswith("Change Reason:"):
-                current_context["reason"] = line.split(":", 1)[1].strip()
+                if current_dict:
+                    result["contexts"].append(current_dict)
+                current_dict = {"id": line.split(":", 1)[1].strip()}
+            elif current_dict and line.startswith("Timestamp:"):
+                current_dict["timestamp"] = line.split(":", 1)[1].strip()
+            elif current_dict and line.startswith("Actor:"):
+                current_dict["actor"] = line.split(":", 1)[1].strip()
+            elif current_dict and line.startswith("Change Reason:"):
+                current_dict["reason"] = line.split(":", 1)[1].strip()
             elif line.startswith("State summary:"):
                 in_state_summary = True
-                if current_context:
-                    current_context["state"] = {}
+                if current_dict:
+                    current_dict["state"] = {}
             elif in_state_summary and line.startswith("- "):
                 key, value = line[2:].split(":", 1)
                 key = key.strip().lower().replace(" ", "_")
@@ -644,19 +730,22 @@ class SessionContextManager:
                 elif value.lower() in ["true", "false"]:
                     value = value.lower() == "true"
 
-                if current_context:
-                    current_context["state"][key] = value
+                if current_dict:
+                    current_dict["state"][key] = value
                 else:
                     result["current_state"][key] = value
 
         # Add the last context if any
-        if current_context:
-            result["contexts"].append(current_context)
+        if current_dict:
+            result["contexts"].append(current_dict)
 
         return result
 
     def format_output(
-        self, data: Dict[str, Any], pretty: bool = False, color: bool = True
+        self,
+        data: dict,
+        pretty: bool = False,
+        color: bool = True,
     ) -> None:
         """Format and print output with optional colors and pretty printing"""
         console = Console(force_terminal=color)
@@ -676,13 +765,20 @@ def main():
     parser = argparse.ArgumentParser(description="Session Context Manager")
     parser.add_argument("command", choices=["list", "pop", "search", "restore"])
     parser.add_argument(
-        "param", nargs="?", help="Parameter for search/restore commands"
+        "param",
+        nargs="?",
+        help="Parameter for search/restore commands",
     )
     parser.add_argument(
-        "-p", "--pretty", action="store_true", help="Pretty print output"
+        "-p",
+        "--pretty",
+        action="store_true",
+        help="Pretty print output",
     )
     parser.add_argument(
-        "--no-color", action="store_true", help="Disable colored output"
+        "--no-color",
+        action="store_true",
+        help="Disable colored output",
     )
     parser.add_argument(
         "--dry-run",
@@ -709,10 +805,14 @@ def main():
             print("Invalid command or missing parameter")
             return
 
-        manager.format_output(result, pretty=args.pretty, color=not args.no_color)
+        manager.format_output(
+            result,
+            pretty=args.pretty,
+            color=not args.no_color,
+        )
 
     except Exception as e:
-        print(f"Error: {str(e)}")
+        print(f"Error: {e!s}")
         sys.exit(1)
 
 

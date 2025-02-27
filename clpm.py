@@ -9,24 +9,24 @@ project ontologies to ensure compatibility, security, and best practices.
 
 import json
 import logging
+import os
 import subprocess
 import sys
 import tempfile
 from dataclasses import dataclass
 from enum import Enum, auto
 from pathlib import Path
-from typing import Dict, List, Optional, Protocol, Tuple, Union
+from typing import List, Optional, Protocol, Tuple
 
 import click
-import jsonschema
 import toml
 import yaml
+from jsonschema import ValidationError, validate, validators
 from packaging.specifiers import SpecifierSet
 from packaging.version import Version
 from rdflib import Graph, Literal, Namespace, URIRef
-from rdflib.namespace import RDF, RDFS
+from rdflib.namespace import RDF
 from rich.console import Console
-from rich.logging import RichHandler
 from rich.traceback import install
 
 # Setup rich error handling
@@ -46,6 +46,43 @@ SCAN_TIMEOUT = 30
 PACKAGE_INSTALL_TIMEOUT = 300  # 5 minutes for package installation
 
 
+def find_conda() -> str:
+    """Find conda executable in PATH or common install locations."""
+    # Try environment variable first
+    conda_path = os.environ.get("CONDA_EXE")
+    if conda_path and os.path.exists(conda_path):
+        return conda_path
+
+    # Try system paths
+    common_paths = [
+        "conda",  # Let the system find it in PATH
+        "bin/conda",  # Relative to CONDA_ROOT
+        "conda/bin/conda",  # Relative to HOME
+        ".conda/bin/conda",  # Relative to HOME
+    ]
+
+    # Add paths from environment variables
+    if "CONDA_ROOT" in os.environ:
+        conda_root = os.environ["CONDA_ROOT"]
+        common_paths.append(os.path.join(conda_root, "bin", "conda"))
+    if "HOME" in os.environ:
+        home = os.environ["HOME"]
+        for path in common_paths[1:]:  # Skip the first one which is just "conda"
+            common_paths.append(os.path.join(home, path))
+
+    for path in common_paths:
+        try:
+            subprocess.run([path, "--version"], capture_output=True)
+            return path
+        except (FileNotFoundError, subprocess.CalledProcessError):
+            continue
+
+    raise EnvironmentError(
+        "Could not find conda executable. Please ensure conda is installed "
+        "and in PATH or set CONDA_EXE environment variable.",
+    )
+
+
 class WorkspaceConfig:
     """Centralized configuration for workspace paths and URIs."""
 
@@ -59,9 +96,9 @@ class WorkspaceConfig:
         self.workspace_root = workspace_root or Path.cwd()
         self.ontology_dir = self.workspace_root
 
-        # Initialize namespaces
-        self.pkg_ns = Namespace("file://package_management#")
-        self.sec_ns = Namespace("file://security#")
+        # Initialize namespaces using relative paths
+        self.pkg_ns = Namespace("./package_management#")
+        self.sec_ns = Namespace("./security#")
 
         # Initialize file paths
         self.pyproject_path = self.workspace_root / "pyproject.toml"
@@ -74,7 +111,7 @@ class WorkspaceConfig:
 
     def get_package_uri(self, package_name: str) -> URIRef:
         """Get URI for a package."""
-        return URIRef(f"{self.pkg_ns}{package_name.replace('-', '_')}")
+        return URIRef(f'{self.pkg_ns}{package_name.replace("-", "_")}')
 
     def get_vulnerability_uri(self, vuln_id: str) -> URIRef:
         """Get URI for a vulnerability."""
@@ -86,9 +123,9 @@ config = WorkspaceConfig()
 PKG = config.pkg_ns
 SEC = config.sec_ns
 
-# Base directory for ontologies
-WORKSPACE_ROOT = Path(__file__).resolve().parent  # noqa: E501
-ONTOLOGY_DIR = WORKSPACE_ROOT  # noqa: E501
+# Base directory for ontologies - use relative path
+WORKSPACE_ROOT = Path(".")
+ONTOLOGY_DIR = WORKSPACE_ROOT
 
 
 class SecurityProvider(Enum):
@@ -148,10 +185,12 @@ class SecurityIssue:
 
         # Validate against schema
         try:
-            jsonschema.validate(
-                {"vulnerabilities": [data_with_package]}, SecurityIssue._schema
+            validate(
+                {"vulnerabilities": [data_with_package]},
+                SecurityIssue._schema,
+                cls=validators.Draft7Validator,
             )
-        except jsonschema.exceptions.ValidationError as e:
+        except ValidationError as e:
             logger.error("Invalid safety scanner output: %s", e)
             raise
 
@@ -176,13 +215,13 @@ class SecurityIssue:
 
         # Create schema-compliant structure
         schema_data = {
-            "dependencies": [{"name": package, "vulnerabilities": [data_with_package]}]
+            "dependencies": [{"name": package, "vulnerabilities": [data_with_package]}],
         }
 
         # Validate against schema
         try:
-            jsonschema.validate(schema_data, SecurityIssue._schema)
-        except jsonschema.exceptions.ValidationError as e:
+            validate(schema_data, SecurityIssue._schema)
+        except ValidationError as e:
             logger.error("Invalid pip-audit scanner output: %s", e)
             raise
 
@@ -223,7 +262,8 @@ class SecurityIssue:
         }
         existing_severity = str(existing_data.get(SEC.severity, "Unknown"))
         if severity_order.get(self.severity, 0) > severity_order.get(
-            existing_severity, 0
+            existing_severity,
+            0,
         ):
             graph.remove((vuln_uri, SEC.severity, None))
             graph.add((vuln_uri, SEC.severity, Literal(self.severity)))
@@ -262,7 +302,7 @@ class SecurityIssue:
                     vuln_uri,
                     SEC.mitigationStatus,
                     Literal(self.mitigation_status),
-                )
+                ),
             )
 
 
@@ -367,7 +407,7 @@ class SafetyScanner:
                                 package,
                                 version,
                             )
-                        except jsonschema.exceptions.ValidationError as e:
+                        except ValidationError as e:
                             logger.error("Invalid vulnerability data: %s", e)
                             continue
 
@@ -401,7 +441,9 @@ class SafetyScanner:
             return False
 
     def _validate_version_constraints(
-        self, package: str, version: Optional[str]
+        self,
+        package: str,
+        version: Optional[str],
     ) -> bool:
         if not version:
             return True
@@ -424,7 +466,7 @@ class SafetyScanner:
 
             # Install package
             pkg_spec = f"{package}=={version}" if version else package
-            conda_path = "/Users/lou/miniconda3/bin/conda"
+            conda_path = find_conda()
             if use_conda:
                 cmd = [
                     conda_path,
@@ -525,14 +567,17 @@ class PipAuditScanner:
                                         issue = SecurityIssue(
                                             cve_id=finding.get("id", "Unknown"),
                                             description=finding.get(
-                                                "description", "No description"
+                                                "description",
+                                                "No description",
                                             ),
                                             severity=finding.get("severity", "Unknown"),
                                             affected_versions=finding.get(
-                                                "affected", ""
+                                                "affected",
+                                                "",
                                             ),
                                             fixed_version=finding.get(
-                                                "fix_versions", [""]
+                                                "fix_versions",
+                                                [""],
                                             )[0],
                                             source="pip-audit",
                                             cvss_score=finding.get("cvss_score"),
@@ -557,7 +602,8 @@ class PipAuditScanner:
                                 for vuln in dep.get("vulnerabilities", []):
                                     try:
                                         issue = SecurityIssue.from_pip_audit_json(
-                                            vuln, package
+                                            vuln,
+                                            package,
                                         )
                                         issues.append(issue)
                                         logger.debug(
@@ -566,9 +612,10 @@ class PipAuditScanner:
                                             package,
                                             version,
                                         )
-                                    except jsonschema.exceptions.ValidationError as e:
+                                    except ValidationError as e:
                                         logger.error(
-                                            "Invalid vulnerability data: %s", e
+                                            "Invalid vulnerability data: %s",
+                                            e,
                                         )
                                         continue
 
@@ -608,7 +655,9 @@ class SecurityChecker:
         issue.to_ontology_triples(self.graph, package)
 
     def check_package(
-        self, package: str, version: str
+        self,
+        package: str,
+        version: str,
     ) -> Tuple[bool, List[SecurityIssue]]:
         """Check package security using all available scanners."""
         logger.debug("Starting security check for %s version %s", package, version)
@@ -691,7 +740,7 @@ class PackageManager:
         # Load ontologies
         if not self.config.package_management_ttl_path.exists():
             logger.error(
-                f"Ontology file not found: {self.config.package_management_ttl_path}"
+                f"Ontology file not found: {self.config.package_management_ttl_path}",
             )
             sys.exit(1)
 
@@ -706,7 +755,9 @@ class PackageManager:
         self.security = SecurityChecker(self.graph, workspace_root)
 
     def _check_security(
-        self, package: str, version: str
+        self,
+        package: str,
+        version: str,
     ) -> Tuple[bool, List[SecurityIssue]]:
         """Check package for known security issues."""
         try:
@@ -717,14 +768,16 @@ class PackageManager:
             return False, []
 
     def _validate_version_constraints(
-        self, package: str, version: Optional[str]
+        self,
+        package: str,
+        version: Optional[str],
     ) -> bool:
         """Validate version against known constraints."""
         if version is None:
             return True
 
         try:
-            pkg_uri = URIRef(f"{self.config.pkg_ns}{package.replace('-', '_')}")
+            pkg_uri = URIRef(f'{self.config.pkg_ns}{package.replace("-", "_")}')
             constraints = (
                 list(self.graph.objects(pkg_uri, self.config.pkg_ns.versionConstraint))
                 or []
@@ -760,16 +813,16 @@ class PackageManager:
             seen_packages.add(name)
 
             dep_type = str(
-                self.graph.value(pkg, self.config.pkg_ns.dependencyType)
+                self.graph.value(pkg, self.config.pkg_ns.dependencyType),
             ).split("#")[-1]
             version = str(self.graph.value(pkg, self.config.pkg_ns.hasVersion))
             source = str(self.graph.value(pkg, self.config.pkg_ns.hasSource)).split(
-                "#"
+                "#",
             )[-1]
             source = "conda" if source == "CondaSource" else "pip"
 
             logger.debug(
-                f"Package details: type={dep_type}, version={version}, source={source}"
+                f"Package details: type={dep_type}, version={version}, source={source}",
             )
             deps.append(
                 DependencySpec(
@@ -777,7 +830,7 @@ class PackageManager:
                     version=version if version != "None" else None,
                     dep_type=(dep_type.lower() if dep_type != "None" else "core"),
                     source=source,
-                )
+                ),
             )
         logger.debug(f"Found {len(deps)} total dependencies")
         return deps
@@ -801,7 +854,7 @@ dependencies = []
 
 [project.optional-dependencies]
 dev = []
-"""
+""",
                     )
 
             # Read current pyproject.toml
@@ -877,7 +930,7 @@ channels:
 dependencies:
   - python>=3.8
   - pip
-"""
+""",
                     )
 
             # Read current environment.yml
@@ -988,14 +1041,14 @@ dependencies:
                     package_uri,
                     self.config.pkg_ns.dependencyType,
                     dep_types[dep_type],
-                )
+                ),
             )
             self.graph.add(
                 (
                     package_uri,
                     self.config.pkg_ns.hasVersion,
                     Literal(version if version else "*"),
-                )
+                ),
             )
             self.graph.add(
                 (
@@ -1006,13 +1059,14 @@ dependencies:
                         if use_conda
                         else self.config.pkg_ns.PipSource
                     ),
-                )
+                ),
             )
 
             # Serialize ontology changes
             logger.debug("Serializing ontology changes")
             self.graph.serialize(
-                self.config.package_management_ttl_path, format="turtle"
+                self.config.package_management_ttl_path,
+                format="turtle",
             )
 
             # Get all current dependencies
@@ -1071,7 +1125,7 @@ dependencies:
                             package_uri,
                             self.config.pkg_ns.hasSource,
                             self.config.pkg_ns.PipSource,
-                        )
+                        ),
                     )
                     self.graph.serialize(
                         self.config.package_management_ttl_path,

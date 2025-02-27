@@ -11,7 +11,7 @@ User profile management for the Teams bot.
 
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 from botbuilder.core import StoreItem
 

@@ -1,0 +1,255 @@
+# Ontology: depval:DeploymentValidationOntology
+# Implements: deployment:Validation
+# Requirement: REQ-DEP-003 Deployment Validation
+# Guidance: guidance:ModelFirstPrinciple#deployment
+# Description: Validation rules and constraints for deployment components
+# Cluster: :DeploymentCluster
+
+@prefix : <./chatbot#> .
+@prefix depval: <./deployment_validation#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix chatbot: <./chatbot#> .
+@prefix solution: <./solution#> .
+@prefix deploy: <./deployment#> .
+@prefix meta: <./meta#> .
+@prefix metameta: <./metameta#> .
+@prefix problem: <./problem#> .
+@prefix conversation: <./conversation#> .
+@prefix guidance: <./guidance#> .
+
+# Ontology metadata
+depval:DeploymentValidationOntology a owl:Ontology ;
+    rdfs:label "Deployment Validation Ontology" ;
+    rdfs:comment "Validation rules and constraints for deployment components" ;
+    owl:versionInfo "1.0.0" ;
+    owl:imports deploy:, chatbot:ChatbotLLMOntology ;
+    :belongsToCluster chatbot:DeploymentCluster .
+
+# Class Definitions
+depval:ValidationRule a owl:Class ;
+    rdfs:label "Validation Rule" ;
+    rdfs:comment "Base class for validation rules" ;
+    owl:versionInfo "1.0.0" .
+
+depval:SecurityValidation a owl:Class ;
+    rdfs:subClassOf depval:ValidationRule ;
+    rdfs:label "Security Validation" ;
+    rdfs:comment "Security-related validation rules" ;
+    owl:versionInfo "1.0.0" .
+
+depval:PerformanceValidation a owl:Class ;
+    rdfs:subClassOf depval:ValidationRule ;
+    rdfs:label "Performance Validation" ;
+    rdfs:comment "Performance-related validation rules" ;
+    owl:versionInfo "1.0.0" .
+
+depval:ResourceValidation a owl:Class ;
+    rdfs:subClassOf depval:ValidationRule ;
+    rdfs:label "Resource Validation" ;
+    rdfs:comment "Resource-related validation rules" ;
+    owl:versionInfo "1.0.0" .
+
+# Property Definitions
+depval:hasValidationLevel a owl:DatatypeProperty ;
+    rdfs:label "Has Validation Level" ;
+    rdfs:comment "Severity level of the validation" ;
+    rdfs:domain depval:ValidationRule ;
+    rdfs:range [ a rdfs:Datatype ;
+        owl:oneOf ("error" "warning" "info")
+    ] ;
+    owl:versionInfo "1.0.0" .
+
+depval:hasValidationMessage a owl:DatatypeProperty ;
+    rdfs:label "Has Validation Message" ;
+    rdfs:comment "Message to display when validation fails" ;
+    rdfs:domain depval:ValidationRule ;
+    rdfs:range xsd:string ;
+    owl:versionInfo "1.0.0" .
+
+depval:hasValidationExpression a owl:DatatypeProperty ;
+    rdfs:label "Has Validation Expression" ;
+    rdfs:comment "SPARQL or SHACL expression for validation" ;
+    rdfs:domain depval:ValidationRule ;
+    rdfs:range xsd:string ;
+    owl:versionInfo "1.0.0" .
+
+depval:appliesTo a owl:ObjectProperty ;
+    rdfs:label "Applies To" ;
+    rdfs:comment "Component type this validation applies to" ;
+    rdfs:domain depval:ValidationRule ;
+    rdfs:range deploy:InfrastructureComponent ;
+    owl:versionInfo "1.0.0" .
+
+depval:hasMinValue a owl:DatatypeProperty ;
+    rdfs:label "Has Minimum Value" ;
+    rdfs:comment "Minimum allowed value" ;
+    rdfs:domain depval:ValidationRule ;
+    rdfs:range xsd:decimal ;
+    owl:versionInfo "1.0.0" .
+
+depval:hasMaxValue a owl:DatatypeProperty ;
+    rdfs:label "Has Maximum Value" ;
+    rdfs:comment "Maximum allowed value" ;
+    rdfs:domain depval:ValidationRule ;
+    rdfs:range xsd:decimal ;
+    owl:versionInfo "1.0.0" .
+
+# Validation Rule Instances
+depval:MinMemoryRule a depval:ResourceValidation ;
+    rdfs:label "Minimum Memory Rule" ;
+    rdfs:comment "Validates minimum memory allocation" ;
+    depval:hasValidationLevel "error" ;
+    depval:hasValidationMessage "Memory allocation must be at least 512MB" ;
+    depval:hasMinValue "512.0"^^xsd:decimal ;
+    depval:appliesTo deploy:InfrastructureComponent .
+
+depval:MaxMemoryRule a depval:ResourceValidation ;
+    rdfs:label "Maximum Memory Rule" ;
+    rdfs:comment "Validates maximum memory allocation" ;
+    depval:hasValidationLevel "warning" ;
+    depval:hasValidationMessage "Memory allocation exceeds recommended maximum" ;
+    depval:hasMaxValue "2048.0"^^xsd:decimal ;
+    depval:appliesTo deploy:InfrastructureComponent .
+
+depval:MaxCPURule a depval:ResourceValidation ;
+    rdfs:label "Maximum CPU Rule" ;
+    rdfs:comment "Validates maximum CPU allocation" ;
+    depval:hasValidationLevel "warning" ;
+    depval:hasValidationMessage "CPU allocation exceeds recommended maximum" ;
+    depval:hasMaxValue "4.0"^^xsd:decimal ;
+    depval:appliesTo deploy:InfrastructureComponent .
+
+depval:MinCPURule a depval:ResourceValidation ;
+    rdfs:label "Minimum CPU Rule" ;
+    rdfs:comment "Validates minimum CPU allocation" ;
+    depval:hasValidationLevel "error" ;
+    depval:hasValidationMessage "CPU allocation must be at least 0.5 cores" ;
+    depval:hasMinValue "0.5"^^xsd:decimal ;
+    depval:appliesTo deploy:InfrastructureComponent .
+
+depval:SSLRequiredRule a depval:SecurityValidation ;
+    rdfs:label "SSL Required Rule" ;
+    rdfs:comment "Validates HTTPS/SSL requirement" ;
+    depval:hasValidationLevel "error" ;
+    depval:hasValidationMessage "HTTPS/SSL must be enabled" ;
+    depval:hasValidationExpression """
+        SELECT ?component
+        WHERE {
+            ?component a deploy:InfrastructureComponent .
+            ?component deploy:endpoint ?endpoint .
+            FILTER (!STRSTARTS(?endpoint, "https://"))
+        }
+    """ ;
+    depval:appliesTo deploy:InfrastructureComponent .
+
+depval:AuthenticationRequiredRule a depval:SecurityValidation ;
+    rdfs:label "Authentication Required Rule" ;
+    rdfs:comment "Validates authentication requirement" ;
+    depval:hasValidationLevel "error" ;
+    depval:hasValidationMessage "Authentication must be enabled" ;
+    depval:hasValidationExpression """
+        SELECT ?component
+        WHERE {
+            ?component a deploy:InfrastructureComponent .
+            FILTER NOT EXISTS { ?component deploy:authenticationEnabled true }
+        }
+    """ ;
+    depval:appliesTo deploy:InfrastructureComponent .
+
+# SHACL Shapes
+depval:ValidationRuleShape a sh:NodeShape ;
+    sh:targetClass depval:ValidationRule ;
+    sh:property [
+        sh:path depval:hasValidationLevel ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:message "Validation rule must have exactly one validation level"
+    ] ,
+    [
+        sh:path depval:hasValidationMessage ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:message "Validation rule must have exactly one validation message"
+    ] ,
+    [
+        sh:path depval:appliesTo ;
+        sh:minCount 1 ;
+        sh:class deploy:InfrastructureComponent ;
+        sh:message "Validation rule must apply to at least one component type"
+    ] .
+
+# Additional Validation Rules
+depval:ResponseTimeRule a depval:PerformanceValidation ;
+    rdfs:label "Response Time Rule" ;
+    rdfs:comment "Validates API response time" ;
+    depval:hasValidationLevel "warning" ;
+    depval:hasValidationMessage "Response time exceeds 1 second" ;
+    depval:hasMaxValue "1.0"^^xsd:decimal ;
+    depval:appliesTo deploy:InfrastructureComponent .
+
+depval:LatencyRule a depval:PerformanceValidation ;
+    rdfs:label "Latency Rule" ;
+    rdfs:comment "Validates API latency" ;
+    depval:hasValidationLevel "warning" ;
+    depval:hasValidationMessage "Latency exceeds 100ms" ;
+    depval:hasMaxValue "0.1"^^xsd:decimal ;
+    depval:appliesTo deploy:InfrastructureComponent .
+
+depval:ConcurrentRequestsRule a depval:PerformanceValidation ;
+    rdfs:label "Concurrent Requests Rule" ;
+    rdfs:comment "Validates concurrent request handling" ;
+    depval:hasValidationLevel "warning" ;
+    depval:hasValidationMessage "Too many concurrent requests" ;
+    depval:hasMaxValue "100.0"^^xsd:decimal ;
+    depval:appliesTo deploy:InfrastructureComponent .
+
+depval:MinConcurrentRequestsRule a depval:PerformanceValidation ;
+    rdfs:label "Minimum Concurrent Requests Rule" ;
+    rdfs:comment "Validates minimum concurrent request handling" ;
+    depval:hasValidationLevel "error" ;
+    depval:hasValidationMessage "Must handle at least 10 concurrent requests" ;
+    depval:hasMinValue "10.0"^^xsd:decimal ;
+    depval:appliesTo deploy:InfrastructureComponent .
+
+depval:TokenExpiryRule a depval:SecurityValidation ;
+    rdfs:label "Token Expiry Rule" ;
+    rdfs:comment "Validates token expiration time" ;
+    depval:hasValidationLevel "error" ;
+    depval:hasValidationMessage "Token expiry must be set and not exceed 24 hours" ;
+    depval:hasMaxValue "24.0"^^xsd:decimal ;
+    depval:appliesTo deploy:InfrastructureComponent .
+
+depval:MinTokenExpiryRule a depval:SecurityValidation ;
+    rdfs:label "Minimum Token Expiry Rule" ;
+    rdfs:comment "Validates minimum token expiration time" ;
+    depval:hasValidationLevel "error" ;
+    depval:hasValidationMessage "Token expiry must be at least 5 minutes" ;
+    depval:hasMinValue "0.0833"^^xsd:decimal ;
+    depval:appliesTo deploy:InfrastructureComponent .
+
+# Logging Requirements
+depval:LogLevelRule a depval:ValidationRule ;
+    rdfs:label "Log Level Rule" ;
+    rdfs:comment "Validates log level settings" ;
+    depval:hasValidationLevel "warning" ;
+    depval:hasValidationMessage "Log level must be one of: DEBUG, INFO, WARNING, ERROR, CRITICAL" ;
+    depval:hasValidationExpression """
+        SELECT ?component
+        WHERE {
+            ?component meta:logLevel ?level .
+            FILTER (?level NOT IN ("DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"))
+        }
+    """ ;
+    depval:appliesTo deploy:InfrastructureComponent .
+
+depval:LogRetentionRule a depval:ValidationRule ;
+    rdfs:label "Log Retention Rule" ;
+    rdfs:comment "Validates log retention period" ;
+    depval:hasValidationLevel "error" ;
+    depval:hasValidationMessage "Log retention must be at least 7 days" ;
+    depval:hasMinValue "7.0"^^xsd:decimal ;
+    depval:appliesTo deploy:InfrastructureComponent . 

@@ -94,7 +94,9 @@ def test_validate_tool_success(validator, tool, version_output, impact_level):
     """Test tool validation with impact levels"""
     with patch("subprocess.run") as mock_run:
         mock_run.return_value = MagicMock(
-            stdout=version_output, stderr="", returncode=0
+            stdout=version_output,
+            stderr="",
+            returncode=0,
         )
         tool_info = {
             "description": "test tool",
@@ -126,7 +128,9 @@ def test_validate_1password_authenticated(validator):
     """Test 1Password validation when authenticated"""
     with patch("subprocess.run") as mock_run:
         mock_run.return_value = MagicMock(
-            stdout="example@email.com", stderr="", returncode=0
+            stdout="example@email.com",
+            stderr="",
+            returncode=0,
         )
         result = validator.validate_1password()
         assert result.success
@@ -153,7 +157,7 @@ channels:
   - conda-forge
 dependencies:
   - python=3.10
-"""
+""",
     )
 
     with patch("subprocess.run") as mock_run:
@@ -178,12 +182,14 @@ channels:
   - conda-forge
 dependencies:
   - python=3.10
-"""
+""",
     )
 
     with patch("subprocess.run") as mock_run:
         mock_run.return_value = MagicMock(
-            stdout='{"envs": []}', stderr="", returncode=0
+            stdout='{"envs": []}',
+            stderr="",
+            returncode=0,
         )
         with patch.object(validator, "workspace_root", tmp_path):
             result = validator.validate_conda_env()
@@ -229,7 +235,7 @@ def test_validate_required_files_all_present(validator, tmp_path):
 # Owned by: {owner}
 # Version: 1.0.0
 # Purpose: Test file
-"""
+""",
         )
 
     with patch.object(validator, "workspace_root", tmp_path):
@@ -366,7 +372,7 @@ def test_validate_required_files_with_drift(validator, tmp_path):
 name: test-env
 dependencies:
   - python=3.11
-"""
+""",
     )
 
     with patch.object(validator, "workspace_root", tmp_path):
@@ -386,7 +392,7 @@ dependencies:
 name: modified-env
 dependencies:
   - python=3.12
-"""
+""",
         )
         results = validator.validate_required_files()
 
@@ -402,7 +408,10 @@ def test_run_validation_with_revalidation(validator):
     """Test full validation with revalidation tracking"""
     success_result = ValidationResult(True, "✅", requires_revalidation=False)
     failure_result = ValidationResult(
-        False, "❌", requires_revalidation=True, impact_level="HIGH"
+        False,
+        "❌",
+        requires_revalidation=True,
+        impact_level="HIGH",
     )
 
     def mock_validate_tool(tool: str, tool_info: Dict) -> ValidationResult:
@@ -452,7 +461,10 @@ def test_extract_ownership_info_invalid(validator, tmp_path):
     ],
 )
 def test_file_specific_drift_thresholds(
-    validator, tmp_path, file_type, drift_threshold
+    validator,
+    tmp_path,
+    file_type,
+    drift_threshold,
 ):
     """Test drift thresholds for different file types"""
     test_file = tmp_path / file_type

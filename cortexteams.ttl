@@ -1,18 +1,34 @@
-@prefix : <./cortexteams#> .
+# Ontology: cortexteams:CortexTeamsOntology
+# Implements: integration:TeamsIntegration
+# Requirement: REQ-INT-001 Teams Integration
+# Guidance: guidance:ModelFirstPrinciple#integration
+# Description: Defines the integration between Snowflake Cortex and Microsoft Teams
+# Cluster: :DeploymentCluster
+
+@prefix : <./chatbot#> .
+@prefix cortexteams: <./cortexteams#> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
 @prefix chatbot: <./chatbot#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix meta: <./meta#> .
+@prefix metameta: <./metameta#> .
+@prefix problem: <./problem#> .
+@prefix solution: <./solution#> .
+@prefix conversation: <./conversation#> .
+@prefix guidance: <./guidance#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
 
 # Ontology metadata
-:CortexTeamsOntology a owl:Ontology ;
+cortexteams:CortexTeamsOntology a owl:Ontology ;
     rdfs:label "Snowflake Cortex Teams Integration" ;
     rdfs:comment "Ontology for the integration between Snowflake Cortex and Microsoft Teams" ;
-    owl:imports chatbot: ;
-    owl:versionInfo "0.1.0" .
+    owl:imports chatbot:ChatbotLLMOntology ;
+    owl:versionInfo "0.1.0" ;
+    :belongsToCluster chatbot:DeploymentCluster .
 
-# Integration Context and Constraints (replacing blank nodes)
+# Integration Context and Constraints
 :EnterpriseContext a chatbot:Context ;
     rdfs:label "Enterprise Environment" ;
     rdfs:comment "The enterprise environment requiring secure and scalable integration." .
@@ -72,7 +88,6 @@
     rdfs:label "Response Formatting" ;
     rdfs:comment "Format Cortex response for Teams display" .
 
-# Add missing workflow steps
 :AccessCheck a chatbot:WorkflowStep ;
     rdfs:label "Access Verification" ;
     rdfs:comment "Verify data access permissions" .
@@ -111,3 +126,137 @@
 :deploymentDiagram a :Documentation ;
     rdfs:label "Deployment Diagram" ;
     :path "assets/diagrams/generated/cortex_teams_deployment.svg" .
+
+# Class Definitions
+cortexteams:TeamsChannel a owl:Class ;
+    rdfs:label "Teams Channel" ;
+    rdfs:comment "A Microsoft Teams channel for integration" ;
+    owl:versionInfo "0.1.0" .
+
+cortexteams:TeamsMessage a owl:Class ;
+    rdfs:label "Teams Message" ;
+    rdfs:comment "A message sent to or received from Teams" ;
+    owl:versionInfo "0.1.0" .
+
+cortexteams:TeamsUser a owl:Class ;
+    rdfs:label "Teams User" ;
+    rdfs:comment "A Microsoft Teams user" ;
+    owl:versionInfo "0.1.0" .
+
+cortexteams:TeamsBot a owl:Class ;
+    rdfs:label "Teams Bot" ;
+    rdfs:comment "A bot integrated with Microsoft Teams" ;
+    owl:versionInfo "0.1.0" .
+
+# Property Definitions
+cortexteams:hasChannelId a owl:DatatypeProperty ;
+    rdfs:label "has channel ID" ;
+    rdfs:comment "The unique identifier of a Teams channel" ;
+    rdfs:domain cortexteams:TeamsChannel ;
+    rdfs:range xsd:string .
+
+cortexteams:hasMessageId a owl:DatatypeProperty ;
+    rdfs:label "has message ID" ;
+    rdfs:comment "The unique identifier of a Teams message" ;
+    rdfs:domain cortexteams:TeamsMessage ;
+    rdfs:range xsd:string .
+
+cortexteams:hasUserId a owl:DatatypeProperty ;
+    rdfs:label "has user ID" ;
+    rdfs:comment "The unique identifier of a Teams user" ;
+    rdfs:domain cortexteams:TeamsUser ;
+    rdfs:range xsd:string .
+
+cortexteams:hasBotId a owl:DatatypeProperty ;
+    rdfs:label "has bot ID" ;
+    rdfs:comment "The unique identifier of a Teams bot" ;
+    rdfs:domain cortexteams:TeamsBot ;
+    rdfs:range xsd:string .
+
+cortexteams:hasContent a owl:DatatypeProperty ;
+    rdfs:label "has content" ;
+    rdfs:comment "The content of a Teams message" ;
+    rdfs:domain cortexteams:TeamsMessage ;
+    rdfs:range xsd:string .
+
+cortexteams:hasSender a owl:ObjectProperty ;
+    rdfs:label "has sender" ;
+    rdfs:comment "Links a message to its sender" ;
+    rdfs:domain cortexteams:TeamsMessage ;
+    rdfs:range cortexteams:TeamsUser .
+
+cortexteams:hasChannel a owl:ObjectProperty ;
+    rdfs:label "has channel" ;
+    rdfs:comment "Links a message to its channel" ;
+    rdfs:domain cortexteams:TeamsMessage ;
+    rdfs:range cortexteams:TeamsChannel .
+
+# SHACL Shapes
+cortexteams:TeamsChannelShape a sh:NodeShape ;
+    sh:targetClass cortexteams:TeamsChannel ;
+    sh:property [
+        sh:path cortexteams:hasChannelId ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+    ] .
+
+cortexteams:TeamsMessageShape a sh:NodeShape ;
+    sh:targetClass cortexteams:TeamsMessage ;
+    sh:property [
+        sh:path cortexteams:hasMessageId ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+    ] ,
+    [
+        sh:path cortexteams:hasContent ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+    ] ,
+    [
+        sh:path cortexteams:hasSender ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:class cortexteams:TeamsUser ;
+    ] ,
+    [
+        sh:path cortexteams:hasChannel ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:class cortexteams:TeamsChannel ;
+    ] .
+
+# Instances
+cortexteams:generalChannel a cortexteams:TeamsChannel ;
+    rdfs:label "General Channel" ;
+    cortexteams:hasChannelId "general-123" .
+
+cortexteams:announcementsChannel a cortexteams:TeamsChannel ;
+    rdfs:label "Announcements Channel" ;
+    cortexteams:hasChannelId "announcements-456" .
+
+cortexteams:user1 a cortexteams:TeamsUser ;
+    rdfs:label "John Doe" ;
+    cortexteams:hasUserId "user-123" .
+
+cortexteams:user2 a cortexteams:TeamsUser ;
+    rdfs:label "Jane Smith" ;
+    cortexteams:hasUserId "user-456" .
+
+cortexteams:chatbot a cortexteams:TeamsBot ;
+    rdfs:label "Cortex Assistant" ;
+    cortexteams:hasBotId "bot-789" .
+
+cortexteams:message1 a cortexteams:TeamsMessage ;
+    cortexteams:hasMessageId "msg-123" ;
+    cortexteams:hasContent "Hello, team!" ;
+    cortexteams:hasSender cortexteams:user1 ;
+    cortexteams:hasChannel cortexteams:generalChannel .
+
+cortexteams:message2 a cortexteams:TeamsMessage ;
+    cortexteams:hasMessageId "msg-456" ;
+    cortexteams:hasContent "Important announcement" ;
+    cortexteams:hasSender cortexteams:user2 ;
+    cortexteams:hasChannel cortexteams:announcementsChannel .

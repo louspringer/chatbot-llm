@@ -7,9 +7,9 @@ import asyncio
 import logging
 import os
 import sys
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, Tuple
 
 import yaml
 
@@ -19,7 +19,6 @@ if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
 from config.key_vault import KeyVaultConfig
-from config.settings import get_secret
 
 # Configure logging
 logging.basicConfig(
@@ -126,7 +125,7 @@ class SecretExpiryChecker:
                             "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
                             "version": "1.2",
                         },
-                    }
+                    },
                 ],
             }
 

@@ -1,87 +1,169 @@
+# Ontology: cost:CostAnalysisOntology
+# Implements: analysis:CostTracking
+# Requirement: REQ-COST-001 Cost Analysis
+# Guidance: guidance:ModelFirstPrinciple#costAnalysis
+# Description: Ontology for analyzing and tracking costs in the system
+# Cluster: :DeploymentCluster
+
 @prefix cost: <./cost_analysis#> .
 @prefix chatbot: <./chatbot#> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix meta: <./meta#> .
+@prefix metameta: <./metameta#> .
+@prefix problem: <./problem#> .
+@prefix solution: <./solution#> .
+@prefix conversation: <./conversation#> .
+@prefix guidance: <./guidance#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix : <./cost_analysis#> .  # Base prefix
 
 # Ontology metadata
 cost:CostAnalysisOntology a owl:Ontology ;
     rdfs:label "Cost Analysis Ontology" ;
     rdfs:comment "Ontology for analyzing and tracking costs in the system" ;
-    owl:versionInfo "0.1.0" .
+    owl:versionInfo "0.1.0" ;
+    owl:imports chatbot:ChatbotLLMOntology ;
+    cost:belongsToCluster chatbot:DeploymentCluster .
 
 # Cost Categories
 cost:CostCategory a owl:Class ;
     rdfs:label "Cost Category" ;
-    rdfs:comment "Base class for different types of costs" .
+    rdfs:comment "Base class for different types of costs" ;
+    owl:versionInfo "0.1.0" .
 
-cost:DesignCost a cost:CostCategory ;
+cost:DesignCost a owl:Class ;
     rdfs:label "Design Cost" ;
-    rdfs:comment "Costs associated with system design phase" .
+    rdfs:comment "Costs associated with system design phase" ;
+    rdfs:subClassOf cost:CostCategory ;
+    owl:versionInfo "0.1.0" .
 
-cost:ImplementationCost a cost:CostCategory ;
+cost:ImplementationCost a owl:Class ;
     rdfs:label "Implementation Cost" ;
-    rdfs:comment "Costs associated with system implementation" .
+    rdfs:comment "Costs associated with system implementation" ;
+    rdfs:subClassOf cost:CostCategory ;
+    owl:versionInfo "0.1.0" .
 
-cost:OperationalCost a cost:CostCategory ;
+cost:OperationalCost a owl:Class ;
     rdfs:label "Operational Cost" ;
-    rdfs:comment "Recurring costs for system operation" .
+    rdfs:comment "Recurring costs for system operation" ;
+    rdfs:subClassOf cost:CostCategory ;
+    owl:versionInfo "0.1.0" .
 
 # Deployment Scales
 cost:DeploymentScale a owl:Class ;
     rdfs:label "Deployment Scale" ;
-    rdfs:comment "Scale of system deployment" .
+    rdfs:comment "Scale of system deployment" ;
+    owl:versionInfo "0.1.0" .
 
 cost:SmallDeployment a cost:DeploymentScale ;
     rdfs:label "Small Deployment" ;
     rdfs:comment "Small-scale deployment (up to 100 users)" ;
-    :userCount "100"^^xsd:integer ;
-    :queriesPerDay "1000"^^xsd:integer .
+    cost:userCount "100"^^xsd:integer ;
+    cost:queriesPerDay "1000"^^xsd:integer .
 
 cost:MediumDeployment a cost:DeploymentScale ;
     rdfs:label "Medium Deployment" ;
     rdfs:comment "Medium-scale deployment (up to 1000 users)" ;
-    :userCount "1000"^^xsd:integer ;
-    :queriesPerDay "10000"^^xsd:integer .
+    cost:userCount "1000"^^xsd:integer ;
+    cost:queriesPerDay "10000"^^xsd:integer .
 
 cost:LargeDeployment a cost:DeploymentScale ;
     rdfs:label "Large Deployment" ;
     rdfs:comment "Large-scale deployment (1000+ users)" ;
-    :userCount "5000"^^xsd:integer ;
-    :queriesPerDay "50000"^^xsd:integer .
+    cost:userCount "5000"^^xsd:integer ;
+    cost:queriesPerDay "50000"^^xsd:integer .
 
 # Cost Properties
 cost:hasBaseCost a owl:DatatypeProperty ;
+    rdfs:label "Has Base Cost" ;
+    rdfs:comment "Base cost in USD" ;
     rdfs:domain cost:CostCategory ;
-    rdfs:range xsd:decimal ;
-    rdfs:comment "Base cost in USD" .
+    rdfs:range xsd:decimal .
 
 cost:hasCostMultiplier a owl:DatatypeProperty ;
+    rdfs:label "Has Cost Multiplier" ;
+    rdfs:comment "Cost multiplier for deployment scale" ;
     rdfs:domain cost:DeploymentScale ;
-    rdfs:range xsd:decimal ;
-    rdfs:comment "Cost multiplier for deployment scale" .
+    rdfs:range xsd:decimal .
 
 cost:hasTimeframe a owl:DatatypeProperty ;
+    rdfs:label "Has Timeframe" ;
+    rdfs:comment "Timeframe for the cost" ;
     rdfs:domain cost:CostCategory ;
-    rdfs:range xsd:string ;
-    rdfs:comment "Timeframe for the cost" .
+    rdfs:range xsd:string .
+
+cost:userCount a owl:DatatypeProperty ;
+    rdfs:label "User Count" ;
+    rdfs:comment "Number of users in deployment" ;
+    rdfs:domain cost:DeploymentScale ;
+    rdfs:range xsd:integer .
+
+cost:queriesPerDay a owl:DatatypeProperty ;
+    rdfs:label "Queries Per Day" ;
+    rdfs:comment "Number of queries per day" ;
+    rdfs:domain cost:DeploymentScale ;
+    rdfs:range xsd:integer .
+
+cost:appliesTo a owl:ObjectProperty ;
+    rdfs:label "Applies To" ;
+    rdfs:comment "Links cost to deployment scale" ;
+    rdfs:domain cost:CostCategory ;
+    rdfs:range cost:DeploymentScale .
+
+# SHACL Shapes
+cost:CostCategoryShape a sh:NodeShape ;
+    sh:targetClass cost:CostCategory ;
+    sh:property [
+        sh:path cost:hasBaseCost ;
+        sh:minCount 1 ;
+        sh:datatype xsd:decimal ;
+        sh:message "Cost category must have a base cost."
+    ], [
+        sh:path cost:hasTimeframe ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "Cost category must have a timeframe."
+    ], [
+        sh:path cost:appliesTo ;
+        sh:minCount 1 ;
+        sh:class cost:DeploymentScale ;
+        sh:message "Cost category must be linked to a deployment scale."
+    ] .
+
+cost:DeploymentScaleShape a sh:NodeShape ;
+    sh:targetClass cost:DeploymentScale ;
+    sh:property [
+        sh:path cost:userCount ;
+        sh:minCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:minInclusive 1 ;
+        sh:message "Deployment scale must specify user count."
+    ], [
+        sh:path cost:queriesPerDay ;
+        sh:minCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:minInclusive 1 ;
+        sh:message "Deployment scale must specify queries per day."
+    ] .
 
 # Cost Instances
 cost:smallDesignCost a cost:DesignCost ;
     cost:hasBaseCost "20000.00"^^xsd:decimal ;
     cost:hasTimeframe "2 months" ;
-    :appliesTo cost:SmallDeployment .
+    cost:appliesTo cost:SmallDeployment .
 
 cost:mediumDesignCost a cost:DesignCost ;
     cost:hasBaseCost "35000.00"^^xsd:decimal ;
     cost:hasTimeframe "3 months" ;
-    :appliesTo cost:MediumDeployment .
+    cost:appliesTo cost:MediumDeployment .
 
 cost:largeDesignCost a cost:DesignCost ;
     cost:hasBaseCost "50000.00"^^xsd:decimal ;
     cost:hasTimeframe "4 months" ;
-    :appliesTo cost:LargeDeployment .
+    cost:appliesTo cost:LargeDeployment .
 
 cost:monthlyInfrastructureCost a cost:OperationalCost ;
     rdfs:comment "Monthly infrastructure costs including compute, storage, and networking" .
@@ -105,3 +187,14 @@ cost:mlModelAssumption a cost:CostAssumption ;
 
 cost:maintenanceAssumption a cost:CostAssumption ;
     rdfs:comment "Monthly maintenance cost per deployment: 15% of implementation cost" .
+
+# Additional Instances
+cost:smallImplementationCost a cost:ImplementationCost ;
+    cost:hasBaseCost "40000.00"^^xsd:decimal ;
+    cost:hasTimeframe "3 months" ;
+    cost:appliesTo cost:SmallDeployment .
+
+cost:mediumImplementationCost a cost:ImplementationCost ;
+    cost:hasBaseCost "75000.00"^^xsd:decimal ;
+    cost:hasTimeframe "4 months" ;
+    cost:appliesTo cost:MediumDeployment .

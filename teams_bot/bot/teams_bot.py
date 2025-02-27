@@ -72,7 +72,9 @@ class TeamsBot(ActivityHandler):
         return conversation_id
 
     async def _process_message_turn(
-        self, turn_context: TurnContext, conversation_id: str
+        self,
+        turn_context: TurnContext,
+        conversation_id: str,
     ) -> None:
         """Process a message turn and save state."""
         # Get and save conversation data
@@ -80,7 +82,9 @@ class TeamsBot(ActivityHandler):
         await self._state_manager.save_conversation_data(turn_context, conv_data)
 
     async def _handle_message_activity(
-        self, turn_context: TurnContext, conversation_id: str
+        self,
+        turn_context: TurnContext,
+        conversation_id: str,
     ) -> None:
         """Handle a message activity."""
         message = turn_context.activity.text
@@ -112,7 +116,8 @@ class TeamsBot(ActivityHandler):
                 and turn_context.activity.members_added
             ):
                 await self.on_members_added_activity(
-                    turn_context.activity.members_added, turn_context
+                    turn_context.activity.members_added,
+                    turn_context,
                 )
 
         except Exception as error:
@@ -144,13 +149,16 @@ class TeamsBot(ActivityHandler):
             raise
 
     def get_conversation_reference(
-        self, conversation_id: str
+        self,
+        conversation_id: str,
     ) -> Optional[ConversationReference]:
         """Get the conversation reference for a conversation ID."""
         return self._conversation_references.get(conversation_id)
 
     async def _handle_member_added(
-        self, member: Any, turn_context: TurnContext
+        self,
+        member: Any,
+        turn_context: TurnContext,
     ) -> None:
         """Handle a new member being added."""
         # Initialize user profile
@@ -166,7 +174,9 @@ class TeamsBot(ActivityHandler):
         logger.info(f"Sent welcome message to {user_profile.name}")
 
     async def on_members_added_activity(
-        self, members_added: List[ChannelAccount], turn_context: TurnContext
+        self,
+        members_added: List[ChannelAccount],
+        turn_context: TurnContext,
     ):
         """Handle members added to conversation."""
         for member in members_added:
@@ -178,7 +188,8 @@ class TeamsBot(ActivityHandler):
         """Handle conversation updates with state cleanup."""
         if turn_context.activity.members_added:
             await self.on_members_added_activity(
-                turn_context.activity.members_added, turn_context
+                turn_context.activity.members_added,
+                turn_context,
             )
         elif turn_context.activity.members_removed:
             try:

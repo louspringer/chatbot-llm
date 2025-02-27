@@ -13,7 +13,7 @@ def main():
 
         # Run test query
         result = session.sql(
-            "SELECT CURRENT_WAREHOUSE() as warehouse"
+            "SELECT CURRENT_WAREHOUSE() as warehouse",
         ).collect()
         print(f"✓ Connected to warehouse: {result[0]['WAREHOUSE']}")
 

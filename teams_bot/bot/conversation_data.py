@@ -12,10 +12,9 @@ Conversation data management for the Teams bot.
 import asyncio
 import json
 import logging
-import types
-from dataclasses import asdict, dataclass, field
-from datetime import datetime, timedelta
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, cast
+from dataclasses import dataclass, field
+from datetime import datetime
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 from transitions.core import MachineError
 from transitions.extensions.asyncio import AsyncMachine
@@ -23,7 +22,7 @@ from transitions.extensions.asyncio import AsyncMachine
 from .conversation_state import ConversationState
 
 if TYPE_CHECKING:
-    from .state_manager import StateManager
+    pass
 
 logger = logging.getLogger(__name__)
 
@@ -147,7 +146,7 @@ class ConversationData:
                     "state": event_data.state.name,
                     "timestamp": datetime.utcnow().isoformat(),
                     "trigger": (event_data.event.name if event_data.event else ""),
-                }
+                },
             )
         # Update current state
         self.current_state = ConversationState(event_data.state.name)
@@ -179,7 +178,7 @@ class ConversationData:
 
         try:
             self.current_state = ConversationState(
-                self.checkpoint_data["current_state"]
+                self.checkpoint_data["current_state"],
             )
             self.conversation_references = self.checkpoint_data[
                 "conversation_references"
@@ -234,14 +233,16 @@ class ConversationData:
                     "last_response": self.last_response,
                     "conversation_references": {},  # Empty dict when no state manager
                     "last_message_id": self.last_message_id,
-                }
+                },
             )
 
         return data
 
     @classmethod
     def from_dict(
-        cls, data: dict, state_manager: Optional[Any] = None
+        cls,
+        data: dict,
+        state_manager: Optional[Any] = None,
     ) -> "ConversationData":
         """Create conversation data from dictionary."""
         instance = cls(
@@ -313,7 +314,7 @@ class ConversationData:
                     "from_state": event_data.transition.source.upper(),
                     "to_state": target_state_enum.value,
                     "timestamp": datetime.utcnow().isoformat(),
-                }
+                },
             )
 
             return True

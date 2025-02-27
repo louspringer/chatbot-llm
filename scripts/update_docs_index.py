@@ -72,7 +72,7 @@ def get_file_description(file_path: Path) -> str:
                             desc = frontmatter.split("description:", 1)[1]
                             desc = desc.split("\n", 1)[0].strip()
                             logging.debug(
-                                f"Found frontmatter in {file_path}: {desc}"
+                                f"Found frontmatter in {file_path}: {desc}",
                             )
                             return desc
                     except Exception:
@@ -116,11 +116,7 @@ def categorize_file(file_path: Path) -> str:
     # Check each category's patterns
     for category, patterns in categories.items():
         for pattern in patterns:
-            if (
-                pattern in file_name
-                or pattern in file_stem
-                or pattern == file_suffix
-            ):
+            if pattern in file_name or pattern in file_stem or pattern == file_suffix:
                 return category
 
     return "other"
@@ -195,10 +191,13 @@ def group_by_category(
 def parse_args() -> argparse.Namespace:
     """Parse command line arguments."""
     parser = argparse.ArgumentParser(
-        description="Update documentation index by scanning files."
+        description="Update documentation index by scanning files.",
     )
     parser.add_argument(
-        "-v", "--verbose", action="store_true", help="Enable verbose logging"
+        "-v",
+        "--verbose",
+        action="store_true",
+        help="Enable verbose logging",
     )
     return parser.parse_args()
 

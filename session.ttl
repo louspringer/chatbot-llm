@@ -1,9 +1,330 @@
-# Ontology: session.ttl
-# Implements: SessionManagementPattern
-# Requirement: REQ-001-SESSION-TRACKING
-# Guidance: guidance:SessionLoggingPattern
-# Description: Tracks the current session state and context changes
+# Ontology: session:SessionOntology
+# Implements: session:StateManagement
+# Requirement: REQ-SES-001 Session State Management
+# Guidance: guidance:ModelFirstPrinciple#stateManagement
+# Description: Manages session state and context for the chatbot
 
-@prefix : <file:///Users/lou/Documents/chatbot-llm/session#> .
+@prefix : <./session#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix meta: <./meta#> .
+@prefix metameta: <./metameta#> .
+@prefix problem: <./problem#> .
+@prefix solution: <./solution#> .
+@prefix conversation: <./conversation#> .
+@prefix guidance: <./guidance#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix chatbot: <./chatbot#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
-:test_context a :Context .
+# Ontology Definition
+:SessionOntology a owl:Ontology ;
+    rdfs:label "Session Management Ontology" ;
+    rdfs:comment "Manages session state and context for the chatbot" ;
+    owl:imports chatbot:ChatbotLLMOntology ;
+    owl:versionInfo "0.1.0" .
+
+# Class Definitions
+:Context a owl:Class ;
+    rdfs:label "Context" ;
+    rdfs:comment "Represents the current state and environment of the session" ;
+    owl:versionInfo "0.1.0" .
+
+:Session a owl:Class ;
+    rdfs:label "Session" ;
+    rdfs:comment "A session instance managing state and context" ;
+    owl:versionInfo "0.1.0" .
+
+:ContextState a owl:Class ;
+    rdfs:label "Context State" ;
+    rdfs:comment "The current state of a context" ;
+    owl:versionInfo "0.1.0" .
+
+:SecurityContext a owl:Class ;
+    rdfs:label "Security Context" ;
+    rdfs:comment "Security settings for a context" ;
+    owl:versionInfo "0.1.0" .
+
+:CursorRule a owl:Class ;
+    rdfs:label "Cursor Rule" ;
+    rdfs:comment "A rule that applies to cursor operations" ;
+    owl:versionInfo "0.1.0" .
+
+:Task a owl:Class ;
+    rdfs:label "Task" ;
+    rdfs:comment "A task or goal within the session" ;
+    owl:versionInfo "0.1.0" .
+
+# Property Definitions
+:isActive a owl:DatatypeProperty ;
+    rdfs:label "Is Active" ;
+    rdfs:comment "Whether the context is currently active" ;
+    rdfs:domain :Context ;
+    rdfs:range xsd:boolean .
+
+:activeCursorRules a owl:ObjectProperty ;
+    rdfs:label "Active Cursor Rules" ;
+    rdfs:comment "Rules currently active in the context" ;
+    rdfs:domain :ContextState ;
+    rdfs:range :CursorRule .
+
+:activeOntologies a owl:ObjectProperty ;
+    rdfs:label "Active Ontologies" ;
+    rdfs:comment "Ontologies currently active in the context" ;
+    rdfs:domain :ContextState ;
+    rdfs:range owl:Ontology .
+
+:activeTask a owl:ObjectProperty ;
+    rdfs:label "Active Task" ;
+    rdfs:comment "The currently active task" ;
+    rdfs:domain :ContextState ;
+    rdfs:range :Task .
+
+:lastUpdated a owl:DatatypeProperty ;
+    rdfs:label "Last Updated" ;
+    rdfs:comment "When the context was last updated" ;
+    rdfs:domain :ContextState ;
+    rdfs:range xsd:dateTime .
+
+:securityContext a owl:ObjectProperty ;
+    rdfs:label "Security Context" ;
+    rdfs:comment "Security context for the session" ;
+    rdfs:domain :ContextState ;
+    rdfs:range :SecurityContext .
+
+:requiresValidation a owl:DatatypeProperty ;
+    rdfs:label "Requires Validation" ;
+    rdfs:comment "Whether validation is required" ;
+    rdfs:domain :SecurityContext ;
+    rdfs:range xsd:boolean .
+
+:securityLevel a owl:DatatypeProperty ;
+    rdfs:label "Security Level" ;
+    rdfs:comment "Security level setting" ;
+    rdfs:domain :SecurityContext ;
+    rdfs:range xsd:string .
+
+:hasStatus a owl:DatatypeProperty ;
+    rdfs:label "Has Status" ;
+    rdfs:comment "The current status of the session" ;
+    rdfs:domain :Session ;
+    rdfs:range xsd:string .
+
+:hasStartTime a owl:DatatypeProperty ;
+    rdfs:label "Has Start Time" ;
+    rdfs:comment "The start time of the session" ;
+    rdfs:domain :Session ;
+    rdfs:range xsd:dateTime .
+
+:hasEndTime a owl:DatatypeProperty ;
+    rdfs:label "Has End Time" ;
+    rdfs:comment "When a task was completed" ;
+    rdfs:domain :Task ;
+    rdfs:range xsd:dateTime .
+
+:hasDescription a owl:DatatypeProperty ;
+    rdfs:label "Has Description" ;
+    rdfs:comment "A description of the context or task" ;
+    rdfs:domain owl:Thing ;
+    rdfs:range xsd:string .
+
+:hasContext a owl:ObjectProperty ;
+    rdfs:label "Has Context" ;
+    rdfs:comment "Links a session to its context" ;
+    rdfs:domain :Session ;
+    rdfs:range :Context .
+
+:hasTask a owl:ObjectProperty ;
+    rdfs:label "Has Task" ;
+    rdfs:comment "Links a session to its current task" ;
+    rdfs:domain :Session ;
+    rdfs:range :Task .
+
+:hasLastUpdate a owl:DatatypeProperty ;
+    rdfs:label "Has Last Update" ;
+    rdfs:comment "The time of the last update to the session" ;
+    rdfs:domain :Session ;
+    rdfs:range xsd:dateTime .
+
+# Additional Properties
+:hasRuleType a owl:DatatypeProperty ;
+    rdfs:label "Has Rule Type" ;
+    rdfs:comment "The type of cursor rule" ;
+    rdfs:domain :CursorRule ;
+    rdfs:range xsd:string .
+
+:hasPriority a owl:DatatypeProperty ;
+    rdfs:label "Has Priority" ;
+    rdfs:comment "Priority level of a task or rule" ;
+    rdfs:domain owl:Thing ;
+    rdfs:range xsd:integer .
+
+:hasParentTask a owl:ObjectProperty ;
+    rdfs:label "Has Parent Task" ;
+    rdfs:comment "Links a task to its parent task" ;
+    rdfs:domain :Task ;
+    rdfs:range :Task .
+
+:hasSubtask a owl:ObjectProperty ;
+    rdfs:label "Has Subtask" ;
+    rdfs:comment "Links a task to its subtasks" ;
+    rdfs:domain :Task ;
+    rdfs:range :Task .
+
+# Additional Instances
+:task2 a :Task ;
+    rdfs:label "Code Review Task" ;
+    :hasStatus "in-progress" ;
+    :hasStartTime "2024-03-19T14:00:00Z"^^xsd:dateTime ;
+    :hasDescription "Review code changes" ;
+    :hasPriority 2 .
+
+:task3 a :Task ;
+    rdfs:label "Documentation Task" ;
+    :hasStatus "pending" ;
+    :hasDescription "Update documentation" ;
+    :hasPriority 3 .
+
+:task4 a :Task ;
+    rdfs:label "Testing Task" ;
+    :hasStatus "completed" ;
+    :hasStartTime "2024-03-19T16:00:00Z"^^xsd:dateTime ;
+    :hasEndTime "2024-03-19T17:00:00Z"^^xsd:dateTime ;
+    :hasDescription "Run test suite" ;
+    :hasPriority 1 .
+
+:task5 a :Task ;
+    rdfs:label "Deployment Task" ;
+    :hasStatus "blocked" ;
+    :hasDescription "Deploy to staging" ;
+    :hasPriority 4 .
+
+:IsortFormatterRule a :CursorRule ;
+    rdfs:label "Isort Formatter Rule" ;
+    :hasRuleType "python-import-sort" ;
+    :hasPriority 2 .
+
+:FlakeValidatorRule a :CursorRule ;
+    rdfs:label "Flake8 Validator Rule" ;
+    :hasRuleType "python-linter" ;
+    :hasPriority 3 .
+
+# SHACL Shapes
+:ContextShape a sh:NodeShape ;
+    sh:targetClass :Context ;
+    sh:property [
+        sh:path :isActive ;
+        sh:datatype xsd:boolean ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+    ] ,
+    [
+        sh:path :hasDescription ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+    ] .
+
+:ContextStateShape a sh:NodeShape ;
+    sh:targetClass :ContextState ;
+    sh:property [
+        sh:path :activeCursorRules ;
+        sh:class :CursorRule ;
+        sh:minCount 1 ;
+    ] ;
+    sh:property [
+        sh:path :activeOntologies ;
+        sh:class owl:Ontology ;
+        sh:minCount 1 ;
+    ] ;
+    sh:property [
+        sh:path :lastUpdated ;
+        sh:datatype xsd:dateTime ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+    ] .
+
+:SecurityContextShape a sh:NodeShape ;
+    sh:targetClass :SecurityContext ;
+    sh:property [
+        sh:path :requiresValidation ;
+        sh:datatype xsd:boolean ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+    ] ;
+    sh:property [
+        sh:path :securityLevel ;
+        sh:datatype xsd:string ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+    ] .
+
+:TaskShape a sh:NodeShape ;
+    sh:targetClass :Task ;
+    sh:property [
+        sh:path rdfs:label ;
+        sh:datatype xsd:string ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+    ] .
+
+# Instance Definitions
+:defaultContext a :Context ;
+    rdfs:label "Default Context" ;
+    :isActive false .
+
+:testContext a :Context ;
+    rdfs:label "Test Context" ;
+    :isActive true .
+
+:defaultSecurityContext a :SecurityContext ;
+    rdfs:label "Default Security Context" ;
+    :requiresValidation true ;
+    :securityLevel "High" .
+
+:testSecurityContext a :SecurityContext ;
+    rdfs:label "Test Security Context" ;
+    :requiresValidation false ;
+    :securityLevel "Low" .
+
+:SPARQLQueryRule a :CursorRule ;
+    rdfs:label "SPARQL Query Rule" .
+
+:BlackFormatterRule a :CursorRule ;
+    rdfs:label "Black Formatter Rule" .
+
+:task1 a :Task ;
+    rdfs:label "Initial Setup Task" ;
+    :hasStatus "completed" ;
+    :hasStartTime "2024-03-19T10:00:00Z"^^xsd:dateTime ;
+    :hasEndTime "2024-03-19T11:00:00Z"^^xsd:dateTime ;
+    :hasDescription "Initial session setup" .
+
+:task6 a :Task ;
+    rdfs:label "Current Development Task" .
+
+# Current Context State
+:currentContext a :ContextState ;
+    rdfs:label "Current Context State" ;
+    :activeCursorRules :SPARQLQueryRule, :BlackFormatterRule ;
+    :activeOntologies chatbot:ChatbotLLMOntology ;
+    :activeTask :task6 ;
+    :lastUpdated "2024-03-20T18:30:00+00:00"^^xsd:dateTime ;
+    :securityContext :defaultSecurityContext .
+
+[] rdf:first <./chatbot#ChatbotLLMOntology> ;
+    rdf:rest <nec9757f9ebfa4123a4584fc7272684cbb2> .
+
+[] rdf:first <./cortexteams#TeamsOntology> ;
+    rdf:rest () .
+
+[] rdf:first :SPARQLQueryRule ;
+    rdf:rest <nec9757f9ebfa4123a4584fc7272684cbb4> .
+
+[] rdf:first :BlackFormatterRule ;
+    rdf:rest () .
+
+[] a :SecurityContext ;
+    session:requiresValidation true ;
+    session:securityLevel "High" .

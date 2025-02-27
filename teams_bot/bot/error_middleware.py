@@ -11,7 +11,7 @@ Error handling middleware implementation.
 
 import logging
 from datetime import datetime
-from typing import Awaitable, Callable, Optional
+from typing import Awaitable, Callable
 
 from botbuilder.core import Middleware, TurnContext
 from botbuilder.schema import Activity, ActivityTypes
@@ -29,7 +29,9 @@ class ErrorHandlingMiddleware(Middleware):
         self._state_manager = state_manager
 
     async def on_turn(
-        self, context: TurnContext, next: Callable[[TurnContext], Awaitable]
+        self,
+        context: TurnContext,
+        next: Callable[[TurnContext], Awaitable],
     ) -> None:
         """Handle errors during turn processing."""
         try:
@@ -52,7 +54,7 @@ class ErrorHandlingMiddleware(Middleware):
                     type=ActivityTypes.message,
                     text=f"I encountered an error. Reference ID: {error_id}\n"
                     f"Please try again later.",
-                )
+                ),
             )
 
     async def _log_error(self, context: TurnContext, error: Exception) -> str:
