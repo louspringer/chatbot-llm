@@ -17,6 +17,8 @@
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix chatbot: <./chatbot#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix pkg: <./package_management#> .
+@prefix time: <./time#> .
 
 # Ontology Definition
 :SessionOntology a owl:Ontology ;
@@ -33,8 +35,8 @@
 
 :Session a owl:Class ;
     rdfs:label "Session" ;
-    rdfs:comment "A session instance managing state and context" ;
-    owl:versionInfo "0.1.0" .
+    rdfs:comment "A work session tracking ontology changes" ;
+    owl:versionInfo "1.0.0" .
 
 :ContextState a owl:Class ;
     rdfs:label "Context State" ;
@@ -56,121 +58,145 @@
     rdfs:comment "A task or goal within the session" ;
     owl:versionInfo "0.1.0" .
 
+:Event a owl:Class ;
+    rdfs:label "Event" ;
+    rdfs:comment "An event that occurred during the session" ;
+    owl:versionInfo "1.0.0" .
+
 # Property Definitions
 :isActive a owl:DatatypeProperty ;
     rdfs:label "Is Active" ;
     rdfs:comment "Whether the context is currently active" ;
     rdfs:domain :Context ;
-    rdfs:range xsd:boolean .
+    rdfs:range xsd:boolean ;
+    owl:versionInfo "0.1.0" .
 
 :activeCursorRules a owl:ObjectProperty ;
     rdfs:label "Active Cursor Rules" ;
     rdfs:comment "Rules currently active in the context" ;
     rdfs:domain :ContextState ;
-    rdfs:range :CursorRule .
+    rdfs:range :CursorRule ;
+    owl:versionInfo "0.1.0" .
 
 :activeOntologies a owl:ObjectProperty ;
     rdfs:label "Active Ontologies" ;
     rdfs:comment "Ontologies currently active in the context" ;
     rdfs:domain :ContextState ;
-    rdfs:range owl:Ontology .
+    rdfs:range owl:Ontology ;
+    owl:versionInfo "0.1.0" .
 
 :activeTask a owl:ObjectProperty ;
     rdfs:label "Active Task" ;
     rdfs:comment "The currently active task" ;
     rdfs:domain :ContextState ;
-    rdfs:range :Task .
+    rdfs:range :Task ;
+    owl:versionInfo "0.1.0" .
 
 :lastUpdated a owl:DatatypeProperty ;
     rdfs:label "Last Updated" ;
     rdfs:comment "When the context was last updated" ;
     rdfs:domain :ContextState ;
-    rdfs:range xsd:dateTime .
+    rdfs:range xsd:dateTime ;
+    owl:versionInfo "0.1.0" .
 
 :securityContext a owl:ObjectProperty ;
     rdfs:label "Security Context" ;
     rdfs:comment "Security context for the session" ;
     rdfs:domain :ContextState ;
-    rdfs:range :SecurityContext .
+    rdfs:range :SecurityContext ;
+    owl:versionInfo "0.1.0" .
 
 :requiresValidation a owl:DatatypeProperty ;
     rdfs:label "Requires Validation" ;
     rdfs:comment "Whether validation is required" ;
     rdfs:domain :SecurityContext ;
-    rdfs:range xsd:boolean .
+    rdfs:range xsd:boolean ;
+    owl:versionInfo "0.1.0" .
 
 :securityLevel a owl:DatatypeProperty ;
     rdfs:label "Security Level" ;
     rdfs:comment "Security level setting" ;
     rdfs:domain :SecurityContext ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    owl:versionInfo "0.1.0" .
 
 :hasStatus a owl:DatatypeProperty ;
     rdfs:label "Has Status" ;
     rdfs:comment "The current status of the session" ;
     rdfs:domain :Session ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    owl:versionInfo "0.1.0" .
 
 :hasStartTime a owl:DatatypeProperty ;
     rdfs:label "Has Start Time" ;
     rdfs:comment "The start time of the session" ;
     rdfs:domain :Session ;
-    rdfs:range xsd:dateTime .
+    rdfs:range xsd:dateTime ;
+    owl:versionInfo "0.1.0" .
 
 :hasEndTime a owl:DatatypeProperty ;
     rdfs:label "Has End Time" ;
     rdfs:comment "When a task was completed" ;
     rdfs:domain :Task ;
-    rdfs:range xsd:dateTime .
+    rdfs:range xsd:dateTime ;
+    owl:versionInfo "0.1.0" .
 
 :hasDescription a owl:DatatypeProperty ;
     rdfs:label "Has Description" ;
     rdfs:comment "A description of the context or task" ;
     rdfs:domain owl:Thing ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    owl:versionInfo "0.1.0" .
 
 :hasContext a owl:ObjectProperty ;
     rdfs:label "Has Context" ;
     rdfs:comment "Links a session to its context" ;
     rdfs:domain :Session ;
-    rdfs:range :Context .
+    rdfs:range :Context ;
+    owl:versionInfo "0.1.0" .
 
 :hasTask a owl:ObjectProperty ;
     rdfs:label "Has Task" ;
     rdfs:comment "Links a session to its current task" ;
     rdfs:domain :Session ;
-    rdfs:range :Task .
+    rdfs:range :Task ;
+    owl:versionInfo "0.1.0" .
 
 :hasLastUpdate a owl:DatatypeProperty ;
     rdfs:label "Has Last Update" ;
     rdfs:comment "The time of the last update to the session" ;
     rdfs:domain :Session ;
-    rdfs:range xsd:dateTime .
+    rdfs:range xsd:dateTime ;
+    owl:versionInfo "0.1.0" .
 
 # Additional Properties
 :hasRuleType a owl:DatatypeProperty ;
     rdfs:label "Has Rule Type" ;
     rdfs:comment "The type of cursor rule" ;
     rdfs:domain :CursorRule ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    owl:versionInfo "0.1.0" .
 
 :hasPriority a owl:DatatypeProperty ;
     rdfs:label "Has Priority" ;
     rdfs:comment "Priority level of a task or rule" ;
     rdfs:domain owl:Thing ;
-    rdfs:range xsd:integer .
+    rdfs:range xsd:integer ;
+    owl:versionInfo "0.1.0" .
 
 :hasParentTask a owl:ObjectProperty ;
     rdfs:label "Has Parent Task" ;
     rdfs:comment "Links a task to its parent task" ;
     rdfs:domain :Task ;
-    rdfs:range :Task .
+    rdfs:range :Task ;
+    owl:versionInfo "0.1.0" .
 
 :hasSubtask a owl:ObjectProperty ;
     rdfs:label "Has Subtask" ;
     rdfs:comment "Links a task to its subtasks" ;
     rdfs:domain :Task ;
-    rdfs:range :Task .
+    rdfs:range :Task ;
+    owl:versionInfo "0.1.0" .
 
 # Additional Instances
 :task2 a :Task ;
@@ -178,13 +204,15 @@
     :hasStatus "in-progress" ;
     :hasStartTime "2024-03-19T14:00:00Z"^^xsd:dateTime ;
     :hasDescription "Review code changes" ;
-    :hasPriority 2 .
+    :hasPriority 2 ;
+    owl:versionInfo "0.1.0" .
 
 :task3 a :Task ;
     rdfs:label "Documentation Task" ;
     :hasStatus "pending" ;
     :hasDescription "Update documentation" ;
-    :hasPriority 3 .
+    :hasPriority 3 ;
+    owl:versionInfo "0.1.0" .
 
 :task4 a :Task ;
     rdfs:label "Testing Task" ;
@@ -192,23 +220,27 @@
     :hasStartTime "2024-03-19T16:00:00Z"^^xsd:dateTime ;
     :hasEndTime "2024-03-19T17:00:00Z"^^xsd:dateTime ;
     :hasDescription "Run test suite" ;
-    :hasPriority 1 .
+    :hasPriority 1 ;
+    owl:versionInfo "0.1.0" .
 
 :task5 a :Task ;
     rdfs:label "Deployment Task" ;
     :hasStatus "blocked" ;
     :hasDescription "Deploy to staging" ;
-    :hasPriority 4 .
+    :hasPriority 4 ;
+    owl:versionInfo "0.1.0" .
 
 :IsortFormatterRule a :CursorRule ;
     rdfs:label "Isort Formatter Rule" ;
     :hasRuleType "python-import-sort" ;
-    :hasPriority 2 .
+    :hasPriority 2 ;
+    owl:versionInfo "0.1.0" .
 
 :FlakeValidatorRule a :CursorRule ;
     rdfs:label "Flake8 Validator Rule" ;
     :hasRuleType "python-linter" ;
-    :hasPriority 3 .
+    :hasPriority 3 ;
+    owl:versionInfo "0.1.0" .
 
 # SHACL Shapes
 :ContextShape a sh:NodeShape ;
@@ -224,7 +256,8 @@
         sh:minCount 1 ;
         sh:maxCount 1 ;
         sh:datatype xsd:string ;
-    ] .
+    ] ;
+    owl:versionInfo "0.1.0" .
 
 :ContextStateShape a sh:NodeShape ;
     sh:targetClass :ContextState ;
@@ -243,7 +276,8 @@
         sh:datatype xsd:dateTime ;
         sh:minCount 1 ;
         sh:maxCount 1 ;
-    ] .
+    ] ;
+    owl:versionInfo "0.1.0" .
 
 :SecurityContextShape a sh:NodeShape ;
     sh:targetClass :SecurityContext ;
@@ -258,7 +292,8 @@
         sh:datatype xsd:string ;
         sh:minCount 1 ;
         sh:maxCount 1 ;
-    ] .
+    ] ;
+    owl:versionInfo "0.1.0" .
 
 :TaskShape a sh:NodeShape ;
     sh:targetClass :Task ;
@@ -267,42 +302,51 @@
         sh:datatype xsd:string ;
         sh:minCount 1 ;
         sh:maxCount 1 ;
-    ] .
+    ] ;
+    owl:versionInfo "0.1.0" .
 
 # Instance Definitions
 :defaultContext a :Context ;
     rdfs:label "Default Context" ;
-    :isActive false .
+    :isActive false ;
+    owl:versionInfo "0.1.0" .
 
 :testContext a :Context ;
     rdfs:label "Test Context" ;
-    :isActive true .
+    :isActive true ;
+    owl:versionInfo "0.1.0" .
 
 :defaultSecurityContext a :SecurityContext ;
     rdfs:label "Default Security Context" ;
     :requiresValidation true ;
-    :securityLevel "High" .
+    :securityLevel "High" ;
+    owl:versionInfo "0.1.0" .
 
 :testSecurityContext a :SecurityContext ;
     rdfs:label "Test Security Context" ;
     :requiresValidation false ;
-    :securityLevel "Low" .
+    :securityLevel "Low" ;
+    owl:versionInfo "0.1.0" .
 
 :SPARQLQueryRule a :CursorRule ;
-    rdfs:label "SPARQL Query Rule" .
+    rdfs:label "SPARQL Query Rule" ;
+    owl:versionInfo "0.1.0" .
 
 :BlackFormatterRule a :CursorRule ;
-    rdfs:label "Black Formatter Rule" .
+    rdfs:label "Black Formatter Rule" ;
+    owl:versionInfo "0.1.0" .
 
 :task1 a :Task ;
     rdfs:label "Initial Setup Task" ;
     :hasStatus "completed" ;
     :hasStartTime "2024-03-19T10:00:00Z"^^xsd:dateTime ;
     :hasEndTime "2024-03-19T11:00:00Z"^^xsd:dateTime ;
-    :hasDescription "Initial session setup" .
+    :hasDescription "Initial session setup" ;
+    owl:versionInfo "0.1.0" .
 
 :task6 a :Task ;
-    rdfs:label "Current Development Task" .
+    rdfs:label "Current Development Task" ;
+    owl:versionInfo "0.1.0" .
 
 # Current Context State
 :currentContext a :ContextState ;
@@ -311,7 +355,8 @@
     :activeOntologies chatbot:ChatbotLLMOntology ;
     :activeTask :task6 ;
     :lastUpdated "2024-03-20T18:30:00+00:00"^^xsd:dateTime ;
-    :securityContext :defaultSecurityContext .
+    :securityContext :defaultSecurityContext ;
+    owl:versionInfo "0.1.0" .
 
 [] rdf:first <./chatbot#ChatbotLLMOntology> ;
     rdf:rest <nec9757f9ebfa4123a4584fc7272684cbb2> .
@@ -327,4 +372,84 @@
 
 [] a :SecurityContext ;
     session:requiresValidation true ;
-    session:securityLevel "High" .
+    session:securityLevel "High" ;
+    owl:versionInfo "0.1.0" .
+
+:CurrentSession a :Session ;
+    rdfs:label "Package Management Update Session" ;
+    :lastModified "2024-02-27T13:40:00Z"^^xsd:dateTime ;
+    :modifiedFile "package_management.ttl" ;
+    :changeDescription "Fixed pkg:anthropic package by adding required pkg:dependencyType property" ;
+    :validationStatus "PASS" ;
+    :relatedOntology pkg:PackageManagementOntology ;
+    owl:versionInfo "1.0.0" .
+
+:ValidationEvent a :Event ;
+    :eventType "Validation" ;
+    :timestamp "2024-02-27T13:40:00Z"^^xsd:dateTime ;
+    :status "SUCCESS" ;
+    :description "Validated package_management.ttl against shapes.ttl - all constraints satisfied" ;
+    owl:versionInfo "1.0.0" .
+
+:lastModified a owl:DatatypeProperty ;
+    rdfs:label "Last Modified" ;
+    rdfs:comment "Timestamp of last modification" ;
+    rdfs:domain :Session ;
+    rdfs:range xsd:dateTime ;
+    owl:versionInfo "1.0.0" .
+
+:modifiedFile a owl:DatatypeProperty ;
+    rdfs:label "Modified File" ;
+    rdfs:comment "File that was modified" ;
+    rdfs:domain :Session ;
+    rdfs:range xsd:string ;
+    owl:versionInfo "1.0.0" .
+
+:changeDescription a owl:DatatypeProperty ;
+    rdfs:label "Change Description" ;
+    rdfs:comment "Description of changes made" ;
+    rdfs:domain :Session ;
+    rdfs:range xsd:string ;
+    owl:versionInfo "1.0.0" .
+
+:validationStatus a owl:DatatypeProperty ;
+    rdfs:label "Validation Status" ;
+    rdfs:comment "Status of validation" ;
+    rdfs:domain :Session ;
+    rdfs:range xsd:string ;
+    owl:versionInfo "1.0.0" .
+
+:eventType a owl:DatatypeProperty ;
+    rdfs:label "Event Type" ;
+    rdfs:comment "Type of event" ;
+    rdfs:domain :Event ;
+    rdfs:range xsd:string ;
+    owl:versionInfo "1.0.0" .
+
+:timestamp a owl:DatatypeProperty ;
+    rdfs:label "Timestamp" ;
+    rdfs:comment "When the event occurred" ;
+    rdfs:domain :Event ;
+    rdfs:range xsd:dateTime ;
+    owl:versionInfo "1.0.0" .
+
+:status a owl:DatatypeProperty ;
+    rdfs:label "Status" ;
+    rdfs:comment "Status of the event" ;
+    rdfs:domain :Event ;
+    rdfs:range xsd:string ;
+    owl:versionInfo "1.0.0" .
+
+:description a owl:DatatypeProperty ;
+    rdfs:label "Description" ;
+    rdfs:comment "Description of the event" ;
+    rdfs:domain :Event ;
+    rdfs:range xsd:string ;
+    owl:versionInfo "1.0.0" .
+
+:relatedOntology a owl:ObjectProperty ;
+    rdfs:label "Related Ontology" ;
+    rdfs:comment "The ontology this session is working with" ;
+    rdfs:domain :Session ;
+    rdfs:range owl:Ontology ;
+    owl:versionInfo "1.0.0" .

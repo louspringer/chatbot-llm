@@ -21,21 +21,21 @@
 
 sec:Severity a rdfs:Class ;
     rdfs:label "Severity Level" ;
-    rdfs:comment "Represents the severity level of a vulnerability" .
+    rdfs:comment "Represents the severity level of a vulnerability" ;
+    owl:versionInfo "1.0.0" .
 
 sec:Vulnerability a rdfs:Class ;
     rdfs:label "Security Vulnerability" ;
-    rdfs:comment "Represents a security vulnerability in a package" .
+    rdfs:comment "Represents a security vulnerability in a package" ;
+    owl:versionInfo "1.0.0" .
 
 pkg:rdflib a pkg:Package ;
+    rdfs:label "RDFLib" ;
+    rdfs:comment "RDF library for Python" ;
     pkg:dependencyType pkg:CoreDependency ;
     pkg:hasSource pkg:CondaSource ;
-    pkg:hasVersion "7.1.3" .
-
-pkg:rdflib a pkg:Package ;
-    pkg:dependencyType pkg:CoreDependency ;
-    pkg:hasSource pkg:CondaSource ;
-    pkg:hasVersion "7.1.3" .
+    pkg:hasVersion "7.1.3" ;
+    pkg:hasSecurityRequirement sec:NoKnownVulnerabilities .
 
 sec:Critical a sec:Severity ;
     rdfs:label "Critical" ;
@@ -247,7 +247,8 @@ pkg:source a owl:ObjectProperty ;
     rdfs:label "source" ;
     rdfs:comment "Source of the package" ;
     rdfs:domain pkg:Package ;
-    rdfs:range pkg:PackageSource .
+    rdfs:range pkg:PackageSource ;
+    owl:versionInfo "1.0.0" .
 
 pkg:toml a pkg:Package ;
     pkg:dependencyType pkg:CoreDependency ;
@@ -309,72 +310,6 @@ pkg:vuln_CVE_2024_52304 a pkg:SecurityVulnerability ;
 
 pkg:Package rdfs:subClassOf [ a owl:Restriction ;
             owl:allValuesFrom sec:Vulnerability ;
-            owl:onProperty sec:hasVulnerability ],
-        [ a owl:Restriction ;
-            owl:allValuesFrom sec:Vulnerability ;
-            owl:onProperty sec:hasVulnerability ],
-        [ a owl:Restriction ;
-            owl:allValuesFrom sec:Vulnerability ;
-            owl:onProperty sec:hasVulnerability ],
-        [ a owl:Restriction ;
-            owl:allValuesFrom sec:Vulnerability ;
-            owl:onProperty sec:hasVulnerability ],
-        [ a owl:Restriction ;
-            owl:allValuesFrom sec:Vulnerability ;
-            owl:onProperty sec:hasVulnerability ],
-        [ a owl:Restriction ;
-            owl:allValuesFrom sec:Vulnerability ;
-            owl:onProperty sec:hasVulnerability ],
-        [ a owl:Restriction ;
-            owl:allValuesFrom sec:Vulnerability ;
-            owl:onProperty sec:hasVulnerability ],
-        [ a owl:Restriction ;
-            owl:allValuesFrom sec:Vulnerability ;
-            owl:onProperty sec:hasVulnerability ],
-        [ a owl:Restriction ;
-            owl:allValuesFrom sec:Vulnerability ;
-            owl:onProperty sec:hasVulnerability ],
-        [ a owl:Restriction ;
-            owl:allValuesFrom sec:Vulnerability ;
-            owl:onProperty sec:hasVulnerability ],
-        [ a owl:Restriction ;
-            owl:allValuesFrom sec:Vulnerability ;
-            owl:onProperty sec:hasVulnerability ],
-        [ a owl:Restriction ;
-            owl:allValuesFrom sec:Vulnerability ;
-            owl:onProperty sec:hasVulnerability ],
-        [ a owl:Restriction ;
-            owl:allValuesFrom sec:Vulnerability ;
-            owl:onProperty sec:hasVulnerability ],
-        [ a owl:Restriction ;
-            owl:allValuesFrom sec:Vulnerability ;
-            owl:onProperty sec:hasVulnerability ],
-        [ a owl:Restriction ;
-            owl:allValuesFrom sec:Vulnerability ;
-            owl:onProperty sec:hasVulnerability ],
-        [ a owl:Restriction ;
-            owl:allValuesFrom sec:Vulnerability ;
-            owl:onProperty sec:hasVulnerability ],
-        [ a owl:Restriction ;
-            owl:allValuesFrom sec:Vulnerability ;
-            owl:onProperty sec:hasVulnerability ],
-        [ a owl:Restriction ;
-            owl:allValuesFrom sec:Vulnerability ;
-            owl:onProperty sec:hasVulnerability ],
-        [ a owl:Restriction ;
-            owl:allValuesFrom sec:Vulnerability ;
-            owl:onProperty sec:hasVulnerability ],
-        [ a owl:Restriction ;
-            owl:allValuesFrom sec:Vulnerability ;
-            owl:onProperty sec:hasVulnerability ],
-        [ a owl:Restriction ;
-            owl:allValuesFrom sec:Vulnerability ;
-            owl:onProperty sec:hasVulnerability ],
-        [ a owl:Restriction ;
-            owl:allValuesFrom sec:Vulnerability ;
-            owl:onProperty sec:hasVulnerability ],
-        [ a owl:Restriction ;
-            owl:allValuesFrom sec:Vulnerability ;
             owl:onProperty sec:hasVulnerability ] .
 
 pkg:PackageSource a owl:Class ;
@@ -435,7 +370,7 @@ pkg:Package a owl:Class ;
 :SecurityRequirement a owl:Class ;
     rdfs:label "Security Requirement" ;
     rdfs:comment "Security requirements for packages" ;
-    owl:versionInfo "0.1.0" .
+    owl:versionInfo "1.0.0" .
 
 :hasVersion a owl:DatatypeProperty ;
     rdfs:label "has version" ;
@@ -475,10 +410,10 @@ pkg:Package a owl:Class ;
     :hasVersion "6.0.0" ;
     :inGroup :core_dependencies .
 
-:anthropic a :Package ;
-    rdfs:label "Anthropic" ;
-    :hasVersion "0.8.0" ;
-    :inGroup :ai_dependencies .
+:anthropic a pkg:Package ;
+    rdfs:label "anthropic" ;
+    pkg:dependencyType pkg:CoreDependency ;
+    pkg:hasVersion "0.8.1" .
 
 :core_dependencies a :DependencyGroup ;
     rdfs:label "Core Dependencies" .
