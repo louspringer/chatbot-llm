@@ -1,12 +1,18 @@
 #!/usr/bin/env python3
+# Ontology: chatbot:LLMGuidance
+# Implements: chatbot:QueryExecution
+# Requirement: REQ-VAL-001 Ontology validation and query execution
+# Guidance: guidance:validation#QueryValidation
+# Description: SPARQL query execution tool for validating and querying ontology files
+
 """SPARQL query tool for Cursor."""
 
-from typing import Any, Dict, List
+from typing import Any
 
 from .jena_tools import JenaTools
 
 
-def run_sparql_query(ttl_file: str, query: str) -> List[Dict[str, Any]]:
+def run_sparql_query(ttl_file: str, query: str) -> list[dict[str, Any]]:
     """Run a SPARQL query against a Turtle file.
 
     Args:
@@ -28,10 +34,10 @@ def run_sparql_query(ttl_file: str, query: str) -> List[Dict[str, Any]]:
         results = jena.run_sparql(ttl_file, query)
         return results
     except Exception as e:
-        raise RuntimeError(f"Error executing SPARQL query: {str(e)}")
+        raise RuntimeError(f"Error executing SPARQL query: {e!s}")
 
 
-def register_tool() -> Dict[str, Any]:
+def register_tool() -> dict[str, Any]:
     """Register the SPARQL query tool with Cursor."""
     return {
         "name": "run_sparql_query",

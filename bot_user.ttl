@@ -21,53 +21,69 @@ bot:BotUserOntology a owl:Ontology ;
 # Classes
 bot:BotUser a owl:Class ;
     rdfs:label "Bot User" ;
-    rdfs:comment "A service account for automated interactions" .
+    rdfs:comment "A service account for automated interactions" ;
+    owl:versionInfo "1.0.0" .
 
 bot:SecurityCredential a owl:Class ;
     rdfs:label "Security Credential" ;
-    rdfs:comment "Security credentials for bot authentication" .
+    rdfs:comment "Security credentials for bot authentication" ;
+    owl:versionInfo "1.0.0" .
 
 bot:RSAKeyPair a owl:Class ;
     rdfs:subClassOf bot:SecurityCredential ;
     rdfs:label "RSA Key Pair" ;
-    rdfs:comment "RSA public/private key pair for secure authentication" .
+    rdfs:comment "RSA public/private key pair for secure authentication" ;
+    owl:versionInfo "1.0.0" .
 
 bot:Role a owl:Class ;
     rdfs:label "Role" ;
-    rdfs:comment "Security role defining bot permissions" .
+    rdfs:comment "Security role defining bot permissions" ;
+    owl:versionInfo "1.0.0" .
 
 bot:Permission a owl:Class ;
     rdfs:label "Permission" ;
-    rdfs:comment "Specific permission granted to a role" .
+    rdfs:comment "Specific permission granted to a role" ;
+    owl:versionInfo "1.0.0" .
 
 bot:DatabaseObject a owl:Class ;
     rdfs:label "Database Object" ;
-    rdfs:comment "Database object that can be accessed by the bot" .
+    rdfs:comment "Database object that can be accessed by the bot" ;
+    owl:versionInfo "1.0.0" .
 
 # Snowflake Object Classes
 bot:SnowflakeObject a owl:Class ;
     rdfs:label "Snowflake Object" ;
-    rdfs:comment "Base class for all Snowflake objects" .
+    rdfs:comment "Base class for all Snowflake objects" ;
+    owl:versionInfo "1.0.0" .
 
 bot:Database a owl:Class ;
     rdfs:subClassOf bot:SnowflakeObject ;
     rdfs:label "Database" ;
-    rdfs:comment "Snowflake database container" .
+    rdfs:comment "Snowflake database container" ;
+    owl:versionInfo "1.0.0" .
 
 bot:Schema a owl:Class ;
     rdfs:subClassOf bot:SnowflakeObject ;
     rdfs:label "Schema" ;
-    rdfs:comment "Database schema" .
+    rdfs:comment "Database schema" ;
+    owl:versionInfo "1.0.0" .
 
 bot:StoredProcedure a owl:Class ;
     rdfs:subClassOf bot:SnowflakeObject ;
     rdfs:label "Stored Procedure" ;
-    rdfs:comment "Snowflake stored procedure" .
+    rdfs:comment "Snowflake stored procedure" ;
+    owl:versionInfo "1.0.0" .
 
 bot:Warehouse a owl:Class ;
     rdfs:subClassOf bot:SnowflakeObject ;
     rdfs:label "Warehouse" ;
-    rdfs:comment "Compute warehouse for processing" .
+    rdfs:comment "Compute warehouse for processing" ;
+    owl:versionInfo "1.0.0" .
+
+bot:SecurityProcedure a owl:Class ;
+    rdfs:label "Security Procedure" ;
+    rdfs:comment "Security-related procedures and processes" ;
+    owl:versionInfo "1.0.0" .
 
 # Properties
 bot:hasCredential a owl:ObjectProperty ;
@@ -149,11 +165,22 @@ bot:TeamsBot a bot:BotUser ;
     rdfs:comment "Service account for Teams bot integration" ;
     bot:hasRole bot:TeamsBotRole .
 
+bot:MonitoringBot a bot:BotUser ;
+    rdfs:label "Monitoring Bot User" ;
+    rdfs:comment "Service account for monitoring and alerting" ;
+    bot:hasRole bot:MonitoringRole .
+
 bot:TeamsBotRole a bot:Role ;
     rdfs:label "Teams Bot Role" ;
     rdfs:comment "Role for Teams bot operations" ;
     bot:hasPermission bot:QueryPermission,
                      bot:DataReadPermission .
+
+bot:MonitoringRole a bot:Role ;
+    rdfs:label "Monitoring Role" ;
+    rdfs:comment "Role for monitoring operations" ;
+    bot:hasPermission bot:MetricsReadPermission,
+                     bot:AlertWritePermission .
 
 bot:QueryPermission a bot:Permission ;
     rdfs:label "Query Permission" ;
@@ -163,8 +190,20 @@ bot:DataReadPermission a bot:Permission ;
     rdfs:label "Data Read Permission" ;
     rdfs:comment "Permission to read data from tables" .
 
+bot:MetricsReadPermission a bot:Permission ;
+    rdfs:label "Metrics Read Permission" ;
+    rdfs:comment "Permission to read monitoring metrics" .
+
+bot:AlertWritePermission a bot:Permission ;
+    rdfs:label "Alert Write Permission" ;
+    rdfs:comment "Permission to write alert data" .
+
 bot:TeamsBotKeyPair a bot:RSAKeyPair ;
     rdfs:label "Teams Bot RSA Key Pair" ;
+    bot:hasKeyRotationSchedule "P90D"^^xsd:duration .
+
+bot:MonitoringBotKeyPair a bot:RSAKeyPair ;
+    rdfs:label "Monitoring Bot RSA Key Pair" ;
     bot:hasKeyRotationSchedule "P90D"^^xsd:duration .
 
 # Security Procedures
@@ -174,11 +213,22 @@ bot:KeyRotationProcedure a bot:SecurityProcedure ;
     bot:hasSchedule "P90D"^^xsd:duration ;
     bot:requiresApproval true .
 
+bot:AccessReviewProcedure a bot:SecurityProcedure ;
+    rdfs:label "Access Review Procedure" ;
+    rdfs:comment "Procedure for reviewing bot access permissions" ;
+    bot:hasSchedule "P30D"^^xsd:duration ;
+    bot:requiresApproval true .
+
 # Snowflake Object Instances
 bot:TeamsBotDB a bot:Database ;
     rdfs:label "TEAMS_BOT_DB" ;
     rdfs:comment "Teams bot database" ;
     bot:containsSchema bot:PublicSchema .
+
+bot:MonitoringDB a bot:Database ;
+    rdfs:label "MONITORING_DB" ;
+    rdfs:comment "Monitoring metrics database" ;
+    bot:containsSchema bot:MetricsSchema .
 
 bot:PublicSchema a bot:Schema ;
     rdfs:label "PUBLIC" ;
@@ -186,9 +236,19 @@ bot:PublicSchema a bot:Schema ;
     bot:containsProcedure bot:RotateKeyProcedure,
                          bot:LogSecurityEventProcedure .
 
+bot:MetricsSchema a bot:Schema ;
+    rdfs:label "METRICS" ;
+    rdfs:comment "Schema for monitoring metrics" ;
+    bot:containsProcedure bot:CollectMetricsProcedure,
+                         bot:GenerateAlertsProcedure .
+
 bot:ComputeWarehouse a bot:Warehouse ;
     rdfs:label "COMPUTE_WH" ;
     rdfs:comment "Default compute warehouse" .
+
+bot:MonitoringWarehouse a bot:Warehouse ;
+    rdfs:label "MONITORING_WH" ;
+    rdfs:comment "Warehouse for monitoring operations" .
 
 bot:RotateKeyProcedure a bot:StoredProcedure ;
     rdfs:label "ROTATE_BOT_KEY" ;
@@ -200,9 +260,23 @@ bot:LogSecurityEventProcedure a bot:StoredProcedure ;
     rdfs:comment "Procedure for logging security events" ;
     bot:requiresRole bot:TeamsBotRole .
 
+bot:CollectMetricsProcedure a bot:StoredProcedure ;
+    rdfs:label "COLLECT_METRICS" ;
+    rdfs:comment "Procedure for collecting monitoring metrics" ;
+    bot:requiresRole bot:MonitoringRole .
+
+bot:GenerateAlertsProcedure a bot:StoredProcedure ;
+    rdfs:label "GENERATE_ALERTS" ;
+    rdfs:comment "Procedure for generating monitoring alerts" ;
+    bot:requiresRole bot:MonitoringRole .
+
 bot:SecurityAuditLog a bot:DatabaseObject ;
     rdfs:label "security_audit_log" ;
     rdfs:comment "Table for security event logging" .
+
+bot:MetricsLog a bot:DatabaseObject ;
+    rdfs:label "metrics_log" ;
+    rdfs:comment "Table for storing monitoring metrics" .
 
 # Additional SHACL Shapes
 bot:DatabaseShape a sh:NodeShape ;
@@ -239,4 +313,4 @@ bot:SchemaShape a sh:NodeShape ;
 # 8. Define security incident response procedures
 # 9. Add support for custom warehouse configurations
 # 10. Implement resource monitoring and quotas
-### 
+###

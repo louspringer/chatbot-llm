@@ -18,7 +18,6 @@ from typing import Any
 
 from rich.console import Console
 
-
 try:
     from anthropic import Client
 except ImportError:
@@ -28,7 +27,6 @@ except ImportError:
 from rdflib import Graph, Literal, Namespace, URIRef
 from rdflib.namespace import RDF, RDFS, XSD
 from rich.syntax import Syntax
-
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

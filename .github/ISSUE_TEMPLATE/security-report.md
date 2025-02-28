@@ -22,4 +22,4 @@ Security vulnerability in dependency chain preventing critical updates. See full
 
 ## References
 - Full Report: docs/security/msrc-report-2024-03.md
-- aiohttp Security Fixes: https://github.com/aio-libs/aiohttp/releases/tag/v3.10.11 
+- aiohttp Security Fixes: https://github.com/aio-libs/aiohttp/releases/tag/v3.10.11

@@ -95,4 +95,4 @@ Failure to follow these procedures will result in:
 
 - [Development Setup Guide](development_setup.md)
 - [Contribution Guidelines](../CONTRIBUTING.md)
-- [Package Management Ontology](../package_management.ttl) 
+- [Package Management Ontology](../package_management.ttl)

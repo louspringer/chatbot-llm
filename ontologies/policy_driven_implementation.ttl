@@ -1,9 +1,20 @@
+# Ontology: chatbot:PolicyDrivenImplementationOntology
+# Implements: chatbot:PolicyDrivenModel
+# Requirement: REQ-POL-001 Policy-driven implementation management
+# Guidance: guidance:implementation#PolicyDriven
+# Description: Defines how policies and requirements drive implementation decisions
+
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix meta: <./meta#> .
+@prefix metameta: <./metameta#> .
+@prefix problem: <./problem#> .
+@prefix solution: <./solution#> .
+@prefix conversation: <./conversation#> .
+@prefix guidance: <./guidance#> .
 @prefix pkg: <./package_management#> .
 @prefix cog: <./cognition_patterns#> .
 @prefix deploy: <./deployment#> .

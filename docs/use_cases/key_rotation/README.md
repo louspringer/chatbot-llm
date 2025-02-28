@@ -39,4 +39,4 @@ All process diagrams are stored in the [diagrams](../diagrams/) directory:
 
 - [Key Rotation Technical Guide](../../key_rotation.md)
 - [Security Requirements](../../security_requirements.md)
-- [Monitoring Guide](../../monitoring_guide.md) 
+- [Monitoring Guide](../../monitoring_guide.md)

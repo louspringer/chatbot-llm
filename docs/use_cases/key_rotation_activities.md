@@ -10,14 +10,14 @@ stateDiagram-v2
         ValidateResources --> ValidatePermissions
         ValidatePermissions --> [*]
     }
-    
+
     state "Key Generation" as gen {
         [*] --> GenerateRSAKey
         GenerateRSAKey --> ExtractPublicKey
         ExtractPublicKey --> ValidateKeyFormat
         ValidateKeyFormat --> [*]
     }
-    
+
     state "Backup Process" as backup {
         [*] --> CreateBackupDir
         CreateBackupDir --> TimestampKeys
@@ -25,14 +25,14 @@ stateDiagram-v2
         CopyKeys --> ValidateBackup
         ValidateBackup --> [*]
     }
-    
+
     state "Snowflake Update" as update {
         [*] --> SetAccountAdmin
         SetAccountAdmin --> UpdatePublicKey
         UpdatePublicKey --> ValidateConnection
         ValidateConnection --> [*]
     }
-    
+
     [*] --> check
     check --> gen : Success
     check --> FailureNotification : Failure
@@ -59,20 +59,20 @@ stateDiagram-v2
         ParseOptions --> ConfirmExecution
         ConfirmExecution --> [*]
     }
-    
+
     state "Progress Display" as display {
         [*] --> ShowStatus
         ShowStatus --> UpdateProgress
         UpdateProgress --> ShowCompletion
         ShowCompletion --> [*]
     }
-    
+
     state "User Verification" as verify {
         [*] --> DisplayResults
         DisplayResults --> WaitForConfirmation
         WaitForConfirmation --> [*]
     }
-    
+
     [*] --> input
     input --> EnvironmentCheck
     EnvironmentCheck --> display : Start Rotation
@@ -97,28 +97,28 @@ stateDiagram-v2
         ValidateIssue --> CategorizeIssue
         CategorizeIssue --> [*]
     }
-    
+
     state "Backup Selection" as select {
         [*] --> ListBackups
         ListBackups --> ValidateBackups
         ValidateBackups --> SelectBackup
         SelectBackup --> [*]
     }
-    
+
     state "Recovery Process" as recover {
         [*] --> RestoreBackup
         RestoreBackup --> ValidateRestore
         ValidateRestore --> UpdateConfiguration
         UpdateConfiguration --> [*]
     }
-    
+
     state "Emergency Procedure" as emergency {
         [*] --> GenerateEmergencyKeys
         GenerateEmergencyKeys --> ManualUpdate
         ManualUpdate --> ValidateAccess
         ValidateAccess --> [*]
     }
-    
+
     [*] --> detect
     detect --> select : Backup Available
     detect --> emergency : No Backup
@@ -144,14 +144,14 @@ stateDiagram-v2
         GatherProcessMetrics --> GatherSecurityMetrics
         GatherSecurityMetrics --> [*]
     }
-    
+
     state "Alert Processing" as alert {
         [*] --> EvaluateThresholds
         EvaluateThresholds --> CategorizeAlerts
         CategorizeAlerts --> DetermineRecipients
         DetermineRecipients --> [*]
     }
-    
+
     state "Notification Dispatch" as notify {
         [*] --> FormatMessage
         FormatMessage --> SelectChannel
@@ -159,7 +159,7 @@ stateDiagram-v2
         SendNotification --> VerifyDelivery
         VerifyDelivery --> [*]
     }
-    
+
     [*] --> collect
     collect --> ProcessMetrics
     ProcessMetrics --> alert : Thresholds Exceeded
@@ -180,21 +180,21 @@ stateDiagram-v2
         RunUnitTests --> RunIntegrationTests
         RunIntegrationTests --> [*]
     }
-    
+
     state "Coverage Analysis" as coverage {
         [*] --> CollectCoverage
         CollectCoverage --> AnalyzeResults
         AnalyzeResults --> GenerateReport
         GenerateReport --> [*]
     }
-    
+
     state "Validation Checks" as validate {
         [*] --> ValidatePermissions
         ValidatePermissions --> ValidateConnectivity
         ValidateConnectivity --> ValidateOperations
         ValidateOperations --> [*]
     }
-    
+
     [*] --> test
     test --> coverage
     coverage --> validate
@@ -216,21 +216,21 @@ stateDiagram-v2
         DetectAnomaly --> CategorizeError
         CategorizeError --> [*]
     }
-    
+
     state "Recovery Strategy" as strategy {
         [*] --> EvaluateError
         EvaluateError --> SelectStrategy
         SelectStrategy --> PrepareRecovery
         PrepareRecovery --> [*]
     }
-    
+
     state "Recovery Execution" as execute {
         [*] --> BackupState
         BackupState --> ApplyFix
         ApplyFix --> ValidateRecovery
         ValidateRecovery --> [*]
     }
-    
+
     [*] --> detect
     detect --> strategy
     strategy --> execute : Automatic Recovery
@@ -241,4 +241,4 @@ stateDiagram-v2
     ValidateSuccess --> EscalateIssue : Failure
     DocumentRecovery --> [*]
     EscalateIssue --> [*]
-``` 
+```

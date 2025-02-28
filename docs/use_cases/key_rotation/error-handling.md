@@ -57,7 +57,7 @@ This document defines error categories, handling procedures, and recovery strate
 secrets:KeyRotationErrorHandling a secrets:ErrorHandling ;
     rdfs:label "Key Rotation Error Handling" ;
     rdfs:comment "Error handling strategies for key rotation process" ;
-    secrets:hasCategory secrets:EnvironmentError, 
+    secrets:hasCategory secrets:EnvironmentError,
                        secrets:OperationError,
                        secrets:RecoveryError ;
     secrets:hasRecoveryStrategy secrets:AutomaticRecovery,
@@ -100,4 +100,4 @@ secrets:RecoveryError a secrets:ErrorCategory ;
 
 - [Technical Troubleshooting](../../key_rotation.md#troubleshooting)
 - [Monitoring Requirements](monitoring.md)
-- [Security Considerations](../../key_rotation.md#security-considerations) 
+- [Security Considerations](../../key_rotation.md#security-considerations)

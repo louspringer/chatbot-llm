@@ -1,3 +1,9 @@
+# Ontology: chatbot:PackageDebugOntology
+# Implements: chatbot:PackageManagement
+# Requirement: REQ-PKG-001 Package management debugging and tracking
+# Guidance: guidance:package#DebuggingWorkflow
+# Description: Defines concepts and relationships for package management debugging activities
+
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
@@ -8,6 +14,7 @@
 @prefix solution: <./solution#> .
 @prefix conversation: <./conversation#> .
 @prefix guidance: <./guidance#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix debug: <#> .
 
 debug:PackageDebugOntology a owl:Ontology ;
@@ -18,47 +25,82 @@ debug:PackageDebugOntology a owl:Ontology ;
 # Core Classes
 debug:DebugSession a owl:Class ;
     rdfs:label "Debug Session" ;
-    rdfs:comment "A package management debugging session" .
+    rdfs:comment "A package management debugging session" ;
+    owl:versionInfo "1.0.0" .
 
 debug:DebugStep a owl:Class ;
     rdfs:label "Debug Step" ;
-    rdfs:comment "A step in the debugging process" .
+    rdfs:comment "A step in the debugging process" ;
+    owl:versionInfo "1.0.0" .
 
 debug:DebugAction a owl:Class ;
     rdfs:label "Debug Action" ;
-    rdfs:comment "An action taken during debugging" .
+    rdfs:comment "An action taken during debugging" ;
+    owl:versionInfo "1.0.0" .
 
 debug:DebugOutcome a owl:Class ;
     rdfs:label "Debug Outcome" ;
-    rdfs:comment "The result of a debug action" .
+    rdfs:comment "The result of a debug action" ;
+    owl:versionInfo "1.0.0" .
 
 debug:PackageIssue a owl:Class ;
     rdfs:label "Package Issue" ;
-    rdfs:comment "A package management issue being debugged" .
+    rdfs:comment "A package management issue being debugged" ;
+    owl:versionInfo "1.0.0" .
 
 # Properties
 debug:hasStep a owl:ObjectProperty ;
+    rdfs:label "has step" ;
+    rdfs:comment "Links a debug session to its steps" ;
     rdfs:domain debug:DebugSession ;
     rdfs:range debug:DebugStep .
 
 debug:hasAction a owl:ObjectProperty ;
+    rdfs:label "has action" ;
+    rdfs:comment "Links a debug step to its actions" ;
     rdfs:domain debug:DebugStep ;
     rdfs:range debug:DebugAction .
 
 debug:hasOutcome a owl:ObjectProperty ;
+    rdfs:label "has outcome" ;
+    rdfs:comment "Links a debug action to its outcome" ;
     rdfs:domain debug:DebugAction ;
     rdfs:range debug:DebugOutcome .
 
 debug:nextStep a owl:ObjectProperty ;
+    rdfs:label "next step" ;
+    rdfs:comment "Links a debug step to the next step in sequence" ;
     rdfs:domain debug:DebugStep ;
     rdfs:range debug:DebugStep .
 
 debug:timestamp a owl:DatatypeProperty ;
+    rdfs:label "timestamp" ;
+    rdfs:comment "The time when a step or action occurred" ;
     rdfs:domain debug:DebugStep ;
     rdfs:range xsd:dateTime .
 
 debug:errorMessage a owl:DatatypeProperty ;
+    rdfs:label "error message" ;
+    rdfs:comment "Error message from a failed action" ;
     rdfs:domain debug:DebugOutcome ;
+    rdfs:range xsd:string .
+
+debug:relatedIssue a owl:ObjectProperty ;
+    rdfs:label "related issue" ;
+    rdfs:comment "Links a debug session to the package issue being debugged" ;
+    rdfs:domain debug:DebugSession ;
+    rdfs:range debug:PackageIssue .
+
+debug:issueType a owl:DatatypeProperty ;
+    rdfs:label "issue type" ;
+    rdfs:comment "The type of package issue" ;
+    rdfs:domain debug:PackageIssue ;
+    rdfs:range xsd:string .
+
+debug:issueStatus a owl:DatatypeProperty ;
+    rdfs:label "issue status" ;
+    rdfs:comment "The current status of the issue" ;
+    rdfs:domain debug:PackageIssue ;
     rdfs:range xsd:string .
 
 # Action Types
@@ -218,4 +260,99 @@ debug:PyGithubPackage a debug:BootstrapPackage ;
     rdfs:label "pygithub" ;
     debug:minVersion "2.1.1" ;
     debug:hasRole debug:ExternalIntegration ;
-    debug:purpose "GitHub API integration" . 
+    debug:purpose "GitHub API integration" .
+
+# Instances
+debug:CondaEnvDebugSession a debug:DebugSession ;
+    rdfs:label "Conda Environment Debug Session" ;
+    debug:hasStep debug:EnvListStep ;
+    debug:relatedIssue debug:CondaEnvConflict .
+
+debug:PipDependencyDebugSession a debug:DebugSession ;
+    rdfs:label "Pip Dependency Debug Session" ;
+    debug:hasStep debug:DependencyCheckStep ;
+    debug:relatedIssue debug:PipVersionMismatch .
+
+debug:EnvListStep a debug:DebugStep ;
+    rdfs:label "Environment List Step" ;
+    debug:hasAction debug:ListEnvironmentsAction ;
+    debug:timestamp "2024-03-20T10:00:00Z"^^xsd:dateTime .
+
+debug:DependencyCheckStep a debug:DebugStep ;
+    rdfs:label "Dependency Check Step" ;
+    debug:hasAction debug:CheckDependenciesAction ;
+    debug:timestamp "2024-03-20T10:05:00Z"^^xsd:dateTime .
+
+debug:ListEnvironmentsAction a debug:DebugAction ;
+    rdfs:label "List Environments Action" ;
+    debug:hasOutcome debug:EnvironmentsListed .
+
+debug:CheckDependenciesAction a debug:DebugAction ;
+    rdfs:label "Check Dependencies Action" ;
+    debug:hasOutcome debug:DependencyConflictFound .
+
+debug:EnvironmentsListed a debug:DebugOutcome ;
+    rdfs:label "Environments Listed" .
+
+debug:DependencyConflictFound a debug:DebugOutcome ;
+    rdfs:label "Dependency Conflict Found" ;
+    debug:errorMessage "Version conflict between package A and package B" .
+
+debug:CondaEnvConflict a debug:PackageIssue ;
+    rdfs:label "Conda Environment Conflict" ;
+    debug:issueType "environment_conflict" ;
+    debug:issueStatus "investigating" .
+
+debug:PipVersionMismatch a debug:PackageIssue ;
+    rdfs:label "Pip Version Mismatch" ;
+    debug:issueType "version_mismatch" ;
+    debug:issueStatus "open" .
+
+# SHACL Shapes
+debug:DebugSessionShape a sh:NodeShape ;
+    sh:targetClass debug:DebugSession ;
+    sh:property [
+        sh:path debug:hasStep ;
+        sh:minCount 1 ;
+        sh:class debug:DebugStep ;
+    ] ;
+    sh:property [
+        sh:path debug:relatedIssue ;
+        sh:minCount 1 ;
+        sh:class debug:PackageIssue ;
+    ] .
+
+debug:DebugStepShape a sh:NodeShape ;
+    sh:targetClass debug:DebugStep ;
+    sh:property [
+        sh:path debug:hasAction ;
+        sh:minCount 1 ;
+        sh:class debug:DebugAction ;
+    ] ;
+    sh:property [
+        sh:path debug:timestamp ;
+        sh:minCount 1 ;
+        sh:datatype xsd:dateTime ;
+    ] .
+
+debug:DebugActionShape a sh:NodeShape ;
+    sh:targetClass debug:DebugAction ;
+    sh:property [
+        sh:path debug:hasOutcome ;
+        sh:minCount 1 ;
+        sh:class debug:DebugOutcome ;
+    ] .
+
+debug:PackageIssueShape a sh:NodeShape ;
+    sh:targetClass debug:PackageIssue ;
+    sh:property [
+        sh:path debug:issueType ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+    ] ;
+    sh:property [
+        sh:path debug:issueStatus ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:in ( "open" "investigating" "resolved" "closed" ) ;
+    ] .

@@ -1,9 +1,20 @@
+# Ontology: chatbot:CognitionPatternsOntology
+# Implements: chatbot:CognitionModel
+# Requirement: REQ-COG-001 Cognition pattern management
+# Guidance: guidance:cognition#PatternManagement
+# Description: Defines cognitive patterns for ontology understanding and management
+
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix meta: <./meta#> .
+@prefix metameta: <./metameta#> .
+@prefix problem: <./problem#> .
+@prefix solution: <./solution#> .
+@prefix conversation: <./conversation#> .
+@prefix guidance: <./guidance#> .
 @prefix cog: <#> .
 
 cog:CognitionPatternsOntology a owl:Ontology ;

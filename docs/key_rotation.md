@@ -96,7 +96,7 @@ Technical solutions for handling [Error Categories](use_cases/key_rotation/error
    ```bash
    # Verify role
    snowsql -q "SELECT CURRENT_ROLE()"
-   
+
    # Verify privileges
    snowsql -q "SHOW GRANTS TO ROLE ACCOUNTADMIN"
    ```
@@ -106,7 +106,7 @@ Technical solutions for handling [Error Categories](use_cases/key_rotation/error
    ```bash
    # Verify OpenSSL installation
    openssl version
-   
+
    # Test key generation
    openssl genrsa 2048
    ```
@@ -116,7 +116,7 @@ Technical solutions for handling [Error Categories](use_cases/key_rotation/error
    ```bash
    # Check backup directory permissions
    ls -la teams_bot/config/keys/backup
-   
+
    # Verify backup integrity
    python teams_bot/scripts/rotate_secrets.py --verify-backup <timestamp>
    ```

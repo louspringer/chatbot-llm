@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
 """Tests for secret rotation functionality."""
 
-import pytest
-from unittest.mock import patch
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
+from unittest.mock import patch
+
+import pytest
 
 from ..scripts.rotate_secrets import (
-    rotate_snowflake_keys,
     backup_key_files,
+    rotate_snowflake_keys,
     run_command,
 )
 

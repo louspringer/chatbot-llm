@@ -131,4 +131,4 @@ pkg:PackageValidator rdfs:subClassOf pdi:EnforcementMechanism ;
     pdi:enforces pdi:DependencyValidationRequirement .
 
 pkg:VersionManager rdfs:subClassOf pdi:EnforcementMechanism ;
-    pdi:enforces pdi:VersionConstraintRequirement . 
+    pdi:enforces pdi:VersionConstraintRequirement .

@@ -24,27 +24,32 @@ envconfig:EnvironmentConfigOntology rdf:type owl:Ontology ;
 envconfig:ConfigurationArtifact rdf:type owl:Class ;
     rdfs:label "Configuration Artifact" ;
     rdfs:comment "A configuration artifact in the system (e.g., .env files, templates)" ;
-    rdfs:subClassOf meta:AbstractionDimension .
+    rdfs:subClassOf meta:AbstractionDimension ;
+    owl:versionInfo "1.0.0" .
 
 envconfig:EnvFile rdf:type owl:Class ;
     rdfs:subClassOf envconfig:ConfigurationArtifact ;
     rdfs:label "Environment File" ;
-    rdfs:comment "An environment file containing configuration variables" .
+    rdfs:comment "An environment file containing configuration variables" ;
+    owl:versionInfo "1.0.0" .
 
 envconfig:ConfigTemplate rdf:type owl:Class ;
     rdfs:subClassOf envconfig:ConfigurationArtifact ;
     rdfs:label "Configuration Template" ;
-    rdfs:comment "A template for configuration files" .
+    rdfs:comment "A template for configuration files" ;
+    owl:versionInfo "1.0.0" .
 
 envconfig:ConfigExample rdf:type owl:Class ;
     rdfs:subClassOf envconfig:ConfigurationArtifact ;
     rdfs:label "Configuration Example" ;
-    rdfs:comment "An example configuration with dummy values" .
+    rdfs:comment "An example configuration with dummy values" ;
+    owl:versionInfo "1.0.0" .
 
 envconfig:Owner rdf:type owl:Class ;
     rdfs:label "Configuration Owner" ;
     rdfs:comment "An ontology that owns configuration artifacts" ;
-    rdfs:subClassOf owl:Ontology .
+    rdfs:subClassOf owl:Ontology ;
+    owl:versionInfo "1.0.0" .
 
 # Properties
 envconfig:hasOwner rdf:type owl:ObjectProperty ;
@@ -72,9 +77,10 @@ envconfig:requiredVariables rdf:type owl:DatatypeProperty ;
     rdfs:comment "List of required variables in the configuration" .
 
 # Impact Analysis Classes
-envconfig:ImpactLevel a owl:Class ;
+envconfig:ImpactLevel rdf:type owl:Class ;
     rdfs:label "Impact Level" ;
-    rdfs:comment "Severity level of configuration changes" .
+    rdfs:comment "Severity level of configuration changes" ;
+    owl:versionInfo "1.0.0" .
 
 envconfig:High a envconfig:ImpactLevel ;
     rdfs:label "High Impact" ;
@@ -88,22 +94,26 @@ envconfig:Low a envconfig:ImpactLevel ;
     rdfs:label "Low Impact" ;
     rdfs:comment "Changes with minimal validation requirements" .
 
-envconfig:DependencyChain a owl:Class ;
+envconfig:DependencyChain rdf:type owl:Class ;
     rdfs:label "Dependency Chain" ;
-    rdfs:comment "Tracks configuration item dependencies and their impacts" .
+    rdfs:comment "Tracks configuration item dependencies and their impacts" ;
+    owl:versionInfo "1.0.0" .
 
 # Configuration Drift Classes
-envconfig:ConfigurationState a owl:Class ;
+envconfig:ConfigurationState rdf:type owl:Class ;
     rdfs:label "Configuration State" ;
-    rdfs:comment "Represents a snapshot of configuration at a point in time" .
+    rdfs:comment "Represents a snapshot of configuration at a point in time" ;
+    owl:versionInfo "1.0.0" .
 
-envconfig:DriftStatus a owl:Class ;
+envconfig:DriftStatus rdf:type owl:Class ;
     rdfs:label "Drift Status" ;
-    rdfs:comment "Status of configuration drift detection" .
+    rdfs:comment "Status of configuration drift detection" ;
+    owl:versionInfo "1.0.0" .
 
-envconfig:DriftThreshold a owl:Class ;
+envconfig:DriftThreshold rdf:type owl:Class ;
     rdfs:label "Drift Threshold" ;
-    rdfs:comment "Threshold for acceptable configuration drift" .
+    rdfs:comment "Threshold for acceptable configuration drift" ;
+    owl:versionInfo "1.0.0" .
 
 # Impact Analysis Properties
 envconfig:hasImpactLevel rdf:type owl:ObjectProperty ;
@@ -150,13 +160,15 @@ envconfig:lastValidated rdf:type owl:DatatypeProperty ;
     rdfs:comment "Timestamp of last validation" .
 
 # Enhanced Validation Rules
-envconfig:ValidationRule a owl:Class ;
+envconfig:ValidationRule rdf:type owl:Class ;
     rdfs:label "Validation Rule" ;
-    rdfs:comment "Rule for validating configuration artifacts" .
+    rdfs:comment "Rule for validating configuration artifacts" ;
+    owl:versionInfo "1.0.0" .
 
-envconfig:ValidationFrequency a owl:Class ;
+envconfig:ValidationFrequency rdf:type owl:Class ;
     rdfs:label "Validation Frequency" ;
-    rdfs:comment "Required frequency of validation checks" .
+    rdfs:comment "Required frequency of validation checks" ;
+    owl:versionInfo "1.0.0" .
 
 envconfig:Daily a envconfig:ValidationFrequency .
 envconfig:Weekly a envconfig:ValidationFrequency .
@@ -275,3 +287,39 @@ envconfig:TemplateValidationRule a envconfig:ValidationRule ;
         rdf:_3 "Verify format consistency" ;
         rdf:_4 "Check security requirements"
     ] .
+
+# Additional Properties
+envconfig:stateHash rdf:type owl:DatatypeProperty ;
+    rdfs:label "state hash" ;
+    rdfs:domain envconfig:ConfigurationState ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Hash representing the configuration state" ;
+    owl:versionInfo "1.0.0" .
+
+envconfig:timestamp rdf:type owl:DatatypeProperty ;
+    rdfs:label "timestamp" ;
+    rdfs:domain envconfig:ConfigurationState ;
+    rdfs:range xsd:dateTime ;
+    rdfs:comment "Timestamp of the configuration state" ;
+    owl:versionInfo "1.0.0" .
+
+envconfig:validatedBy rdf:type owl:DatatypeProperty ;
+    rdfs:label "validated by" ;
+    rdfs:domain envconfig:ConfigurationState ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Entity that validated the configuration" ;
+    owl:versionInfo "1.0.0" .
+
+envconfig:primaryArtifact rdf:type owl:ObjectProperty ;
+    rdfs:label "primary artifact" ;
+    rdfs:domain envconfig:DependencyChain ;
+    rdfs:range envconfig:ConfigurationArtifact ;
+    rdfs:comment "The primary artifact in a dependency chain" ;
+    owl:versionInfo "1.0.0" .
+
+envconfig:dependencies rdf:type owl:ObjectProperty ;
+    rdfs:label "dependencies" ;
+    rdfs:domain envconfig:DependencyChain ;
+    rdfs:range rdf:List ;
+    rdfs:comment "List of dependent artifacts" ;
+    owl:versionInfo "1.0.0" .

@@ -8,6 +8,7 @@
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix trace: <./traceability#> .
 @prefix ca: <./cortex_analyst#> .
 @prefix teams: <./cortexteams#> .
@@ -22,15 +23,18 @@ trace:TraceabilityOntology a owl:Ontology ;
 # Infrastructure Classes
 trace:Infrastructure a owl:Class ;
     rdfs:label "Infrastructure" ;
-    rdfs:comment "Infrastructure components like databases, schemas, warehouses" .
+    rdfs:comment "Infrastructure components like databases, schemas, warehouses" ;
+    owl:versionInfo "1.0.0" .
 
 trace:SecurityRole a owl:Class ;
     rdfs:label "Security Role" ;
-    rdfs:comment "Security roles and permissions" .
+    rdfs:comment "Security roles and permissions" ;
+    owl:versionInfo "1.0.0" .
 
 trace:DeploymentOrder a owl:Class ;
     rdfs:label "Deployment Order" ;
-    rdfs:comment "Defines the order of deployment steps" .
+    rdfs:comment "Defines the order of deployment steps" ;
+    owl:versionInfo "1.0.0" .
 
 # Additional Properties
 trace:requiresRole a owl:ObjectProperty ;

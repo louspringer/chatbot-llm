@@ -39,4 +39,4 @@ group Alternative Flow [Emergency]
     admin -> system: Manual recovery
 end
 
-@enduml 
+@enduml

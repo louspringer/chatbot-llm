@@ -78,9 +78,7 @@ def test_class_documentation(test_graph):
 
     results = list(test_graph.query(query))
     missing = len(results)
-    assert (
-        missing == 0
-    ), f"Found {missing} classes without proper documentation"
+    assert missing == 0, f"Found {missing} classes without proper documentation"
 
 
 def test_property_domains_ranges(test_graph):

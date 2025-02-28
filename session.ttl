@@ -1,30 +1,96 @@
+# Ontology: chatbot:SessionOntology
+# Implements: chatbot:SessionManagement
+# Requirement: REQ-SESSION-001 Session state tracking
+# Guidance: guidance:session#StateManagement
+# Description: Tracks current session state including active ontologies and tasks
+
 @prefix : <./session#> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
-@prefix session: <file:///private/var/folders/hg/zvfs15m17550vl6qnf_q010w0000gn/T/pytest-of-lou/pytest-3/test_update_session_and_log0/session#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix meta: <./meta#> .
+@prefix metameta: <./metameta#> .
+@prefix problem: <./problem#> .
+@prefix solution: <./solution#> .
+@prefix conversation: <./conversation#> .
+@prefix guidance: <./guidance#> .
+@prefix pkg: <./package_management#> .
+@prefix sec: <./security#> .
+@prefix deploy: <./deployment_config#> .
+@prefix roadmap: <./roadmap#> .
+@prefix conv: <./conversation#> .
+@prefix env: <./environment_variables#> .
+@prefix rules: <./rules#> .
 
-<file:///Users/lou/Documents/chatbot-llm/session#test_context> a :Context .
+:CurrentSession a :Session ;
+    rdfs:label "Current Session" ;
+    :hasContext :CurrentContext ;
+    :hasActiveCursorRules (
+        :ArtifactTraceabilityRule
+        :PackageManagementRule
+        :ProjectOntologyRule
+    ) ;
+    :hasActiveOntologies (
+        pkg:PackageManagementOntology
+        sec:SecurityOntology
+        deploy:DeploymentConfigOntology
+        roadmap:RoadmapOntology
+        conv:ConversationOntology
+        meta:MetaOntology
+        metameta:MetaMetaOntology
+        problem:ProblemOntology
+        solution:SolutionOntology
+        guidance:GuidanceOntology
+        env:EnvironmentVariablesOntology
+    ) ;
+    :lastUpdated "2024-03-21T15:00:00Z"^^xsd:dateTime .
 
-session:currentContext a :ContextState ;
-    session:activeCursorRules <n68803ae45b5e4c27b7cf86776675a288b3> ;
-    session:activeOntologies <n68803ae45b5e4c27b7cf86776675a288b1> ;
-    session:activeTask :task6 ;
-    session:lastUpdated "2024-03-20T18:30:00+00:00"^^xsd:dateTime ;
-    session:securityContext <n68803ae45b5e4c27b7cf86776675a288b5> .
+:CurrentContext a :Context ;
+    rdfs:label "Current Context" ;
+    :hasActiveTask :OntologyIntegrityTask ;
+    :hasSecurityContext :CurrentSecurityContext ;
+    :activeCursorRules (
+        rules:artifact-traceability
+        rules:no-requirements-txt
+        rules:package-management
+        rules:project-ontology
+        rules:project-root-ontologies
+        rules:sparql-queries
+    ) ;
+    :activeOntologies (
+        meta:MetaOntology
+        metameta:MetaMetaOntology
+        problem:ProblemOntology
+        solution:SolutionOntology
+        guidance:GuidanceOntology
+        conversation:ConversationOntology
+        env:EnvironmentVariablesOntology
+    ) .
 
-[] rdf:first <./chatbot#ChatbotLLMOntology> ;
-    rdf:rest <n68803ae45b5e4c27b7cf86776675a288b2> .
+:OntologyIntegrityTask a :Task ;
+    rdfs:label "Ontology Integrity Check" ;
+    :hasCompletedSteps (
+        "Updated meta.ttl with version info and SHACL shapes"
+        "Updated metameta.ttl with version info and SHACL shapes"
+        "Updated problem.ttl with version info and SHACL shapes"
+        "Updated solution.ttl with version info and SHACL shapes"
+        "Updated guidance.ttl with version info and SHACL shapes"
+        "Verified conversation.ttl integrity"
+        "Updated environment_variables.ttl with version info"
+        "Ran final integrity validation"
+    ) ;
+    :hasNextSteps (
+        "Add missing version info to classes and properties"
+        "Add missing SHACL shapes for classes"
+        "Add domain and range to traceability#requiresRole"
+    ) ;
+    :validationResults (
+        "Found 200+ classes and properties missing version info"
+        "Found 100+ classes missing SHACL shapes"
+        "Found 1 property missing domain/range definitions"
+    ) .
 
-[] rdf:first <./cortexteams#TeamsOntology> ;
-    rdf:rest () .
-
-[] rdf:first :SPARQLQueryRule ;
-    rdf:rest <n68803ae45b5e4c27b7cf86776675a288b4> .
-
-[] rdf:first :BlackFormatterRule ;
-    rdf:rest () .
-
-[] a :SecurityContext ;
-    session:requiresValidation true ;
-    session:securityLevel "High" .
-
+:CurrentSecurityContext a :SecurityContext ;
+    rdfs:label "Current Security Context" ;
+    :lastValidated "2024-03-21T15:00:00Z"^^xsd:dateTime .

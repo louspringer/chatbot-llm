@@ -4,6 +4,12 @@
 @prefix deploy: <./deployment#> .
 @prefix chatbot: <./chatbot#> .
 @prefix solution: <./solution#> .
+@prefix guidance: <./guidance#> .
+@prefix meta: <./meta#> .
+@prefix metameta: <./metameta#> .
+@prefix conversation: <./conversation#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix problem: <./problem#> .
 
 deploy:DeploymentOntology rdf:type owl:Ontology ;
     rdfs:label "Deployment Ontology" ;
@@ -15,40 +21,48 @@ deploy:DeploymentOntology rdf:type owl:Ontology ;
 # Classes
 deploy:Component rdf:type owl:Class ;
     rdfs:label "Component" ;
-    rdfs:comment "Base class for all deployment components" .
+    rdfs:comment "Base class for all deployment components" ;
+    owl:versionInfo "1.0.0" .
 
 deploy:SharedComponent rdf:type owl:Class ;
     rdfs:subClassOf deploy:Component ;
     rdfs:label "Shared Component" ;
-    rdfs:comment "Components shared between deployment environments" .
+    rdfs:comment "Components shared between deployment environments" ;
+    owl:versionInfo "1.0.0" .
 
 deploy:ConfigurationComponent rdf:type owl:Class ;
     rdfs:subClassOf deploy:SharedComponent ;
     rdfs:label "Configuration Component" ;
-    rdfs:comment "Shared configuration files" .
+    rdfs:comment "Shared configuration files" ;
+    owl:versionInfo "1.0.0" .
 
 deploy:RuntimeDependency rdf:type owl:Class ;
     rdfs:subClassOf deploy:SharedComponent ;
     rdfs:label "Runtime Dependency" ;
-    rdfs:comment "Shared runtime dependencies" .
+    rdfs:comment "Shared runtime dependencies" ;
+    owl:versionInfo "1.0.0" .
 
 deploy:InfrastructureComponent rdf:type owl:Class ;
     rdfs:subClassOf deploy:Component ;
     rdfs:label "Infrastructure Component" ;
-    rdfs:comment "Azure-specific infrastructure components" .
+    rdfs:comment "Azure-specific infrastructure components" ;
+    owl:versionInfo "1.0.0" .
 
 deploy:LocalComponent rdf:type owl:Class ;
     rdfs:subClassOf deploy:Component ;
     rdfs:label "Local Component" ;
-    rdfs:comment "Components specific to local development" .
+    rdfs:comment "Components specific to local development" ;
+    owl:versionInfo "1.0.0" .
 
 deploy:MonitoringSystem rdf:type owl:Class ;
     rdfs:label "Monitoring System" ;
-    rdfs:comment "System for monitoring and observability" .
+    rdfs:comment "System for monitoring and observability" ;
+    owl:versionInfo "1.0.0" .
 
 deploy:SecurityControl rdf:type owl:Class ;
     rdfs:label "Security Control" ;
-    rdfs:comment "Security measure or control" .
+    rdfs:comment "Security controls and measures" ;
+    owl:versionInfo "1.0.0" .
 
 deploy:DeploymentEnvironment rdf:type owl:Class ;
     rdfs:label "Deployment Environment" ;

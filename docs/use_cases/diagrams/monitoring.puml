@@ -35,4 +35,4 @@ notify --> UpdateAlertStatus
 StoreMetrics --> [*]
 UpdateAlertStatus --> [*]
 
-@enduml 
+@enduml

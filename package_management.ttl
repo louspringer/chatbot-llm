@@ -126,7 +126,8 @@ pkg:PackageManagementShape a sh:NodeShape ;
 
 pkg:SecurityCheck a pkg:ValidationStep ;
     rdfs:label "Security Check" ;
-    rdfs:comment "Validation step for security scanning" .
+    rdfs:comment "Validation step for security scanning" ;
+    owl:versionInfo "1.0.0" .
 
 pkg:SecurityValidation a pkg:ValidationStep ;
     rdfs:label "Security Validation" ;
@@ -439,4 +440,191 @@ pkg:hasSource a owl:ObjectProperty ;
     rdfs:comment "Source of the package" ;
     rdfs:domain pkg:Package ;
     rdfs:range pkg:PackageSource ;
+    owl:versionInfo "1.0.0" .
+
+# Additional Classes with Version Info
+pkg:Package a owl:Class ;
+    rdfs:label "Package" ;
+    rdfs:comment "A Python package dependency" ;
+    owl:versionInfo "1.0.0" .
+
+pkg:PackageSource a owl:Class ;
+    rdfs:label "Package Source" ;
+    rdfs:comment "Source for installing Python packages" ;
+    owl:versionInfo "1.0.0" .
+
+pkg:DependencyType a owl:Class ;
+    rdfs:label "Dependency Type" ;
+    rdfs:comment "Type of package dependency" ;
+    owl:versionInfo "1.0.0" .
+
+pkg:ValidationStep a owl:Class ;
+    rdfs:label "Validation Step" ;
+    rdfs:comment "Step in package validation process" ;
+    owl:versionInfo "1.0.0" .
+
+pkg:SecurityVulnerability a owl:Class ;
+    rdfs:label "Security Vulnerability" ;
+    rdfs:comment "Security vulnerability in a package" ;
+    owl:versionInfo "1.0.0" .
+
+pkg:SecurityImpact a owl:Class ;
+    rdfs:label "Security Impact" ;
+    rdfs:comment "Impact level of a security vulnerability" ;
+    owl:versionInfo "1.0.0" .
+
+pkg:SecurityLikelihood a owl:Class ;
+    rdfs:label "Security Likelihood" ;
+    rdfs:comment "Likelihood of a security vulnerability being exploited" ;
+    owl:versionInfo "1.0.0" .
+
+# Additional Properties with Range
+pkg:hasPackageSource a owl:ObjectProperty ;
+    rdfs:label "Has Package Source" ;
+    rdfs:comment "Links a package to its source" ;
+    rdfs:domain pkg:Package ;
+    rdfs:range pkg:PackageSource ;
+    owl:versionInfo "1.0.0" .
+
+pkg:hasDependencyType a owl:ObjectProperty ;
+    rdfs:label "Has Dependency Type" ;
+    rdfs:comment "Links a package to its dependency type" ;
+    rdfs:domain pkg:Package ;
+    rdfs:range pkg:DependencyType ;
+    owl:versionInfo "1.0.0" .
+
+pkg:hasValidationStep a owl:ObjectProperty ;
+    rdfs:label "Has Validation Step" ;
+    rdfs:comment "Links a package to its validation steps" ;
+    rdfs:domain pkg:Package ;
+    rdfs:range pkg:ValidationStep ;
+    owl:versionInfo "1.0.0" .
+
+# Additional Instances
+pkg:CondaSource a pkg:PackageSource ;
+    rdfs:label "Conda" ;
+    rdfs:comment "Conda package manager" .
+
+pkg:PipSource a pkg:PackageSource ;
+    rdfs:label "Pip" ;
+    rdfs:comment "Pip package manager" .
+
+pkg:CoreDependency a pkg:DependencyType ;
+    rdfs:label "Core Dependency" ;
+    rdfs:comment "Required for core functionality" .
+
+pkg:DevelopmentDependency a pkg:DependencyType ;
+    rdfs:label "Development Dependency" ;
+    rdfs:comment "Required for development only" .
+
+pkg:BootstrapDependency a pkg:DependencyType ;
+    rdfs:label "Bootstrap Dependency" ;
+    rdfs:comment "Required for initial setup" .
+
+# Add version info to classes
+pkg:Package a rdfs:Class ;
+    rdfs:label "Package" ;
+    rdfs:comment "Represents a software package" ;
+    owl:versionInfo "1.0.0" .
+
+pkg:DependencyType a rdfs:Class ;
+    rdfs:label "Dependency Type" ;
+    rdfs:comment "Type of package dependency" ;
+    owl:versionInfo "1.0.0" .
+
+pkg:ValidationStep a rdfs:Class ;
+    rdfs:label "Validation Step" ;
+    rdfs:comment "Step in package validation process" ;
+    owl:versionInfo "1.0.0" .
+
+pkg:SecurityVulnerability a rdfs:Class ;
+    rdfs:label "Security Vulnerability" ;
+    rdfs:comment "Security vulnerability in a package" ;
+    owl:versionInfo "1.0.0" .
+
+pkg:SecurityImpact a rdfs:Class ;
+    rdfs:label "Security Impact" ;
+    rdfs:comment "Impact level of a security vulnerability" ;
+    owl:versionInfo "1.0.0" .
+
+pkg:SecurityLikelihood a rdfs:Class ;
+    rdfs:label "Security Likelihood" ;
+    rdfs:comment "Likelihood of a security vulnerability being exploited" ;
+    owl:versionInfo "1.0.0" .
+
+# Add SHACL shapes
+pkg:PackageShape a sh:NodeShape ;
+    sh:targetClass pkg:Package ;
+    sh:property [
+        sh:path pkg:hasVersion ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "Package must have at least one version" ;
+    ] ,
+    [
+        sh:path pkg:dependencyType ;
+        sh:minCount 1 ;
+        sh:class pkg:DependencyType ;
+        sh:message "Package must have a dependency type" ;
+    ] .
+
+pkg:SecurityVulnerabilityShape a sh:NodeShape ;
+    sh:targetClass pkg:SecurityVulnerability ;
+    sh:property [
+        sh:path pkg:cvssScore ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:decimal ;
+        sh:minInclusive 0.0 ;
+        sh:maxInclusive 10.0 ;
+        sh:message "CVSS score must be between 0.0 and 10.0" ;
+    ] ,
+    [
+        sh:path pkg:hasImpact ;
+        sh:minCount 1 ;
+        sh:class pkg:SecurityImpact ;
+        sh:message "Vulnerability must have an impact level" ;
+    ] ,
+    [
+        sh:path pkg:hasLikelihood ;
+        sh:minCount 1 ;
+        sh:class pkg:SecurityLikelihood ;
+        sh:message "Vulnerability must have a likelihood" ;
+    ] ,
+    [
+        sh:path pkg:mitigationStatus ;
+        sh:minCount 1 ;
+        sh:in ("unmitigated" "in_progress" "mitigated") ;
+        sh:message "Mitigation status must be one of: unmitigated, in_progress, mitigated" ;
+    ] .
+
+pkg:ValidationStepShape a sh:NodeShape ;
+    sh:targetClass pkg:ValidationStep ;
+    sh:property [
+        sh:path rdfs:label ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "Validation step must have a label" ;
+    ] .
+
+# Add missing property definitions with domains and ranges
+pkg:hasValidationStep a owl:ObjectProperty ;
+    rdfs:label "Has Validation Step" ;
+    rdfs:comment "Links a package management process to its validation steps" ;
+    rdfs:domain pkg:PackageManagementProcess ;
+    rdfs:range pkg:ValidationStep ;
+    owl:versionInfo "1.0.0" .
+
+pkg:hasPackageSource a owl:ObjectProperty ;
+    rdfs:label "Has Package Source" ;
+    rdfs:comment "Links a package to its source repository" ;
+    rdfs:domain pkg:Package ;
+    rdfs:range pkg:PackageSource ;
+    owl:versionInfo "1.0.0" .
+
+pkg:hasDependencyType a owl:ObjectProperty ;
+    rdfs:label "Has Dependency Type" ;
+    rdfs:comment "Links a package to its dependency type" ;
+    rdfs:domain pkg:Package ;
+    rdfs:range pkg:DependencyType ;
     owl:versionInfo "1.0.0" .

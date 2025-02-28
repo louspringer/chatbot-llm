@@ -88,4 +88,4 @@ secrets:EmergencyRecoveryTest a secrets:TestCase ;
 
 - [Scheduled Key Rotation](scheduled-rotation.md)
 - [Manual Key Rotation](manual-rotation.md)
-- [Technical Implementation](../../key_rotation.md#emergency-recovery) 
+- [Technical Implementation](../../key_rotation.md#emergency-recovery)

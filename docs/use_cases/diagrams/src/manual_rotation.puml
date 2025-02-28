@@ -39,4 +39,4 @@ group Alternative Flow [Recovery]
     system --> admin: Report recovery status
 end
 
-@enduml 
+@enduml

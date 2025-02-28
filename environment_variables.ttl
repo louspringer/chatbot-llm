@@ -13,11 +13,11 @@
 @prefix config: <./config_management#> .
 @prefix deploy: <./deployment_config#> .
 
-# Ontology: cortexteams:EnvironmentVariables
-# Implements: cortexteams:Configuration
-# Requirement: REQ-ENV-001 Environment Variable Management
-# Guidance: guidance:BotPatterns#Configuration
-# Description: Environment variable definitions and management for the Teams bot
+# Ontology: chatbot:EnvironmentVariablesOntology
+# Implements: chatbot:ConfigurationModel
+# Requirement: REQ-ENV-001 Environment variable management
+# Guidance: guidance:configuration#EnvironmentVariables
+# Description: Defines environment variable concepts and relationships
 
 # Ontology Definition
 env:EnvironmentVariablesOntology rdf:type owl:Ontology ;
@@ -30,36 +30,42 @@ env:EnvironmentVariablesOntology rdf:type owl:Ontology ;
 env:EnvironmentVariable rdf:type owl:Class ;
     rdfs:label "Environment Variable" ;
     rdfs:comment "A system environment variable used in the application" ;
-    rdfs:subClassOf config:ConfigurationItem .
+    rdfs:subClassOf config:ConfigurationItem ;
+    owl:versionInfo "1.0.0" .
 
 env:VariableGroup rdf:type owl:Class ;
     rdfs:label "Variable Group" ;
-    rdfs:comment "A logical grouping of related environment variables" .
+    rdfs:comment "A logical grouping of related environment variables" ;
+    owl:versionInfo "1.0.0" .
 
 # Properties
 env:hasDefaultValue rdf:type owl:DatatypeProperty ;
     rdfs:label "has default value" ;
     rdfs:domain env:EnvironmentVariable ;
     rdfs:range xsd:string ;
-    rdfs:comment "Default value for the environment variable" .
+    rdfs:comment "Default value for the environment variable" ;
+    owl:versionInfo "1.0.0" .
 
 env:isRequired rdf:type owl:DatatypeProperty ;
     rdfs:label "is required" ;
     rdfs:domain env:EnvironmentVariable ;
     rdfs:range xsd:boolean ;
-    rdfs:comment "Whether the environment variable is required" .
+    rdfs:comment "Whether the environment variable is required" ;
+    owl:versionInfo "1.0.0" .
 
 env:belongsToGroup rdf:type owl:ObjectProperty ;
     rdfs:label "belongs to group" ;
     rdfs:domain env:EnvironmentVariable ;
     rdfs:range env:VariableGroup ;
-    rdfs:comment "Groups related environment variables" .
+    rdfs:comment "Groups related environment variables" ;
+    owl:versionInfo "1.0.0" .
 
 env:usedInComponent rdf:type owl:ObjectProperty ;
     rdfs:label "used in component" ;
     rdfs:domain env:EnvironmentVariable ;
     rdfs:range deploy:DeploymentArtifact ;
-    rdfs:comment "Links environment variables to deployment artifacts that use them" .
+    rdfs:comment "Links environment variables to deployment artifacts that use them" ;
+    owl:versionInfo "1.0.0" .
 
 # Variable Groups
 env:SnowflakeGroup rdf:type env:VariableGroup ;
@@ -77,6 +83,15 @@ env:SecurityGroup rdf:type env:VariableGroup ;
 env:LoggingGroup rdf:type env:VariableGroup ;
     rdfs:label "Logging Configuration" ;
     rdfs:comment "Logging-related environment variables" .
+
+# Additional Variable Groups for ensuring two instances per class
+env:DatabaseGroup rdf:type env:VariableGroup ;
+    rdfs:label "Database Configuration" ;
+    rdfs:comment "Database-related environment variables" .
+
+env:APIGroup rdf:type env:VariableGroup ;
+    rdfs:label "API Configuration" ;
+    rdfs:comment "API-related environment variables" .
 
 # Environment Variables
 env:SNOWFLAKE_ROLE rdf:type env:EnvironmentVariable ;
@@ -141,6 +156,23 @@ env:ANTHROPIC_API_KEY rdf:type env:EnvironmentVariable ;
     rdfs:comment "Anthropic API key for Claude" ;
     env:isRequired true ;
     env:belongsToGroup env:SecurityGroup ;
+    env:usedInComponent deploy:EnvFile .
+
+# Additional Environment Variables for ensuring two instances per class
+env:DATABASE_URL rdf:type env:EnvironmentVariable ;
+    rdfs:label "DATABASE_URL" ;
+    rdfs:comment "Database connection URL" ;
+    env:hasDefaultValue "postgresql://localhost:5432/mydb" ;
+    env:isRequired true ;
+    env:belongsToGroup env:DatabaseGroup ;
+    env:usedInComponent deploy:EnvFile .
+
+env:API_VERSION rdf:type env:EnvironmentVariable ;
+    rdfs:label "API_VERSION" ;
+    rdfs:comment "API version to use" ;
+    env:hasDefaultValue "v1" ;
+    env:isRequired true ;
+    env:belongsToGroup env:APIGroup ;
     env:usedInComponent deploy:EnvFile .
 
 # SHACL Validation

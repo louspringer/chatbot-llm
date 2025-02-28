@@ -1,3 +1,9 @@
+# Ontology: chatbot:SecurityOntology
+# Implements: chatbot:SecurityModel
+# Requirement: REQ-SEC-001 Security vulnerability tracking and management
+# Guidance: guidance:security#VulnerabilityManagement
+# Description: Defines security concepts and relationships for vulnerability management
+
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
@@ -7,15 +13,128 @@
 @prefix meta: <./meta#> .
 @prefix problem: <./problem#> .
 @prefix solution: <./solution#> .
+@prefix conversation: <./conversation#> .
+@prefix guidance: <./guidance#> .
+@prefix metameta: <./metameta#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
 
 # Security Ontology Classes
-sec:Vulnerability a rdfs:Class ;
+sec:Vulnerability a owl:Class ;
     rdfs:label "Security Vulnerability" ;
-    rdfs:comment "Represents a security vulnerability in a package" .
+    rdfs:comment "Represents a security vulnerability in a package" ;
+    owl:versionInfo "1.0.0" .
 
-sec:Severity a rdfs:Class ;
+sec:Severity a owl:Class ;
     rdfs:label "Severity Level" ;
-    rdfs:comment "Represents the severity level of a vulnerability" .
+    rdfs:comment "Represents the severity level of a vulnerability" ;
+    owl:versionInfo "1.0.0" .
+
+sec:VulnerabilityReport a owl:Class ;
+    rdfs:label "Vulnerability Report" ;
+    rdfs:comment "A report documenting a security vulnerability" ;
+    owl:versionInfo "1.0.0" .
+
+sec:RemediationAction a owl:Class ;
+    rdfs:label "Remediation Action" ;
+    rdfs:comment "Action taken to address a vulnerability" ;
+    owl:versionInfo "1.0.0" .
+
+# SHACL Shapes
+sec:VulnerabilityShape a sh:NodeShape ;
+    sh:targetClass sec:Vulnerability ;
+    sh:property [
+        sh:path sec:hasSeverity ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:class sec:Severity ;
+    ] ;
+    sh:property [
+        sh:path sec:cvssScore ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:decimal ;
+        sh:minInclusive 0.0 ;
+        sh:maxInclusive 10.0 ;
+    ] ;
+    sh:property [
+        sh:path sec:hasReport ;
+        sh:minCount 1 ;
+        sh:class sec:VulnerabilityReport ;
+    ] ;
+    sh:property [
+        sh:path sec:hasRemediation ;
+        sh:minCount 1 ;
+        sh:class sec:RemediationAction ;
+    ] .
+
+sec:VulnerabilityReportShape a sh:NodeShape ;
+    sh:targetClass sec:VulnerabilityReport ;
+    sh:property [
+        sh:path sec:reportDate ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:dateTime ;
+    ] .
+
+sec:RemediationActionShape a sh:NodeShape ;
+    sh:targetClass sec:RemediationAction ;
+    sh:property [
+        sh:path sec:remediationStatus ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:in ("planned" "in_progress" "completed" "blocked") ;
+    ] .
+
+# Properties
+sec:affectsPackage a owl:ObjectProperty ;
+    rdfs:label "affects package" ;
+    rdfs:comment "Links a vulnerability to the affected package" ;
+    rdfs:domain sec:Vulnerability ;
+    rdfs:range pkg:Package ;
+    owl:versionInfo "1.0.0" .
+
+sec:hasSeverity a owl:ObjectProperty ;
+    rdfs:label "has severity" ;
+    rdfs:comment "Links a vulnerability to its severity level" ;
+    rdfs:domain sec:Vulnerability ;
+    rdfs:range sec:Severity ;
+    owl:versionInfo "1.0.0" .
+
+sec:hasReport a owl:ObjectProperty ;
+    rdfs:label "has report" ;
+    rdfs:comment "Links a vulnerability to its report" ;
+    rdfs:domain sec:Vulnerability ;
+    rdfs:range sec:VulnerabilityReport ;
+    owl:versionInfo "1.0.0" .
+
+sec:hasRemediation a owl:ObjectProperty ;
+    rdfs:label "has remediation" ;
+    rdfs:comment "Links a vulnerability to its remediation action" ;
+    rdfs:domain sec:Vulnerability ;
+    rdfs:range sec:RemediationAction ;
+    owl:versionInfo "1.0.0" .
+
+sec:cvssScore a owl:DatatypeProperty ;
+    rdfs:label "CVSS score" ;
+    rdfs:comment "The CVSS score of the vulnerability" ;
+    rdfs:domain sec:Vulnerability ;
+    rdfs:range xsd:decimal ;
+    owl:versionInfo "1.0.0" .
+
+sec:reportDate a owl:DatatypeProperty ;
+    rdfs:label "report date" ;
+    rdfs:comment "The date when the vulnerability report was created" ;
+    rdfs:domain sec:VulnerabilityReport ;
+    rdfs:range xsd:dateTime ;
+    owl:versionInfo "1.0.0" .
+
+sec:remediationStatus a owl:DatatypeProperty ;
+    rdfs:label "remediation status" ;
+    rdfs:comment "The current status of the remediation action" ;
+    rdfs:domain sec:RemediationAction ;
+    rdfs:range xsd:string ;
+    owl:versionInfo "1.0.0" .
 
 # Severity Instances
 sec:Critical a sec:Severity ;
@@ -34,42 +153,48 @@ sec:Low a sec:Severity ;
     rdfs:label "Low" ;
     rdfs:comment "Low severity level - CVSS score < 4.0" .
 
-# Properties
-sec:affectsPackage a rdf:Property ;
-    rdfs:label "Affects Package" ;
-    rdfs:comment "Links a vulnerability to the affected package" ;
-    rdfs:domain sec:Vulnerability ;
-    rdfs:range xsd:string .
+# Example Vulnerability Instances
+sec:CVE-2024-001 a sec:Vulnerability ;
+    rdfs:label "CVE-2024-001" ;
+    rdfs:comment "Example critical vulnerability in package management" ;
+    sec:hasSeverity sec:Critical ;
+    sec:cvssScore "9.5"^^xsd:decimal ;
+    sec:hasReport sec:Report-2024-001 ;
+    sec:hasRemediation sec:Remediation-2024-001 .
 
-sec:severity a rdf:Property ;
-    rdfs:label "Has Severity" ;
-    rdfs:comment "Indicates the severity level of a vulnerability" ;
-    rdfs:domain sec:Vulnerability ;
-    rdfs:range xsd:string .
+sec:CVE-2024-002 a sec:Vulnerability ;
+    rdfs:label "CVE-2024-002" ;
+    rdfs:comment "Example high severity vulnerability in configuration" ;
+    sec:hasSeverity sec:High ;
+    sec:cvssScore "7.8"^^xsd:decimal ;
+    sec:hasReport sec:Report-2024-002 ;
+    sec:hasRemediation sec:Remediation-2024-002 .
 
-sec:cvssScore a rdf:Property ;
-    rdfs:label "CVSS Score" ;
-    rdfs:comment "The CVSS score of the vulnerability" ;
-    rdfs:domain sec:Vulnerability ;
-    rdfs:range xsd:float .
+# Additional Vulnerability Instances
+sec:CVE-2024-003 a sec:Vulnerability ;
+    rdfs:label "Sample Medium Vulnerability" ;
+    sec:affectsPackage pkg:CryptographyPackage ;
+    sec:severity sec:Medium ;
+    sec:cvssScore "5.5"^^xsd:float ;
+    sec:source "Snyk" ;
+    sec:fixedVersion "41.0.1" ;
+    sec:mitigationStatus "Open" .
 
-sec:source a rdf:Property ;
-    rdfs:label "Source" ;
-    rdfs:comment "The security scanner that identified the vulnerability" ;
-    rdfs:domain sec:Vulnerability ;
-    rdfs:range xsd:string .
+sec:CVE-2024-004 a sec:Vulnerability ;
+    rdfs:label "Sample Low Vulnerability" ;
+    sec:affectsPackage pkg:UrlLib3Package ;
+    sec:severity sec:Low ;
+    sec:cvssScore "3.2"^^xsd:float ;
+    sec:source "Safety DB" ;
+    sec:fixedVersion "2.0.3" ;
+    sec:mitigationStatus "Won't Fix" .
 
-sec:fixedVersion a rdf:Property ;
-    rdfs:label "Fixed Version" ;
-    rdfs:comment "The version where this vulnerability is fixed" ;
-    rdfs:domain sec:Vulnerability ;
-    rdfs:range xsd:string .
-
-sec:mitigationStatus a rdf:Property ;
-    rdfs:label "Mitigation Status" ;
-    rdfs:comment "Current status of vulnerability mitigation" ;
-    rdfs:domain sec:Vulnerability ;
-    rdfs:range xsd:string .
+# Additional Property Definitions
+sec:hasVulnerability a owl:ObjectProperty ;
+    rdfs:label "Has Vulnerability" ;
+    rdfs:comment "Links a package to its known vulnerabilities" ;
+    rdfs:domain pkg:Package ;
+    rdfs:range sec:Vulnerability .
 
 # Integration with Package Management
 pkg:Package rdfs:subClassOf [
@@ -77,3 +202,25 @@ pkg:Package rdfs:subClassOf [
     owl:onProperty sec:hasVulnerability ;
     owl:allValuesFrom sec:Vulnerability
 ] .
+
+# Example Report Instances
+sec:Report-2024-001 a sec:VulnerabilityReport ;
+    rdfs:label "Report for CVE-2024-001" ;
+    rdfs:comment "Detailed report for critical vulnerability" ;
+    sec:reportDate "2024-03-15T10:30:00Z"^^xsd:dateTime .
+
+sec:Report-2024-002 a sec:VulnerabilityReport ;
+    rdfs:label "Report for CVE-2024-002" ;
+    rdfs:comment "Detailed report for high severity vulnerability" ;
+    sec:reportDate "2024-03-16T14:45:00Z"^^xsd:dateTime .
+
+# Example Remediation Instances
+sec:Remediation-2024-001 a sec:RemediationAction ;
+    rdfs:label "Remediation for CVE-2024-001" ;
+    rdfs:comment "Critical vulnerability remediation steps" ;
+    sec:remediationStatus "in_progress" .
+
+sec:Remediation-2024-002 a sec:RemediationAction ;
+    rdfs:label "Remediation for CVE-2024-002" ;
+    rdfs:comment "High severity vulnerability remediation steps" ;
+    sec:remediationStatus "planned" .

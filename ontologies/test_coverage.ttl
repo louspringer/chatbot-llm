@@ -257,8 +257,8 @@ tc:resourceMinimum a owl:DatatypeProperty ;
 tc:SnowflakeKeyRotationTests a tc:TestSuite ;
     rdfs:label "Snowflake Key Rotation Tests" ;
     rdfs:comment "Test suite for Snowflake key rotation functionality" ;
-    tc:hasTestCase tc:SuccessfulKeyRotationTest, tc:WrongRoleTest, 
-                   tc:InvalidKeyFormatTest, tc:KeyGenerationFailureTest, 
+    tc:hasTestCase tc:SuccessfulKeyRotationTest, tc:WrongRoleTest,
+                   tc:InvalidKeyFormatTest, tc:KeyGenerationFailureTest,
                    tc:BackupFunctionalityTest, tc:CommandExecutionTest ;
     tc:hasCoverageMetric tc:KeyRotationCoverage ;
     tc:hasEnvironment tc:SnowflakeTestEnvironment ;
@@ -444,4 +444,4 @@ tc:EnvironmentVariableShape a sh:NodeShape ;
 # - Add test coverage trend analysis
 # - Add test performance benchmarking
 # - Add test data versioning
-# - Add test environment provisioning automation 
+# - Add test environment provisioning automation

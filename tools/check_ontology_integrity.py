@@ -11,7 +11,6 @@ import rdflib
 from rdflib import OWL, RDF, RDFS
 from rdflib.term import Node
 
-
 # Configure logging
 logging.basicConfig(
     level=logging.DEBUG,

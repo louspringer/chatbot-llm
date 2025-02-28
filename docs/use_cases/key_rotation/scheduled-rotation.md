@@ -111,4 +111,4 @@ secrets:ScheduledRotationTest a secrets:TestCase ;
 - [Manual Key Rotation](manual-rotation.md)
 - [Emergency Key Recovery](emergency-recovery.md)
 - [Technical Implementation](../../key_rotation.md#automated-key-rotation)
-- [Documentation Map](documentation_map.md) 
+- [Documentation Map](documentation_map.md)

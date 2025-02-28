@@ -148,4 +148,4 @@ monitor:SecurityMetrics a monitor:KPI ;
 
 - [Technical Monitoring](../../key_rotation.md#monitoring-and-validation)
 - [Error Handling](error-handling.md)
-- [Security Considerations](../../key_rotation.md#security-considerations) 
+- [Security Considerations](../../key_rotation.md#security-considerations)

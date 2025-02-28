@@ -84,4 +84,4 @@ The vulnerabilities affect all Bot Framework applications using botbuilder-ai, p
 
 ## Contact Information
 Lou Springer
-lou@louspringer.com 
+lou@louspringer.com

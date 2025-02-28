@@ -1,3 +1,9 @@
+# Ontology: chatbot:MonitoringOntology
+# Implements: chatbot:MonitoringModel
+# Requirement: REQ-MON-001 System monitoring and alerting
+# Guidance: guidance:monitoring#SystemMonitoring
+# Description: Defines monitoring requirements, KPIs, alerts, and implementation details
+
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
@@ -11,22 +17,32 @@
 @prefix monitor: <#> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 
+# Ontology Definition
+monitor:MonitoringOntology rdf:type owl:Ontology ;
+    rdfs:label "Monitoring Ontology" ;
+    rdfs:comment "Ontology for system monitoring and alerting" ;
+    owl:versionInfo "1.0.0" .
+
 # Classes
 monitor:MonitoringRequirement a owl:Class ;
     rdfs:label "Monitoring Requirement" ;
-    rdfs:comment "Base class for monitoring requirements" .
+    rdfs:comment "Defines monitoring requirements for system components and processes" ;
+    owl:versionInfo "1.0.0" .
 
 monitor:KPI a owl:Class ;
     rdfs:label "Key Performance Indicator" ;
-    rdfs:comment "Performance metrics and indicators" .
+    rdfs:comment "Defines performance metrics and indicators used to measure system health and performance" ;
+    owl:versionInfo "1.0.0" .
 
 monitor:Alert a owl:Class ;
     rdfs:label "Alert" ;
-    rdfs:comment "Monitoring alerts and notifications" .
+    rdfs:comment "Defines monitoring alerts and notifications for system events and conditions" ;
+    owl:versionInfo "1.0.0" .
 
 monitor:Implementation a owl:Class ;
     rdfs:label "Implementation" ;
-    rdfs:comment "Monitoring implementation details" .
+    rdfs:comment "Specifies monitoring implementation details including tools, configurations, and integrations" ;
+    owl:versionInfo "1.0.0" .
 
 # Properties
 monitor:hasKPI a owl:ObjectProperty ;
@@ -107,4 +123,31 @@ monitor:WarningAlerts a monitor:Alert ;
     rdfs:label "Warning Alerts" .
 
 monitor:CloudWatchMetrics a monitor:Implementation ;
-    rdfs:label "CloudWatch Metrics Implementation" . 
+    rdfs:label "CloudWatch Metrics Implementation" .
+
+# Additional Instances
+monitor:InfoAlerts a monitor:Alert ;
+    rdfs:label "Info Alerts" .
+
+monitor:PrometheusMetrics a monitor:Implementation ;
+    rdfs:label "Prometheus Metrics Implementation" .
+
+monitor:LatencyMetrics a monitor:KPI ;
+    rdfs:label "Latency Metrics" ;
+    monitor:hasMetric "RequestLatency", "ProcessingTime" .
+
+monitor:ResourceUtilization a monitor:KPI ;
+    rdfs:label "Resource Utilization" ;
+    monitor:hasMetric "CPUUsage", "MemoryUsage", "DiskUsage" .
+
+monitor:DatabaseMonitoring a monitor:MonitoringRequirement ;
+    rdfs:label "Database Monitoring" ;
+    monitor:hasKPI monitor:LatencyMetrics ;
+    monitor:hasAlert monitor:CriticalAlerts ;
+    monitor:hasImplementation monitor:CloudWatchMetrics .
+
+monitor:APIMonitoring a monitor:MonitoringRequirement ;
+    rdfs:label "API Monitoring" ;
+    monitor:hasKPI monitor:ResourceUtilization ;
+    monitor:hasAlert monitor:WarningAlerts ;
+    monitor:hasImplementation monitor:PrometheusMetrics .

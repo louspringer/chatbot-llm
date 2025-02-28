@@ -9,7 +9,7 @@ dependencies:
     # Claude's Package Manager (ClPM - with lowercase 'l')
     # Cl (Claude) + PM (Package Manager)
     # Minimal bootstrap dependencies to get ClPM running
-    
+
     # Version Management
     - packaging>=23.2.0  # Version parsing and comparison
 
@@ -30,4 +30,4 @@ dependencies:
     - rich>=13.7.0      # Terminal output formatting
 
 variables:
-  PYTHONPATH: ${CONDA_PREFIX}/lib/python3.11/site-packages 
+  PYTHONPATH: ${CONDA_PREFIX}/lib/python3.11/site-packages

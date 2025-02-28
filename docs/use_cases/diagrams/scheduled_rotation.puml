@@ -48,4 +48,4 @@ RecoveryProcess --> FailureNotification
 SuccessNotification --> [*]
 FailureNotification --> [*]
 
-@enduml 
+@enduml

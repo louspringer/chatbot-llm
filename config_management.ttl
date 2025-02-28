@@ -1,3 +1,9 @@
+# Ontology: chatbot:ConfigManagementOntology
+# Implements: chatbot:ConfigurationManagement
+# Requirement: REQ-CFG-001 Configuration management and validation
+# Guidance: guidance:config#ConfigurationManagement
+# Description: Manages configuration artifacts with impact analysis and drift detection
+
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
@@ -23,71 +29,108 @@ config:ConfigManagementOntology rdf:type owl:Ontology ;
     owl:imports <./meta>, <./problem>, <./solution>, <./guidance>, <./deployment_config> .
 
 # Core Classes
-config:ConfigurationArtifact rdf:type owl:Class ;
+config:ConfigurationArtifact a owl:Class ;
     rdfs:label "Configuration Artifact" ;
     rdfs:comment "A configuration artifact in the system (e.g., .env files, templates)" ;
-    rdfs:subClassOf meta:AbstractionDimension .
+    rdfs:subClassOf meta:AbstractionDimension ;
+    owl:versionInfo "1.0.0" .
 
-config:ConfigurationItem rdf:type owl:Class ;
+config:ConfigurationItem a owl:Class ;
     rdfs:label "Configuration Item" ;
-    rdfs:comment "A configuration item that requires a value" .
+    rdfs:comment "A configuration item that requires a value" ;
+    owl:versionInfo "1.0.0" .
 
-config:EnvironmentVariable rdf:type owl:Class ;
+config:EnvironmentVariable a owl:Class ;
     rdfs:subClassOf config:ConfigurationItem ;
     rdfs:label "Environment Variable" ;
-    rdfs:comment "An environment variable used for configuration" .
+    rdfs:comment "An environment variable used for configuration" ;
+    owl:versionInfo "1.0.0" .
 
-config:ConfigurationGroup rdf:type owl:Class ;
+config:ConfigurationGroup a owl:Class ;
     rdfs:label "Configuration Group" ;
-    rdfs:comment "A logical grouping of configuration items" .
+    rdfs:comment "A logical grouping of configuration items" ;
+    owl:versionInfo "1.0.0" .
 
 # Properties
-config:hasDefaultValue rdf:type owl:DatatypeProperty ;
+config:hasDefaultValue a owl:DatatypeProperty ;
+    rdfs:label "Has Default Value" ;
+    rdfs:comment "The default value for a configuration item" ;
     rdfs:domain config:ConfigurationItem ;
-    rdfs:range xsd:string ;
-    rdfs:comment "The default value for a configuration item" .
+    rdfs:range xsd:string .
 
-config:isRequired rdf:type owl:DatatypeProperty ;
+config:isRequired a owl:DatatypeProperty ;
+    rdfs:label "Is Required" ;
+    rdfs:comment "Whether the configuration item is required" ;
     rdfs:domain config:ConfigurationItem ;
-    rdfs:range xsd:boolean ;
-    rdfs:comment "Whether the configuration item is required" .
+    rdfs:range xsd:boolean .
 
-config:belongsToGroup rdf:type owl:ObjectProperty ;
+config:belongsToGroup a owl:ObjectProperty ;
+    rdfs:label "Belongs to Group" ;
+    rdfs:comment "Groups related configuration items" ;
     rdfs:domain config:ConfigurationItem ;
-    rdfs:range config:ConfigurationGroup ;
-    rdfs:comment "Groups related configuration items" .
+    rdfs:range config:ConfigurationGroup .
+
+config:hasDescription a owl:DatatypeProperty ;
+    rdfs:label "Has Description" ;
+    rdfs:comment "Detailed description of the configuration item" ;
+    rdfs:domain config:ConfigurationItem ;
+    rdfs:range xsd:string .
 
 # Configuration Groups
-config:DatabaseConfig rdf:type config:ConfigurationGroup ;
+config:DatabaseConfig a config:ConfigurationGroup ;
     rdfs:label "Database Configuration" ;
     rdfs:comment "Database-related configuration items" .
 
-config:SecurityConfig rdf:type config:ConfigurationGroup ;
+config:SecurityConfig a config:ConfigurationGroup ;
     rdfs:label "Security Configuration" ;
     rdfs:comment "Security-related configuration items" .
 
+config:APIConfig a config:ConfigurationGroup ;
+    rdfs:label "API Configuration" ;
+    rdfs:comment "API-related configuration items" .
+
+config:LoggingConfig a config:ConfigurationGroup ;
+    rdfs:label "Logging Configuration" ;
+    rdfs:comment "Logging-related configuration items" .
+
 # Environment Variables
-config:SNOWFLAKE_ROLE rdf:type config:EnvironmentVariable ;
+config:SNOWFLAKE_ROLE a config:EnvironmentVariable ;
     rdfs:label "Snowflake Role" ;
     config:isRequired true ;
     config:belongsToGroup config:SecurityConfig ;
+    config:hasDescription "Role used for Snowflake authentication" ;
     owl:sameAs deploy:RoleVar .
 
-config:SNOWFLAKE_DATABASE rdf:type config:EnvironmentVariable ;
+config:SNOWFLAKE_DATABASE a config:EnvironmentVariable ;
     rdfs:label "Snowflake Database" ;
     config:isRequired true ;
     config:belongsToGroup config:DatabaseConfig ;
+    config:hasDescription "Target Snowflake database name" ;
     owl:sameAs deploy:DatabaseVar .
 
-config:SNOWFLAKE_SCHEMA rdf:type config:EnvironmentVariable ;
+config:SNOWFLAKE_SCHEMA a config:EnvironmentVariable ;
     rdfs:label "Snowflake Schema" ;
     config:isRequired true ;
     config:belongsToGroup config:DatabaseConfig ;
+    config:hasDescription "Target Snowflake schema name" ;
     owl:sameAs deploy:SchemaVar .
 
+config:LOG_LEVEL a config:EnvironmentVariable ;
+    rdfs:label "Log Level" ;
+    config:isRequired true ;
+    config:belongsToGroup config:LoggingConfig ;
+    config:hasDefaultValue "INFO" ;
+    config:hasDescription "Application logging level" .
+
+config:API_KEY a config:EnvironmentVariable ;
+    rdfs:label "API Key" ;
+    config:isRequired true ;
+    config:belongsToGroup config:SecurityConfig ;
+    config:hasDescription "Authentication key for API access" .
+
 # SHACL Shapes
-config:EnvironmentVariableShape rdf:type sh:NodeShape ;
-    sh:targetClass config:EnvironmentVariable ;
+config:ConfigurationItemShape a sh:NodeShape ;
+    sh:targetClass config:ConfigurationItem ;
     sh:property [
         sh:path config:isRequired ;
         sh:minCount 1 ;
@@ -98,10 +141,31 @@ config:EnvironmentVariableShape rdf:type sh:NodeShape ;
         sh:path config:belongsToGroup ;
         sh:minCount 1 ;
         sh:class config:ConfigurationGroup ;
+    ] ;
+    sh:property [
+        sh:path config:hasDescription ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+    ] .
+
+config:ConfigurationGroupShape a sh:NodeShape ;
+    sh:targetClass config:ConfigurationGroup ;
+    sh:property [
+        sh:path rdfs:label ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+    ] ;
+    sh:property [
+        sh:path rdfs:comment ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
     ] .
 
 # Link to Cortex Analyst Ontology
-config:cortexAnalystConfig rdf:type config:ConfigurationGroup ;
+config:cortexAnalystConfig a config:ConfigurationGroup ;
     rdfs:label "Cortex Analyst Configuration" ;
     rdfs:comment "Configuration for Cortex Analyst deployment" ;
     owl:imports ca: .

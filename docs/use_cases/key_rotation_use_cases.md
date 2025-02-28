@@ -217,4 +217,4 @@ For detailed technical requirements, environment setup, and script usage instruc
 - [Key Rotation Technical Guide](../key_rotation.md)
 - [Test Coverage Documentation](../../test_coverage.ttl)
 - [Security Requirements](../security_requirements.md)
-- [Monitoring Guide](../monitoring_guide.md) 
+- [Monitoring Guide](../monitoring_guide.md)

@@ -82,4 +82,4 @@ secrets:ManualKeyRotation a secrets:KeyRotationProcess ;
 
 - [Scheduled Key Rotation](scheduled-rotation.md)
 - [Emergency Key Recovery](emergency-recovery.md)
-- [Technical Implementation](../../key_rotation.md#manual-key-rotation) 
+- [Technical Implementation](../../key_rotation.md#manual-key-rotation)

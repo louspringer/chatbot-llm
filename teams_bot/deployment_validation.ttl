@@ -252,4 +252,4 @@ depval:LogRetentionRule a depval:ValidationRule ;
     depval:hasValidationLevel "error" ;
     depval:hasValidationMessage "Log retention must be at least 7 days" ;
     depval:hasMinValue "7.0"^^xsd:decimal ;
-    depval:appliesTo deploy:InfrastructureComponent . 
+    depval:appliesTo deploy:InfrastructureComponent .

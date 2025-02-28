@@ -8,37 +8,91 @@
 @prefix solution: <./solution#> .
 @prefix conversation: <./conversation#> .
 @prefix guidance: <./guidance#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix roadmap: <#> .
+
+# Ontology Definition
+roadmap:RoadmapOntology rdf:type owl:Ontology ;
+    rdfs:label "Roadmap Ontology" ;
+    rdfs:comment "Ontology for managing product roadmap and feature planning" ;
+    owl:versionInfo "1.0.0" .
+
+# SHACL Shapes
+roadmap:RoadmapShape a sh:NodeShape ;
+    sh:targetClass roadmap:Roadmap ;
+    sh:property [
+        sh:path roadmap:plannedVersion ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+    ] ;
+    sh:property [
+        sh:path roadmap:hasFeature ;
+        sh:minCount 1 ;
+        sh:class roadmap:Feature ;
+    ] .
+
+roadmap:FeatureShape a sh:NodeShape ;
+    sh:targetClass roadmap:Feature ;
+    sh:property [
+        sh:path roadmap:priority ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:in ("HIGH" "MEDIUM" "LOW") ;
+    ] ;
+    sh:property [
+        sh:path roadmap:plannedQuarter ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:pattern "^[0-9]{4}-Q[1-4]$" ;
+    ] .
 
 # Classes
 roadmap:Roadmap a owl:Class ;
     rdfs:label "Roadmap" ;
-    rdfs:comment "Product roadmap and future plans" .
+    rdfs:comment "Product roadmap and future plans" ;
+    owl:versionInfo "1.0.0" .
 
 roadmap:Feature a owl:Class ;
     rdfs:label "Feature" ;
-    rdfs:comment "Planned feature or enhancement" .
+    rdfs:comment "Planned feature or enhancement" ;
+    owl:versionInfo "1.0.0" .
 
 roadmap:Priority a owl:Class ;
     rdfs:label "Priority" ;
-    rdfs:comment "Priority level for features" .
+    rdfs:comment "Priority level for features" ;
+    owl:versionInfo "1.0.0" .
 
 # Properties
 roadmap:plannedVersion a owl:DatatypeProperty ;
+    rdfs:label "planned version" ;
+    rdfs:comment "The planned version for a roadmap item" ;
     rdfs:domain roadmap:Roadmap ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    owl:versionInfo "1.0.0" .
 
 roadmap:hasFeature a owl:ObjectProperty ;
+    rdfs:label "has feature" ;
+    rdfs:comment "Links a roadmap to its planned features" ;
     rdfs:domain roadmap:Roadmap ;
-    rdfs:range roadmap:Feature .
+    rdfs:range roadmap:Feature ;
+    owl:versionInfo "1.0.0" .
 
 roadmap:priority a owl:DatatypeProperty ;
+    rdfs:label "priority" ;
+    rdfs:comment "The priority level of a feature" ;
     rdfs:domain roadmap:Feature ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    owl:versionInfo "1.0.0" .
 
 roadmap:plannedQuarter a owl:DatatypeProperty ;
+    rdfs:label "planned quarter" ;
+    rdfs:comment "The planned quarter for implementing a feature" ;
     rdfs:domain roadmap:Feature ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    owl:versionInfo "1.0.0" .
 
 # Instances
 roadmap:AutomatedRecovery a roadmap:Feature ;
@@ -63,4 +117,4 @@ roadmap:MediumPriority a roadmap:Priority ;
     rdfs:label "Medium Priority" .
 
 roadmap:LowPriority a roadmap:Priority ;
-    rdfs:label "Low Priority" . 
+    rdfs:label "Low Priority" .

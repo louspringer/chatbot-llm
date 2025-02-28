@@ -81,4 +81,4 @@ version:v1_0_0 a version:Release ;
 
 - [Documentation Guidelines](../../docs/guidelines.md)
 - [Change Management Process](../../docs/change-management.md)
-- [Release Process](../../docs/release-process.md) 
+- [Release Process](../../docs/release-process.md)

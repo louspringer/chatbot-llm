@@ -1,3 +1,9 @@
+# Ontology: chatbot:DeploymentConfigOntology
+# Implements: chatbot:DeploymentModel
+# Requirement: REQ-DEP-001 Deployment configuration management
+# Guidance: guidance:deployment#ConfigurationManagement
+# Description: Defines deployment configuration concepts and relationships
+
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
@@ -21,50 +27,197 @@ deploy:DeploymentConfigOntology rdf:type owl:Ontology ;
     owl:versionInfo "1.0.0" ;
     owl:imports <./config_management>, <./secrets_management>, <./cortex_analyst> .
 
+# SHACL Shapes
+deploy:DeploymentEnvironmentShape a sh:NodeShape ;
+    sh:targetClass deploy:DeploymentEnvironment ;
+    sh:property [
+        sh:path deploy:hasStage ;
+        sh:minCount 1 ;
+        sh:class deploy:DeploymentStage ;
+    ] .
+
+deploy:DeploymentStageShape a sh:NodeShape ;
+    sh:targetClass deploy:DeploymentStage ;
+    sh:property [
+        sh:path deploy:stageOrder ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:minInclusive 1 ;
+    ] ;
+    sh:property [
+        sh:path deploy:requiresArtifact ;
+        sh:minCount 1 ;
+        sh:class deploy:DeploymentArtifact ;
+    ] .
+
+deploy:DeploymentArtifactShape a sh:NodeShape ;
+    sh:targetClass deploy:DeploymentArtifact ;
+    sh:property [
+        sh:path deploy:artifactPath ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+    ] ;
+    sh:property [
+        sh:path deploy:artifactType ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:in ("shell" "yaml" "json" "python" "sql") ;
+    ] .
+
+deploy:ScriptArtifactShape a sh:NodeShape ;
+    sh:targetClass deploy:ScriptArtifact ;
+    sh:property [
+        sh:path deploy:artifactType ;
+        sh:hasValue "shell" ;
+    ] .
+
+deploy:ConfigurationArtifactShape a sh:NodeShape ;
+    sh:targetClass deploy:ConfigurationArtifact ;
+    sh:property [
+        sh:path deploy:artifactType ;
+        sh:in ("yaml" "json") ;
+    ] .
+
 # Core Classes
 deploy:DeploymentArtifact rdf:type owl:Class ;
     rdfs:label "Deployment Artifact" ;
-    rdfs:comment "A file or resource used in the deployment process" .
+    rdfs:comment "A file or resource used in the deployment process" ;
+    owl:versionInfo "1.0.0" .
 
 deploy:ScriptArtifact rdf:type owl:Class ;
     rdfs:subClassOf deploy:DeploymentArtifact ;
     rdfs:label "Script Artifact" ;
-    rdfs:comment "A script file used in deployment" .
+    rdfs:comment "A script file used in deployment" ;
+    owl:versionInfo "1.0.0" .
 
 deploy:ConfigurationArtifact rdf:type owl:Class ;
     rdfs:subClassOf deploy:DeploymentArtifact ;
     rdfs:label "Configuration Artifact" ;
-    rdfs:comment "A configuration file used in deployment" .
+    rdfs:comment "A configuration file used in deployment" ;
+    owl:versionInfo "1.0.0" .
 
 deploy:EnvironmentVariable rdf:type owl:Class ;
     rdfs:subClassOf config:ConfigurationItem ;
     rdfs:label "Environment Variable" ;
-    rdfs:comment "An environment variable used in deployment" .
+    rdfs:comment "An environment variable used in deployment" ;
+    owl:versionInfo "1.0.0" .
+
+deploy:DeploymentEnvironment rdf:type owl:Class ;
+    rdfs:label "Deployment Environment" ;
+    rdfs:comment "An environment where deployments occur (e.g., development, production)" ;
+    owl:versionInfo "1.0.0" .
+
+deploy:DeploymentStage rdf:type owl:Class ;
+    rdfs:label "Deployment Stage" ;
+    rdfs:comment "A stage in the deployment process (e.g., build, test)" ;
+    owl:versionInfo "1.0.0" .
 
 # Properties
-deploy:hasScript rdf:type owl:ObjectProperty ;
-    rdfs:label "has script" ;
-    rdfs:domain deploy:DeploymentArtifact ;
-    rdfs:range deploy:ScriptArtifact ;
-    rdfs:comment "Links a deployment artifact to its associated script" .
+deploy:hasArtifact rdf:type owl:ObjectProperty ;
+    rdfs:label "has artifact" ;
+    rdfs:comment "Links an environment to its deployment artifacts" ;
+    rdfs:domain deploy:DeploymentEnvironment ;
+    rdfs:range deploy:DeploymentArtifact ;
+    owl:versionInfo "1.0.0" .
 
-deploy:hasConfig rdf:type owl:ObjectProperty ;
-    rdfs:label "has configuration" ;
-    rdfs:domain deploy:DeploymentArtifact ;
-    rdfs:range deploy:ConfigurationArtifact ;
-    rdfs:comment "Links a deployment artifact to its configuration" .
+deploy:hasStage rdf:type owl:ObjectProperty ;
+    rdfs:label "has stage" ;
+    rdfs:comment "Links an environment to its deployment stages" ;
+    rdfs:domain deploy:DeploymentEnvironment ;
+    rdfs:range deploy:DeploymentStage ;
+    owl:versionInfo "1.0.0" .
 
-deploy:requiresVariable rdf:type owl:ObjectProperty ;
-    rdfs:label "requires variable" ;
-    rdfs:domain deploy:DeploymentArtifact ;
-    rdfs:range deploy:EnvironmentVariable ;
-    rdfs:comment "Specifies required environment variables" .
+deploy:requiresArtifact rdf:type owl:ObjectProperty ;
+    rdfs:label "requires artifact" ;
+    rdfs:comment "Links a deployment stage to required artifacts" ;
+    rdfs:domain deploy:DeploymentStage ;
+    rdfs:range deploy:DeploymentArtifact ;
+    owl:versionInfo "1.0.0" .
 
-deploy:hasDefaultValue rdf:type owl:DatatypeProperty ;
-    rdfs:label "has default value" ;
-    rdfs:domain deploy:EnvironmentVariable ;
+deploy:artifactPath rdf:type owl:DatatypeProperty ;
+    rdfs:label "artifact path" ;
+    rdfs:comment "The file system path of a deployment artifact" ;
+    rdfs:domain deploy:DeploymentArtifact ;
     rdfs:range xsd:string ;
-    rdfs:comment "Default value for an environment variable" .
+    owl:versionInfo "1.0.0" .
+
+deploy:artifactType rdf:type owl:DatatypeProperty ;
+    rdfs:label "artifact type" ;
+    rdfs:comment "The type of the deployment artifact (e.g., shell, yaml)" ;
+    rdfs:domain deploy:DeploymentArtifact ;
+    rdfs:range xsd:string ;
+    owl:versionInfo "1.0.0" .
+
+deploy:stageOrder rdf:type owl:DatatypeProperty ;
+    rdfs:label "stage order" ;
+    rdfs:comment "The execution order of a deployment stage" ;
+    rdfs:domain deploy:DeploymentStage ;
+    rdfs:range xsd:integer ;
+    owl:versionInfo "1.0.0" .
+
+# Environment Instances
+deploy:DevelopmentEnv rdf:type deploy:DeploymentEnvironment ;
+    rdfs:label "Development Environment" ;
+    rdfs:comment "Development deployment environment" ;
+    deploy:hasStage deploy:DevBuildStage, deploy:DevTestStage .
+
+deploy:ProductionEnv rdf:type deploy:DeploymentEnvironment ;
+    rdfs:label "Production Environment" ;
+    rdfs:comment "Production deployment environment" ;
+    deploy:hasStage deploy:ProdBuildStage, deploy:ProdTestStage .
+
+# Stage Instances
+deploy:DevBuildStage rdf:type deploy:DeploymentStage ;
+    rdfs:label "Development Build Stage" ;
+    rdfs:comment "Build stage in development environment" ;
+    deploy:stageOrder "1"^^xsd:integer ;
+    deploy:requiresArtifact deploy:BuildScript, deploy:DevConfig .
+
+deploy:DevTestStage rdf:type deploy:DeploymentStage ;
+    rdfs:label "Development Test Stage" ;
+    rdfs:comment "Test stage in development environment" ;
+    deploy:stageOrder "2"^^xsd:integer ;
+    deploy:requiresArtifact deploy:TestScript, deploy:DevConfig .
+
+deploy:ProdBuildStage rdf:type deploy:DeploymentStage ;
+    rdfs:label "Production Build Stage" ;
+    rdfs:comment "Build stage in production environment" ;
+    deploy:stageOrder "1"^^xsd:integer ;
+    deploy:requiresArtifact deploy:BuildScript, deploy:ProdConfig .
+
+deploy:ProdTestStage rdf:type deploy:DeploymentStage ;
+    rdfs:label "Production Test Stage" ;
+    rdfs:comment "Test stage in production environment" ;
+    deploy:stageOrder "2"^^xsd:integer ;
+    deploy:requiresArtifact deploy:TestScript, deploy:ProdConfig .
+
+# Artifact Instances
+deploy:BuildScript rdf:type deploy:ScriptArtifact ;
+    rdfs:label "Build Script" ;
+    rdfs:comment "Script for building the application" ;
+    deploy:artifactPath "/scripts/build.sh" ;
+    deploy:artifactType "shell" .
+
+deploy:TestScript rdf:type deploy:ScriptArtifact ;
+    rdfs:label "Test Script" ;
+    rdfs:comment "Script for running tests" ;
+    deploy:artifactPath "/scripts/test.sh" ;
+    deploy:artifactType "shell" .
+
+deploy:DevConfig rdf:type deploy:ConfigurationArtifact ;
+    rdfs:label "Development Config" ;
+    rdfs:comment "Configuration for development environment" ;
+    deploy:artifactPath "/config/dev.yaml" ;
+    deploy:artifactType "yaml" .
+
+deploy:ProdConfig rdf:type deploy:ConfigurationArtifact ;
+    rdfs:label "Production Config" ;
+    rdfs:comment "Configuration for production environment" ;
+    deploy:artifactPath "/config/prod.yaml" ;
+    deploy:artifactType "yaml" .
 
 # Instances - Scripts
 deploy:DeployScript rdf:type deploy:ScriptArtifact ;
@@ -155,11 +308,13 @@ deploy:EnvironmentVariableShape a sh:NodeShape ;
 deploy:PythonPackage rdf:type owl:Class ;
     rdfs:subClassOf deploy:DeploymentArtifact ;
     rdfs:label "Python Package" ;
-    rdfs:comment "A Python package dependency" .
+    rdfs:comment "A Python package dependency" ;
+    owl:versionInfo "1.0.0" .
 
 deploy:PackageSource rdf:type owl:Class ;
     rdfs:label "Package Source" ;
-    rdfs:comment "Source for installing Python packages (conda or pip)" .
+    rdfs:comment "Source for installing Python packages (conda or pip)" ;
+    owl:versionInfo "1.0.0" .
 
 deploy:Conda rdf:type deploy:PackageSource ;
     rdfs:label "Conda" ;
@@ -171,7 +326,8 @@ deploy:Pip rdf:type deploy:PackageSource ;
 
 deploy:PackageType rdf:type owl:Class ;
     rdfs:label "Package Type" ;
-    rdfs:comment "Type of package (core, development, etc.)" .
+    rdfs:comment "Type of package (core, development, etc.)" ;
+    owl:versionInfo "1.0.0" .
 
 deploy:CorePackage rdf:type deploy:PackageType ;
     rdfs:label "Core Package" ;
@@ -249,6 +405,52 @@ deploy:BotBuilderCore rdf:type deploy:PythonPackage ;
     deploy:packageVersion ">=4.14.0" ;
     deploy:preferredSource deploy:Pip ;
     deploy:packageType deploy:CorePackage .
+
+# Additional Package Instances
+deploy:Snowpark rdf:type deploy:PythonPackage ;
+    rdfs:label "snowpark-python" ;
+    deploy:packageName "snowpark-python" ;
+    deploy:packageVersion ">=1.0.0" ;
+    deploy:preferredSource deploy:Conda ;
+    deploy:packageType deploy:CorePackage .
+
+deploy:PyTest rdf:type deploy:PythonPackage ;
+    rdfs:label "pytest" ;
+    deploy:packageName "pytest" ;
+    deploy:packageVersion ">=7.0.0" ;
+    deploy:preferredSource deploy:Pip ;
+    deploy:packageType deploy:DevPackage .
+
+# Additional Configuration Artifacts
+deploy:LoggingConfig rdf:type deploy:ConfigurationArtifact ;
+    rdfs:label "logging.conf" ;
+    rdfs:comment "Logging configuration file" .
+
+deploy:RotationConfig rdf:type deploy:ConfigurationArtifact ;
+    rdfs:label "rotation_config.yaml" ;
+    rdfs:comment "Key rotation configuration file" .
+
+# Additional Script Artifacts
+deploy:KeyRotationScript rdf:type deploy:ScriptArtifact ;
+    rdfs:label "rotate_secrets.sh" ;
+    rdfs:comment "Secret rotation script" ;
+    deploy:hasConfig deploy:RotationConfig .
+
+deploy:ValidationScript rdf:type deploy:ScriptArtifact ;
+    rdfs:label "validate_deployment.py" ;
+    rdfs:comment "Deployment validation script" ;
+    deploy:hasConfig deploy:LoggingConfig .
+
+# Additional Environment Variables
+deploy:LogLevelVar rdf:type deploy:EnvironmentVariable ;
+    rdfs:label "LOG_LEVEL" ;
+    rdfs:comment "Application logging level" ;
+    deploy:hasDefaultValue "INFO" .
+
+deploy:RotationIntervalVar rdf:type deploy:EnvironmentVariable ;
+    rdfs:label "KEY_ROTATION_INTERVAL" ;
+    rdfs:comment "Key rotation interval in days" ;
+    deploy:hasDefaultValue "90" .
 
 # TODO Section
 ###
