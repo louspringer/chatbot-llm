@@ -1,17 +1,26 @@
-"""Tests for security scanner functionality."""
+"""
+Tests for security scanner functionality.
 
+# Ontology: test:SecurityScanners
+# Implements: test:SecurityValidation
+# Requirement: REQ-TEST-003 Security Scanner Testing
+# Guidance: guidance:TestingPattern#SecurityScanning
+# Description: Tests for security scanner functionality to validate package security
+"""
+
+import asyncio
 import json
 import logging
 import os
 import signal
 import subprocess
 import tempfile
+import time
 from pathlib import Path
-from typing import List, Optional
 from unittest.mock import MagicMock, patch
 
 import pytest
-from rdflib import RDF, RDFS, Graph, Literal, Namespace, URIRef
+from rdflib import OWL, RDF, RDFS, Graph, Literal, Namespace, URIRef
 
 from clpm import (
     PipAuditScanner,
@@ -80,7 +89,7 @@ class MockScanner(SecurityScanner):
         self,
         name: str,
         available: bool = True,
-        issues: Optional[List[SecurityIssue]] = None,
+        issues: list[SecurityIssue] | None = None,
     ):
         self._name = name
         self._available = available
@@ -93,7 +102,7 @@ class MockScanner(SecurityScanner):
     def is_available(self) -> bool:
         return self._available
 
-    def scan_package(self, package: str, version: str) -> List[SecurityIssue]:
+    def scan_package(self, package: str, version: str) -> list[SecurityIssue]:
         return self._issues
 
 
@@ -239,28 +248,79 @@ async def test_safety_scanner():
 
 
 @pytest.mark.asyncio
-@pytest.mark.skip(reason="Timeout issues - see issue #15")
+@pytest.mark.timeout(SCAN_TIMEOUT)
 async def test_safety_scanner_with_debug(caplog_debug, mock_subprocess):
     """Test SafetyScanner with detailed logging."""
+    logger.debug("Starting SafetyScanner detailed test")
     scanner = SafetyScanner()
+
+    # Log initial state
+    logger.debug("Initial scanner state: %s", vars(scanner))
+
+    # Configure mock with faster response
+    logger.debug("Configuring mock subprocess")
     mock_subprocess.return_value.returncode = 1
     mock_subprocess.return_value.stdout = json.dumps(
         {"vulnerabilities": MOCK_SAFETY_OUTPUT["vulnerabilities"]},
     )
+    # Add timeout to mock to prevent hanging
+    mock_subprocess.return_value.configure_mock(timeout=AVAILABILITY_CHECK_TIMEOUT)
+    logger.debug("Mock data configured: %s", MOCK_SAFETY_OUTPUT)
 
-    results = scanner.scan_package("vuln-pkg", "1.0.0")
+    try:
+        # Test scanner availability with timeout
+        logger.debug("Checking scanner availability")
+        is_available = await asyncio.wait_for(
+            asyncio.to_thread(scanner.is_available),
+            timeout=AVAILABILITY_CHECK_TIMEOUT,
+        )
+        logger.debug("Scanner availability: %s", is_available)
+
+        # Run scan with timing information
+        logger.debug("Starting package scan")
+        start_time = time.time()
+        results = await asyncio.wait_for(
+            asyncio.to_thread(scanner.scan_package, "vuln-pkg", "1.0.0"),
+            timeout=SCAN_TIMEOUT,
+        )
+        end_time = time.time()
+        logger.debug("Scan completed in %.2f seconds", end_time - start_time)
+
+        # Log detailed results
+        logger.debug("Scan results count: %d", len(results))
+        for idx, result in enumerate(results):
+            logger.debug(
+                "Result %d: CVE=%s, severity=%s, affected_versions=%s",
+                idx + 1,
+                result.cve_id,
+                result.severity,
+                result.affected_versions,
+            )
+
+        # Verify results
+        assert len(results) == 1
+        assert results[0].cve_id == "TEST-001"
+        logger.debug("All assertions passed")
+
+    except asyncio.TimeoutError as e:
+        logger.error("Operation timed out: %s", str(e))
+        logger.error("Scanner state: %s", vars(scanner))
+        logger.error("Mock subprocess calls: %s", mock_subprocess.mock_calls)
+        raise
+    except Exception as e:
+        logger.error("Test failed: %s", str(e))
+        logger.error("Error type: %s", type(e).__name__)
+        logger.error("Scanner state: %s", vars(scanner))
+        logger.error("Mock subprocess calls: %s", mock_subprocess.mock_calls)
+        raise
 
     # Log the entire process
     logger.debug("Test complete. Captured logs:")
     for record in caplog_debug.records:
         logger.debug("%s: %s", record.levelname, record.message)
 
-    assert len(results) == 1
-    assert results[0].cve_id == "TEST-001"
-
 
 @pytest.mark.asyncio
-@pytest.mark.skip(reason="Type checking issues - see issue #15")
 async def test_pip_audit_scanner():
     """Test PipAuditScanner functionality."""
     scanner = PipAuditScanner()
@@ -268,19 +328,32 @@ async def test_pip_audit_scanner():
     with patch("subprocess.run") as mock_run:
         # Test availability check
         mock_run.return_value.returncode = 0
-        assert scanner.is_available()
+        mock_run.return_value.stdout = ""  # Ensure stdout is string
+        assert await asyncio.wait_for(
+            asyncio.to_thread(scanner.is_available),
+            timeout=AVAILABILITY_CHECK_TIMEOUT,
+        )
 
         # Test successful scan (no issues)
         mock_run.return_value.returncode = 0
         mock_run.return_value.stdout = "{}"
-        results = scanner.scan_package("safe-pkg", "1.0.0")
+        results = await asyncio.wait_for(
+            asyncio.to_thread(scanner.scan_package, "safe-pkg", "1.0.0"),
+            timeout=SCAN_TIMEOUT,
+        )
+        assert isinstance(results, list)  # Type check
         assert len(results) == 0
 
         # Test scan with issues
         mock_run.return_value.returncode = 1
         mock_run.return_value.stdout = json.dumps(MOCK_PIP_AUDIT_OUTPUT)
-        results = scanner.scan_package("test-pkg", "1.0.0")
+        results = await asyncio.wait_for(
+            asyncio.to_thread(scanner.scan_package, "test-pkg", "1.0.0"),
+            timeout=SCAN_TIMEOUT,
+        )
+        assert isinstance(results, list)  # Type check
         assert len(results) == 1
+        assert isinstance(results[0], SecurityIssue)  # Type check
         assert results[0].cve_id == "TEST-002"
         assert results[0].severity == "Medium"
 
@@ -420,9 +493,13 @@ def test_security_ontology_loading(caplog):
 
     # Verify key components exist
     logger.debug("Checking for classes")
-    has_classes = any(graph.subjects(RDF.type, RDFS.Class))
+    has_classes = any(graph.subjects(RDF.type, RDFS.Class)) or any(
+        graph.subjects(RDF.type, OWL.Class),
+    )
     logger.debug("Has classes: %s", has_classes)
-    assert has_classes, "No classes found"
+    assert (
+        has_classes
+    ), "No classes found (looking for rdf:type rdfs:Class or owl:Class)"
 
     logger.debug("Checking for labels")
     has_labels = any(graph.triples((None, RDFS.label, None)))
@@ -454,15 +531,18 @@ def test_security_ontology_loading(caplog):
         logger.debug("Checking class: %s", cls)
         class_uri = SEC[cls]
         logger.debug(
-            "Looking for triple: (%s, %s, %s)",
+            "Looking for triple: (%s, %s, %s) or (%s, %s, %s)",
             class_uri,
             RDF.type,
             RDFS.Class,
+            class_uri,
+            RDF.type,
+            OWL.Class,
         )
-        assert (
+        assert (class_uri, RDF.type, RDFS.Class) in graph or (
             class_uri,
             RDF.type,
-            RDFS.Class,
+            OWL.Class,
         ) in graph, f"Missing required class: {cls}"
 
     # Check severity levels
@@ -543,7 +623,6 @@ def test_pip_audit_scanner_initialization(mock_subprocess, caplog):
 
 
 @pytest.mark.timeout(SCAN_TIMEOUT)
-@pytest.mark.skip(reason="Type checking issues - see issue #15")
 def test_pip_audit_scanner_scan_package(
     mock_subprocess: MagicMock,
     mock_temp_file: str,
@@ -553,21 +632,56 @@ def test_pip_audit_scanner_scan_package(
     logger.debug("Starting PipAuditScanner package scan test")
     scanner = PipAuditScanner()
 
+    # Log mock configuration
+    logger.debug("Configuring mock subprocess with test data")
     mock_subprocess.return_value.stdout = json.dumps(MOCK_PIP_AUDIT_OUTPUT)
+    mock_subprocess.return_value.configure_mock(timeout=SCAN_TIMEOUT)  # Add timeout
+    logger.debug("Mock data: %s", MOCK_PIP_AUDIT_OUTPUT)
 
     logger.debug("Running package scan")
     try:
+        # Log scanner state before scan
+        logger.debug("Scanner state before scan: available=%s", scanner.is_available())
+
         results = scanner.scan_package("test-pkg", "1.0.0")
         logger.debug("Scan completed with %d results", len(results))
+
+        # Type checking
+        assert isinstance(results, list), f"Expected list, got {type(results)}"
+
+        # Log detailed results
+        for idx, result in enumerate(results):
+            assert isinstance(
+                result, SecurityIssue
+            ), f"Result {idx} is not SecurityIssue"
+            logger.debug(
+                "Result %d: CVE=%s, severity=%s, source=%s",
+                idx + 1,
+                result.cve_id,
+                result.severity,
+                result.source,
+            )
 
         assert len(results) == 1
         assert results[0].cve_id == "TEST-002"
         logger.debug("Package scan test passed")
     except subprocess.TimeoutExpired as e:
         logger.error("Package scan timed out: %s", e)
+        logger.error("Command: %s", e.cmd)
+        logger.error("Timeout: %s seconds", e.timeout)
+        raise
+    except TypeError as e:
+        logger.error("Type error during scan: %s", e)
+        logger.error("Scanner state: %s", vars(scanner))
+        logger.error("Mock subprocess calls: %s", mock_subprocess.mock_calls)
+        logger.error(
+            "Result type: %s", type(results) if "results" in locals() else "Not created"
+        )
         raise
     except Exception as e:
         logger.error("Unexpected error during package scan: %s", e)
+        logger.error("Error type: %s", type(e).__name__)
+        logger.error("Scanner state: %s", vars(scanner))
         raise
 
 

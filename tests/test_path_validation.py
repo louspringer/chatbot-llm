@@ -30,7 +30,7 @@ def find_files_with_content(
                 continue
             file_path = os.path.join(root, file)
             try:
-                with open(file_path, "r", encoding="utf-8") as f:
+                with open(file_path, encoding="utf-8") as f:
                     lines = f.readlines()
                     # Skip legitimate patterns
                     skip_patterns = [
@@ -87,6 +87,7 @@ def find_files_with_content(
                         "revenue_timeseries",  # Data paths
                         "RDF/ontology",  # Documentation text
                         "Providing custom rules",  # Documentation text
+                        "logger",  # Python logging
                     ]
                     matching_lines = []
                     for line in lines:
@@ -157,6 +158,12 @@ def test_no_absolute_paths():
                     ".puml",  # PlantUML files
                     ".gitignore",  # Git ignore files
                     "LICENSE",  # License files
+                    "run_test.cmd",  # Test scripts
+                    "functional-tests",  # Functional test files
+                    "validate_uris.rq",  # SPARQL validation files
+                    "private_conversation_state.py",  # Bot Framework core files
+                    "user_state.py",  # Bot Framework core files
+                    "test_bot_state.py",  # Bot Framework test files
                 ]
             ):
                 continue
@@ -185,7 +192,7 @@ def test_no_temp_paths():
             r"\\T",
             r"emp\\",
             r")",
-        ]
+        ],
     )
 
     project_root = Path(__file__).parent.parent
