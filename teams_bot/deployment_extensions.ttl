@@ -34,24 +34,24 @@ depext:TeamsInfrastructure a owl:Class ;
     rdfs:subClassOf deploy:InfrastructureComponent ;
     rdfs:label "Teams Infrastructure" ;
     rdfs:comment "Infrastructure components specific to Teams integration" ;
-    owl:versionInfo "0.1.0" .
+    owl:versionInfo "1.0.0" .
 
 depext:TeamsAuthComponent a owl:Class ;
     rdfs:subClassOf depext:TeamsInfrastructure ;
     rdfs:label "Teams Authentication Component" ;
     rdfs:comment "Authentication component for Teams integration" ;
-    owl:versionInfo "0.1.0" .
+    owl:versionInfo "1.0.0" .
 
 depext:TeamsChannelComponent a owl:Class ;
     rdfs:subClassOf depext:TeamsInfrastructure ;
     rdfs:label "Teams Channel Component" ;
     rdfs:comment "Channel component for Teams integration" ;
-    owl:versionInfo "0.1.0" .
+    owl:versionInfo "1.0.0" .
 
 depext:SourceStructure a owl:Class ;
     rdfs:label "Source Code Structure" ;
     rdfs:comment "Defines the structure of source code files" ;
-    owl:versionInfo "0.1.0" .
+    owl:versionInfo "1.0.0" .
 
 # Property Definitions
 depext:authType a owl:DatatypeProperty ;
@@ -232,4 +232,60 @@ depext:SourceStructureShape a sh:NodeShape ;
         sh:minCount 1 ;
         sh:pattern "^teams-bot/.*\\.py$" ;
         sh:message "Function root must be in teams-bot/ directory with .py extension"
+    ] .
+
+# Additional Property Definitions
+depext:channelConfiguration a owl:ObjectProperty ;
+    rdfs:label "Channel Configuration" ;
+    rdfs:comment "Configuration settings for a Teams channel" ;
+    rdfs:domain depext:TeamsChannelComponent ;
+    rdfs:range [ a owl:Class ;
+        owl:intersectionOf (
+            [ a owl:Restriction ;
+                owl:onProperty depext:channelType ;
+                owl:someValuesFrom xsd:string ]
+            [ a owl:Restriction ;
+                owl:onProperty depext:messageTypes ;
+                owl:someValuesFrom xsd:string ]
+        )
+    ] ;
+    owl:versionInfo "1.0.0" .
+
+depext:deploymentEnvironment a owl:DatatypeProperty ;
+    rdfs:label "Deployment Environment" ;
+    rdfs:comment "Environment where the component is deployed" ;
+    rdfs:domain depext:TeamsInfrastructure ;
+    rdfs:range [ a rdfs:Datatype ;
+        owl:oneOf ("production" "staging" "development")
+    ] ;
+    owl:versionInfo "1.0.0" .
+
+depext:botEndpoint a owl:DatatypeProperty ;
+    rdfs:label "Bot Endpoint" ;
+    rdfs:comment "Endpoint URL for the Teams bot" ;
+    rdfs:domain depext:TeamsChannelComponent ;
+    rdfs:range xsd:anyURI ;
+    owl:versionInfo "1.0.0" .
+
+depext:maxConcurrentCalls a owl:DatatypeProperty ;
+    rdfs:label "Max Concurrent Calls" ;
+    rdfs:comment "Maximum number of concurrent API calls allowed" ;
+    rdfs:domain depext:TeamsChannelComponent ;
+    rdfs:range xsd:integer ;
+    owl:versionInfo "1.0.0" .
+
+# Add validation for new properties
+depext:TeamsChannelValidationExtended a sh:NodeShape ;
+    sh:targetClass depext:TeamsChannelComponent ;
+    sh:property [
+        sh:path depext:botEndpoint ;
+        sh:pattern "^https://.*\\.azurewebsites\\.net/api/messages$" ;
+        sh:minCount 1 ;
+        sh:message "Bot endpoint must be an HTTPS Azure Functions URL ending in /api/messages"
+    ] ;
+    sh:property [
+        sh:path depext:maxConcurrentCalls ;
+        sh:minInclusive 1 ;
+        sh:maxInclusive 100 ;
+        sh:message "Max concurrent calls must be between 1 and 100"
     ] .

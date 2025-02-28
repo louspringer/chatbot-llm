@@ -32,24 +32,28 @@ devwf:DevelopmentWorkflowOntology a owl:Ontology ;
     dct:created "2024-03-19"^^xsd:date ;
     dct:creator "Teams Bot Development Team" ;
     dct:description "Models the development workflow, CI/CD processes, and validation stages for the Teams Bot project" ;
-    :belongsToCluster chatbot:DeploymentCluster .
+    chatbot:belongsToCluster chatbot:DeploymentCluster .
 
 # Core Classes
 :DevelopmentPhase a owl:Class ;
     rdfs:label "Development Phase" ;
-    rdfs:comment "A phase in the development lifecycle" .
+    rdfs:comment "A phase in the development lifecycle" ;
+    owl:versionInfo "1.0" .
 
 :WorkflowProcess a owl:Class ;
     rdfs:label "Workflow Process" ;
-    rdfs:comment "A process within the development workflow" .
+    rdfs:comment "A process within the development workflow" ;
+    owl:versionInfo "1.0" .
 
 :ValidationCheck a owl:Class ;
     rdfs:label "Validation Check" ;
-    rdfs:comment "A validation check in the CI/CD pipeline" .
+    rdfs:comment "A validation check in the CI/CD pipeline" ;
+    owl:versionInfo "1.0" .
 
 :BranchProtection a owl:Class ;
     rdfs:label "Branch Protection" ;
-    rdfs:comment "Branch protection rules and requirements" .
+    rdfs:comment "Branch protection rules and requirements" ;
+    owl:versionInfo "1.0" .
 
 # Development Phases
 :InitialDevelopment a :DevelopmentPhase ;
@@ -136,26 +140,104 @@ devwf:DevelopmentWorkflowOntology a owl:Ontology ;
 
 # Properties
 :hasWorkflowProcess a owl:ObjectProperty ;
+    rdfs:label "Has Workflow Process" ;
+    rdfs:comment "Links a development phase to its workflow processes" ;
     rdfs:domain :DevelopmentPhase ;
-    rdfs:range :WorkflowProcess .
+    rdfs:range :WorkflowProcess ;
+    owl:versionInfo "1.0" .
 
 :hasValidationCheck a owl:ObjectProperty ;
+    rdfs:label "Has Validation Check" ;
+    rdfs:comment "Links a workflow process or phase to its validation checks" ;
     rdfs:domain [ a owl:Class ;
         owl:unionOf (:WorkflowProcess :DevelopmentPhase)
     ] ;
-    rdfs:range :ValidationCheck .
+    rdfs:range :ValidationCheck ;
+    owl:versionInfo "1.0" .
 
 :hasBranchProtection a owl:ObjectProperty ;
+    rdfs:label "Has Branch Protection" ;
+    rdfs:comment "Links a development phase to its branch protection rules" ;
     rdfs:domain :DevelopmentPhase ;
-    rdfs:range :BranchProtection .
+    rdfs:range :BranchProtection ;
+    owl:versionInfo "1.0" .
 
 :isCurrentPhase a owl:DatatypeProperty ;
+    rdfs:label "Is Current Phase" ;
+    rdfs:comment "Indicates if this is the current development phase" ;
     rdfs:domain :DevelopmentPhase ;
-    rdfs:range xsd:boolean .
+    rdfs:range xsd:boolean ;
+    owl:versionInfo "1.0" .
 
 :isBlocking a owl:DatatypeProperty ;
+    rdfs:label "Is Blocking" ;
+    rdfs:comment "Indicates if a validation check blocks the workflow" ;
     rdfs:domain :ValidationCheck ;
-    rdfs:range xsd:boolean .
+    rdfs:range xsd:boolean ;
+    owl:versionInfo "1.0" .
+
+:workflowFile a owl:DatatypeProperty ;
+    rdfs:label "Workflow File" ;
+    rdfs:comment "Path to the workflow file" ;
+    rdfs:domain :WorkflowProcess ;
+    rdfs:range xsd:string ;
+    owl:versionInfo "1.0" .
+
+:tool a owl:DatatypeProperty ;
+    rdfs:label "Tool" ;
+    rdfs:comment "The tool used for validation" ;
+    rdfs:domain :ValidationCheck ;
+    rdfs:range xsd:string ;
+    owl:versionInfo "1.0" .
+
+:configuration a owl:DatatypeProperty ;
+    rdfs:label "Configuration" ;
+    rdfs:comment "Configuration for the validation tool" ;
+    rdfs:domain :ValidationCheck ;
+    rdfs:range xsd:string ;
+    owl:versionInfo "1.0" .
+
+:requirePullRequest a owl:DatatypeProperty ;
+    rdfs:label "Require Pull Request" ;
+    rdfs:comment "Whether pull requests are required" ;
+    rdfs:domain :BranchProtection ;
+    rdfs:range xsd:boolean ;
+    owl:versionInfo "1.0" .
+
+:requiredReviewers a owl:DatatypeProperty ;
+    rdfs:label "Required Reviewers" ;
+    rdfs:comment "Number of required reviewers" ;
+    rdfs:domain :BranchProtection ;
+    rdfs:range xsd:integer ;
+    owl:versionInfo "1.0" .
+
+:allowForcePush a owl:DatatypeProperty ;
+    rdfs:label "Allow Force Push" ;
+    rdfs:comment "Whether force push is allowed" ;
+    rdfs:domain :BranchProtection ;
+    rdfs:range xsd:boolean ;
+    owl:versionInfo "1.0" .
+
+:requireStatusChecks a owl:DatatypeProperty ;
+    rdfs:label "Require Status Checks" ;
+    rdfs:comment "Whether status checks are required" ;
+    rdfs:domain :BranchProtection ;
+    rdfs:range xsd:boolean ;
+    owl:versionInfo "1.0" .
+
+:continueOnError a owl:DatatypeProperty ;
+    rdfs:label "Continue On Error" ;
+    rdfs:comment "Whether to continue workflow on error" ;
+    rdfs:domain :WorkflowProcess ;
+    rdfs:range xsd:boolean ;
+    owl:versionInfo "1.0" .
+
+:requiresApproval a owl:DatatypeProperty ;
+    rdfs:label "Requires Approval" ;
+    rdfs:comment "Whether workflow requires approval" ;
+    rdfs:domain :WorkflowProcess ;
+    rdfs:range xsd:boolean ;
+    owl:versionInfo "1.0" .
 
 # SHACL Shapes
 :DevelopmentPhaseShape a sh:NodeShape ;
@@ -163,10 +245,105 @@ devwf:DevelopmentWorkflowOntology a owl:Ontology ;
     sh:property [
         sh:path :hasWorkflowProcess ;
         sh:minCount 1 ;
+        sh:class :WorkflowProcess ;
         sh:message "Development phase must have at least one workflow process."
     ] ;
     sh:property [
         sh:path :hasBranchProtection ;
         sh:minCount 1 ;
+        sh:class :BranchProtection ;
         sh:message "Development phase must have branch protection rules."
     ] .
+
+:WorkflowProcessShape a sh:NodeShape ;
+    sh:targetClass :WorkflowProcess ;
+    sh:property [
+        sh:path :hasValidationCheck ;
+        sh:minCount 1 ;
+        sh:class :ValidationCheck ;
+        sh:message "Workflow process must have at least one validation check."
+    ] .
+
+:ValidationCheckShape a sh:NodeShape ;
+    sh:targetClass :ValidationCheck ;
+    sh:property [
+        sh:path :tool ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "Validation check must specify a tool."
+    ] ,
+    [
+        sh:path :isBlocking ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:boolean ;
+        sh:message "Validation check must specify if it is blocking."
+    ] .
+
+:BranchProtectionShape a sh:NodeShape ;
+    sh:targetClass :BranchProtection ;
+    sh:property [
+        sh:path :requirePullRequest ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:boolean ;
+        sh:message "Branch protection must specify if pull requests are required."
+    ] ,
+    [
+        sh:path :requiredReviewers ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:message "Branch protection must specify number of required reviewers."
+    ] .
+
+# Additional Instances
+:TestCoverage a :ValidationCheck ;
+    rdfs:label "Test Coverage Check" ;
+    :tool "pytest-cov" ;
+    :isBlocking true ;
+    :configuration """
+    pytest --cov=teams-bot --cov-report=xml
+    """ .
+
+:SecurityScan a :ValidationCheck ;
+    rdfs:label "Security Scan" ;
+    :tool "bandit" ;
+    :isBlocking true ;
+    :configuration """
+    bandit -r teams-bot -ll
+    """ .
+
+:ComprehensiveSecurity a :ValidationCheck ;
+    rdfs:label "Comprehensive Security" ;
+    :tool "safety, bandit" ;
+    :isBlocking true ;
+    :configuration """
+    safety check
+    bandit -r teams-bot -ll
+    """ .
+
+:PerformanceTest a :ValidationCheck ;
+    rdfs:label "Performance Test" ;
+    :tool "locust" ;
+    :isBlocking true ;
+    :configuration """
+    locust -f performance/locustfile.py --headless -u 10 -r 2
+    """ .
+
+:FullCICDPipeline a :WorkflowProcess ;
+    rdfs:label "Full CI/CD Pipeline" ;
+    :workflowFile ".github/workflows/prod-pipeline.yml" ;
+    :hasValidationCheck :ComprehensiveSecurity, :PerformanceTest ;
+    :continueOnError false ;
+    :requiresApproval true ;
+    rdfs:comment "Complete pipeline for production deployment" .
+
+:MainBranchProtection a :BranchProtection ;
+    rdfs:label "Main Branch Protection" ;
+    :requirePullRequest true ;
+    :requiredReviewers 2 ;
+    :allowForcePush false ;
+    :requireStatusChecks true ;
+    rdfs:comment "Strict protection for main branch in production" .

@@ -1,0 +1,105 @@
+# Ontology: meta:ValidationShapes
+# Implements: meta:ShapeValidation
+# Requirement: REQ-VAL-002 SHACL Shape Validation
+# Guidance: guidance:ValidationPatterns#SHACLValidation
+# Description: SHACL shapes for validating package management and security constraints
+
+@prefix : <./shapes#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix meta: <./meta#> .
+@prefix metameta: <./metameta#> .
+@prefix problem: <./problem#> .
+@prefix solution: <./solution#> .
+@prefix conversation: <./conversation#> .
+@prefix guidance: <./guidance#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix pkg: <./package_management#> .
+@prefix sec: <./security#> .
+
+# Class Definitions
+:Shape a owl:Class ;
+    rdfs:label "SHACL Shape" ;
+    rdfs:comment "Base class for all SHACL shapes in the system" ;
+    owl:versionInfo "0.1.0" .
+
+:ValidationShape a owl:Class ;
+    rdfs:subClassOf :Shape ;
+    rdfs:label "Validation Shape" ;
+    rdfs:comment "Shape used for validation purposes" ;
+    owl:versionInfo "0.1.0" .
+
+:PackageShape a owl:Class ;
+    rdfs:subClassOf :ValidationShape ;
+    rdfs:label "Package Shape" ;
+    rdfs:comment "Shape for validating package definitions" ;
+    owl:versionInfo "0.1.0" .
+
+:SecurityShape a owl:Class ;
+    rdfs:subClassOf :ValidationShape ;
+    rdfs:label "Security Shape" ;
+    rdfs:comment "Shape for validating security constraints" ;
+    owl:versionInfo "0.1.0" .
+
+# Property Definitions
+:hasTargetClass a owl:ObjectProperty ;
+    rdfs:label "Has Target Class" ;
+    rdfs:comment "Specifies the class this shape validates" ;
+    rdfs:domain :Shape ;
+    rdfs:range owl:Class ;
+    owl:versionInfo "0.1.0" .
+
+:hasConstraint a owl:ObjectProperty ;
+    rdfs:label "Has Constraint" ;
+    rdfs:comment "Links a shape to its validation constraints" ;
+    rdfs:domain :Shape ;
+    rdfs:range sh:PropertyShape ;
+    owl:versionInfo "0.1.0" .
+
+# Instance Definitions
+:packageValidationShape a :PackageShape ;
+    rdfs:label "Package Validation Shape" ;
+    :hasTargetClass pkg:Package ;
+    owl:versionInfo "0.1.0" .
+
+:securityValidationShape a :SecurityShape ;
+    rdfs:label "Security Validation Shape" ;
+    :hasTargetClass sec:SecurityRequirement ;
+    owl:versionInfo "0.1.0" .
+
+:packageDependencyShape a :PackageShape ;
+    rdfs:label "Package Dependency Shape" ;
+    :hasTargetClass pkg:Dependency ;
+    owl:versionInfo "0.1.0" .
+
+:vulnerabilityShape a :SecurityShape ;
+    rdfs:label "Vulnerability Shape" ;
+    :hasTargetClass sec:Vulnerability ;
+    owl:versionInfo "0.1.0" .
+
+pkg:PackageShape a sh:NodeShape ;
+    rdfs:label "Package Shape" ;
+    rdfs:comment "Shape for validating package properties" ;
+    sh:targetClass pkg:Package ;
+    owl:versionInfo "1.0.0" .
+
+sec:VulnerabilityShape a sh:NodeShape ;
+    rdfs:label "Vulnerability Shape" ;
+    rdfs:comment "Shape for validating vulnerability properties" ;
+    sh:targetClass sec:Vulnerability ;
+    owl:versionInfo "1.0.0" .
+
+pkg:DependencyTypeShape a sh:NodeShape ;
+    rdfs:label "Dependency Type Shape" ;
+    rdfs:comment "Shape for validating dependency type properties" ;
+    sh:targetClass pkg:DependencyType ;
+    owl:versionInfo "1.0.0" .
+
+:hasValidationRule a owl:ObjectProperty ;
+    rdfs:label "Has Validation Rule" ;
+    rdfs:comment "Links a shape to its validation rules" ;
+    rdfs:domain sh:NodeShape ;
+    rdfs:range sh:PropertyShape ;
+    owl:versionInfo "1.0.0" .

@@ -15,11 +15,8 @@ from unittest.mock import Mock, patch
 import pytest
 from rdflib import Graph, Namespace
 
-from tools.chatbot_llm.session_context_manager import (
-    SessionContextManager,
-    main as session_manager_main,
-)
-
+from tools.chatbot_llm.session_context_manager import SessionContextManager
+from tools.chatbot_llm.session_context_manager import main as session_manager_main
 
 # Constants for testing
 TEST_DIR = Path(__file__).parent / "fixtures"

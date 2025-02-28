@@ -26,7 +26,7 @@ cortexteams:CortexTeamsOntology a owl:Ontology ;
     rdfs:comment "Ontology for the integration between Snowflake Cortex and Microsoft Teams" ;
     owl:imports chatbot:ChatbotLLMOntology ;
     owl:versionInfo "0.1.0" ;
-    :belongsToCluster chatbot:DeploymentCluster .
+    chatbot:belongsToCluster chatbot:DeploymentCluster .
 
 # Integration Context and Constraints
 :EnterpriseContext a chatbot:Context ;
@@ -260,3 +260,75 @@ cortexteams:message2 a cortexteams:TeamsMessage ;
     cortexteams:hasContent "Important announcement" ;
     cortexteams:hasSender cortexteams:user2 ;
     cortexteams:hasChannel cortexteams:announcementsChannel .
+
+# Property Definitions for chatbot: namespace
+chatbot:belongsToCluster a owl:ObjectProperty ;
+    rdfs:label "Belongs to Cluster" ;
+    rdfs:comment "Links an ontology to its deployment cluster" ;
+    rdfs:domain owl:Ontology ;
+    rdfs:range chatbot:DeploymentCluster ;
+    owl:versionInfo "0.1.0" .
+
+chatbot:hasRequirement a owl:ObjectProperty ;
+    rdfs:label "Has Requirement" ;
+    rdfs:comment "Links a component to its requirements" ;
+    rdfs:domain chatbot:Integration ;
+    rdfs:range chatbot:SecurityRequirement ;
+    owl:versionInfo "0.1.0" .
+
+chatbot:hasWorkflow a owl:ObjectProperty ;
+    rdfs:label "Has Workflow" ;
+    rdfs:comment "Links a component to its workflows" ;
+    rdfs:domain chatbot:Integration ;
+    rdfs:range chatbot:Workflow ;
+    owl:versionInfo "0.1.0" .
+
+chatbot:connectsTo a owl:ObjectProperty ;
+    rdfs:label "Connects To" ;
+    rdfs:comment "Links an integration to another integration" ;
+    rdfs:domain chatbot:Integration ;
+    rdfs:range chatbot:Integration ;
+    owl:versionInfo "0.1.0" .
+
+chatbot:hasStep a owl:ObjectProperty ;
+    rdfs:label "Has Step" ;
+    rdfs:comment "Links a workflow to its steps" ;
+    rdfs:domain chatbot:Workflow ;
+    rdfs:range chatbot:WorkflowStep ;
+    owl:versionInfo "0.1.0" .
+
+# Class Definitions for chatbot: namespace
+chatbot:Context a owl:Class ;
+    rdfs:label "Context" ;
+    rdfs:comment "A context for integration" ;
+    owl:versionInfo "0.1.0" .
+
+chatbot:Constraint a owl:Class ;
+    rdfs:label "Constraint" ;
+    rdfs:comment "A constraint on integration" ;
+    owl:versionInfo "0.1.0" .
+
+chatbot:Integration a owl:Class ;
+    rdfs:label "Integration" ;
+    rdfs:comment "An integration component" ;
+    owl:versionInfo "0.1.0" .
+
+chatbot:SecurityRequirement a owl:Class ;
+    rdfs:label "Security Requirement" ;
+    rdfs:comment "A security requirement for integration" ;
+    owl:versionInfo "0.1.0" .
+
+chatbot:Workflow a owl:Class ;
+    rdfs:label "Workflow" ;
+    rdfs:comment "A workflow in the integration" ;
+    owl:versionInfo "0.1.0" .
+
+chatbot:WorkflowStep a owl:Class ;
+    rdfs:label "Workflow Step" ;
+    rdfs:comment "A step in a workflow" ;
+    owl:versionInfo "0.1.0" .
+
+chatbot:DeploymentCluster a owl:Class ;
+    rdfs:label "Deployment Cluster" ;
+    rdfs:comment "A deployment cluster for integration" ;
+    owl:versionInfo "0.1.0" .

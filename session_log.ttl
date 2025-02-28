@@ -1,188 +1,15 @@
-# Ontology: session:SessionLog
-# Implements: session:LogManagement
-# Requirement: REQ-SES-003 Session Logging
-# Guidance: guidance:ModelFirstPrinciple#logging
-# Description: Ontology for managing session logs and tracking session activities
-
-@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
-@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix owl: <http://www.w3.org/2002/07/owl#> .
-@prefix meta: <./meta#> .
-@prefix metameta: <./metameta#> .
-@prefix problem: <./problem#> .
-@prefix solution: <./solution#> .
-@prefix conversation: <./conversation#> .
+@prefix default1: <file:///private/var/folders/hg/zvfs15m17550vl6qnf_q010w0000gn/T/pytest-of-lou/pytest-3/test_update_session_and_log0/session_log#> .
 @prefix guidance: <./guidance#> .
-@prefix sh: <http://www.w3.org/ns/shacl#> .
-@prefix : <#> .
+@prefix guidance1: <file:///private/var/folders/hg/zvfs15m17550vl6qnf_q010w0000gn/T/pytest-of-lou/pytest-3/test_update_session_and_log0/guidance#> .
+@prefix log: <./session_log#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
-:SessionLogOntology a owl:Ontology ;
-    rdfs:label "Session Log Ontology" ;
-    rdfs:comment "Ontology for managing session logs" ;
-    owl:imports <./chatbot.ttl> ;
-    owl:versionInfo "0.1.0" .
-
-:LogEntry a owl:Class ;
-    rdfs:label "Log Entry" ;
-    rdfs:comment "A log entry in the session" ;
-    owl:versionInfo "0.1.0" .
-
-:LogLevel a owl:Class ;
-    rdfs:label "Log Level" ;
-    rdfs:comment "The severity level of a log entry" ;
-    owl:versionInfo "0.1.0" .
-
-:Actor a owl:Class ;
-    rdfs:label "Actor" ;
-    rdfs:comment "An entity that can create log entries" ;
-    owl:versionInfo "0.1.0" .
-
-:SessionLogEntry a owl:Class ;
-    rdfs:label "Session Log Entry" ;
-    rdfs:comment "A specialized log entry for session events" ;
-    rdfs:subClassOf :LogEntry ;
-    owl:versionInfo "0.1.0" .
-
-:hasTimestamp a owl:DatatypeProperty ;
-    rdfs:label "Has Timestamp" ;
-    rdfs:comment "The timestamp when the log entry was created" ;
-    rdfs:domain :LogEntry ;
-    rdfs:range xsd:dateTime ;
-    owl:versionInfo "0.1.0" .
-
-:hasLevel a owl:ObjectProperty ;
-    rdfs:label "Has Level" ;
-    rdfs:comment "The severity level of the log entry" ;
-    rdfs:domain :LogEntry ;
-    rdfs:range :LogLevel ;
-    owl:versionInfo "0.1.0" .
-
-:hasMessage a owl:DatatypeProperty ;
-    rdfs:label "Has Message" ;
-    rdfs:comment "The message content of the log entry" ;
-    rdfs:domain :LogEntry ;
-    rdfs:range xsd:string ;
-    owl:versionInfo "0.1.0" .
-
-:hasActor a owl:ObjectProperty ;
-    rdfs:label "Has Actor" ;
-    rdfs:comment "The actor that created the log entry" ;
-    rdfs:domain :LogEntry ;
-    rdfs:range :Actor ;
-    owl:versionInfo "0.1.0" .
-
-:hasChangeReason a owl:DatatypeProperty ;
-    rdfs:label "Has Change Reason" ;
-    rdfs:comment "The reason for a change in the session" ;
-    rdfs:domain :LogEntry ;
-    rdfs:range xsd:string ;
-    owl:versionInfo "0.1.0" .
-
-:hasSessionId a owl:DatatypeProperty ;
-    rdfs:label "Has Session ID" ;
-    rdfs:comment "The unique identifier of the session" ;
-    rdfs:domain :SessionLogEntry ;
-    rdfs:range xsd:string ;
-    owl:versionInfo "0.1.0" .
-
-:hasComponent a owl:DatatypeProperty ;
-    rdfs:label "Has Component" ;
-    rdfs:comment "The component that generated the log entry" ;
-    rdfs:domain :LogEntry ;
-    rdfs:range xsd:string ;
-    owl:versionInfo "0.1.0" .
-
-:LogEntryShape a sh:NodeShape ;
-    sh:targetClass :LogEntry ;
-    sh:property [
-        sh:path :hasTimestamp ;
-        sh:minCount 1 ;
-        sh:maxCount 1 ;
-        sh:datatype xsd:dateTime ;
-    ] ,
-    [
-        sh:path :hasLevel ;
-        sh:minCount 1 ;
-        sh:maxCount 1 ;
-        sh:class :LogLevel ;
-    ] ,
-    [
-        sh:path :hasMessage ;
-        sh:minCount 1 ;
-        sh:maxCount 1 ;
-        sh:datatype xsd:string ;
-    ] ,
-    [
-        sh:path :hasActor ;
-        sh:minCount 1 ;
-        sh:maxCount 1 ;
-        sh:class :Actor ;
-    ] .
-
-:INFO a :LogLevel ;
-    rdfs:label "Info" ;
-    rdfs:comment "Information level log entry" ;
-    owl:versionInfo "0.1.0" .
-
-:ERROR a :LogLevel ;
-    rdfs:label "Error" ;
-    rdfs:comment "Error level log entry" ;
-    owl:versionInfo "0.1.0" .
-
-:WARNING a :LogLevel ;
-    rdfs:label "Warning" ;
-    rdfs:comment "Warning level log entry" ;
-    owl:versionInfo "0.1.0" .
-
-:DEBUG a :LogLevel ;
-    rdfs:label "Debug" ;
-    rdfs:comment "Debug level log entry" ;
-    owl:versionInfo "0.1.0" .
-
-:ClaudeAI a :Actor ;
-    rdfs:label "Claude AI" ;
-    rdfs:comment "The Claude AI assistant" ;
-    owl:versionInfo "0.1.0" .
-
-:HumanUser a :Actor ;
-    rdfs:label "Human User" ;
-    rdfs:comment "A human user of the system" ;
-    owl:versionInfo "0.1.0" .
-
-:SystemAgent a :Actor ;
-    rdfs:label "System Agent" ;
-    rdfs:comment "The system automation agent" ;
-    owl:versionInfo "0.1.0" .
-
-:log1 a :LogEntry ;
-    :hasTimestamp "2024-03-19T10:00:00Z"^^xsd:dateTime ;
-    :hasLevel :INFO ;
-    :hasMessage "Session started" ;
-    :hasActor :HumanUser .
-
-:log2 a :LogEntry ;
-    :hasTimestamp "2024-03-19T10:01:00Z"^^xsd:dateTime ;
-    :hasLevel :INFO ;
-    :hasMessage "Context updated" ;
-    :hasActor :ClaudeAI ;
-    :hasChangeReason "User request processed" .
-
-:log3 a :LogEntry ;
-    :hasTimestamp "2024-03-19T10:02:00Z"^^xsd:dateTime ;
-    :hasLevel :WARNING ;
-    :hasMessage "Validation warning" ;
-    :hasActor :SystemAgent .
-
-@prefix default1: <file:///private/var/folders/hg/zvfs15m17550vl6qnf_q010w0000gn/T/pytest-of-lou/pytest-81/test_update_session_and_log0/session_log#> .
-@prefix guidance1: <file:///private/var/folders/hg/zvfs15m17550vl6qnf_q010w0000gn/T/pytest-of-lou/pytest-81/test_update_session_and_log0/guidance#> .
-@prefix log: <./session_log#> .
-
-log:entry_2025_02_25_230714 a guidance:SessionLogEntry ;
+log:entry_2025_02_27_185453 a guidance:SessionLogEntry ;
     rdfs:label "Session Update"^^xsd:string ;
     guidance:hasActor log:ClaudeAI ;
     guidance:hasChangeReason "Initial state"^^xsd:string ;
-    guidance:hasTimestamp "2025-02-25T23:07:14.353590"^^xsd:dateTime .
+    guidance:hasTimestamp "2025-02-27T18:54:53.664064"^^xsd:dateTime .
 
 <file:///Users/lou/Documents/chatbot-llm/session_log#test_entry> a log:LogEntry .
 
@@ -191,3 +18,4 @@ default1:entry_2024_03_20_001 a guidance:SessionLogEntry ;
     guidance1:hasActor log:ClaudeAI ;
     guidance1:hasChangeReason "Initial state"^^xsd:string ;
     guidance1:hasTimestamp "2024-03-20T18:30:00+00:00"^^xsd:dateTime .
+

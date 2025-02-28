@@ -3,7 +3,6 @@ Tests for the local environment validator
 """
 
 from datetime import datetime
-from typing import Dict
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -160,16 +159,18 @@ dependencies:
 """,
     )
 
-    with patch("subprocess.run") as mock_run:
-        mock_run.return_value = MagicMock(
-            stdout='{"envs": ["/path/to/chatbot-llm"]}',
-            stderr="",
-            returncode=0,
-        )
-        with patch.object(validator, "workspace_root", tmp_path):
-            result = validator.validate_conda_env()
-            assert result.success
-            assert "✅" in result.message
+    with patch("shutil.which") as mock_which:
+        mock_which.return_value = "/usr/local/bin/conda"
+        with patch("subprocess.run") as mock_run:
+            mock_run.return_value = MagicMock(
+                stdout='{"envs": ["/path/to/chatbot-llm"]}',
+                stderr="",
+                returncode=0,
+            )
+            with patch.object(validator, "workspace_root", tmp_path):
+                result = validator.validate_conda_env()
+                assert result.success
+                assert "✅" in result.message
 
 
 def test_validate_conda_env_missing(validator, tmp_path):
@@ -185,17 +186,19 @@ dependencies:
 """,
     )
 
-    with patch("subprocess.run") as mock_run:
-        mock_run.return_value = MagicMock(
-            stdout='{"envs": []}',
-            stderr="",
-            returncode=0,
-        )
-        with patch.object(validator, "workspace_root", tmp_path):
-            result = validator.validate_conda_env()
-            assert not result.success
-            assert "❌" in result.message
-            assert "conda env create" in result.details
+    with patch("shutil.which") as mock_which:
+        mock_which.return_value = "/usr/local/bin/conda"
+        with patch("subprocess.run") as mock_run:
+            mock_run.return_value = MagicMock(
+                stdout='{"envs": []}',
+                stderr="",
+                returncode=0,
+            )
+            with patch.object(validator, "workspace_root", tmp_path):
+                result = validator.validate_conda_env()
+                assert not result.success
+                assert "❌" in result.message
+                assert "conda env create" in result.details
 
 
 def test_validate_git_config_valid(validator):
@@ -205,7 +208,7 @@ def test_validate_git_config_valid(validator):
         def mock_git_config(*args, **kwargs):
             if "user.email" in args[0]:
                 return MagicMock(stdout="user@example.com\n", stderr="")
-            elif "user.name" in args[0]:
+            if "user.name" in args[0]:
                 return MagicMock(stdout="Test User\n", stderr="")
             return MagicMock(stdout="", stderr="")
 
@@ -414,7 +417,7 @@ def test_run_validation_with_revalidation(validator):
         impact_level="HIGH",
     )
 
-    def mock_validate_tool(tool: str, tool_info: Dict) -> ValidationResult:
+    def mock_validate_tool(tool: str, tool_info: dict) -> ValidationResult:
         if tool in ["op", "conda"]:
             return failure_result
         return success_result

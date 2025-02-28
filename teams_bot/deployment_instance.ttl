@@ -129,6 +129,70 @@ depinst:backupCost a owl:DatatypeProperty ;
     rdfs:domain owl:Thing ;
     rdfs:range xsd:decimal .
 
+# Additional Property Definitions
+depinst:operationalCosts a owl:ObjectProperty ;
+    rdfs:label "Operational Costs" ;
+    rdfs:comment "Operational costs associated with a component" ;
+    rdfs:domain owl:Thing ;
+    rdfs:range [ a owl:Class ;
+        owl:intersectionOf (
+            [ a owl:Restriction ;
+                owl:onProperty depinst:maintenanceCost ;
+                owl:someValuesFrom xsd:decimal ]
+            [ a owl:Restriction ;
+                owl:onProperty depinst:supportTier ;
+                owl:someValuesFrom xsd:string ]
+            [ a owl:Restriction ;
+                owl:onProperty depinst:slaRequirement ;
+                owl:someValuesFrom xsd:string ]
+            [ a owl:Restriction ;
+                owl:onProperty depinst:backupCost ;
+                owl:someValuesFrom xsd:decimal ]
+        )
+    ] .
+
+depinst:utilizationMetrics a owl:ObjectProperty ;
+    rdfs:label "Utilization Metrics" ;
+    rdfs:comment "Metrics related to resource utilization" ;
+    rdfs:domain deploy:InfrastructureComponent ;
+    rdfs:range [ a owl:Class ;
+        owl:intersectionOf (
+            [ a owl:Restriction ;
+                owl:onProperty depinst:targetUtilization ;
+                owl:someValuesFrom xsd:decimal ]
+            [ a owl:Restriction ;
+                owl:onProperty depinst:peakMultiplier ;
+                owl:someValuesFrom xsd:decimal ]
+            [ a owl:Restriction ;
+                owl:onProperty depinst:costPerUnit ;
+                owl:someValuesFrom xsd:decimal ]
+        )
+    ] .
+
+depinst:targetUtilization a owl:DatatypeProperty ;
+    rdfs:label "Target Utilization" ;
+    rdfs:comment "Target resource utilization percentage" ;
+    rdfs:domain owl:Thing ;
+    rdfs:range xsd:decimal .
+
+depinst:peakMultiplier a owl:DatatypeProperty ;
+    rdfs:label "Peak Multiplier" ;
+    rdfs:comment "Multiplier for peak usage periods" ;
+    rdfs:domain owl:Thing ;
+    rdfs:range xsd:decimal .
+
+depinst:costPerUnit a owl:DatatypeProperty ;
+    rdfs:label "Cost Per Unit" ;
+    rdfs:comment "Cost per unit of resource" ;
+    rdfs:domain owl:Thing ;
+    rdfs:range xsd:decimal .
+
+depinst:costComponents a owl:ObjectProperty ;
+    rdfs:label "Cost Components" ;
+    rdfs:comment "Components that contribute to cost" ;
+    rdfs:domain depinst:CostModel ;
+    rdfs:range depinst:CostComponentShape .
+
 # SHACL Shapes
 depinst:KeyVaultShape a sh:NodeShape ;
     sh:targetClass depinst:KeyVault ;

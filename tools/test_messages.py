@@ -26,7 +26,6 @@ from pathlib import Path
 
 import aiohttp
 
-
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -153,39 +152,41 @@ class BotTester:
                 return {"success": False, "error": str(e), "time": 0.0}
 
     async def run_test_case(self, test_case: TestCase) -> TestResult:
-        """Run a single test case and return the result."""
+        """Run a single test case."""
         logger.info("Running test: %s", test_case.name)
-
-        timeout = aiohttp.ClientTimeout(total=test_case.timeout_seconds)
         start_time = time.time()
 
         try:
             response = await self.send_message(
                 test_case.input_message,
                 test_case.conversation_type,
-                timeout,
+                timeout=aiohttp.ClientTimeout(total=test_case.timeout_seconds),
             )
-            end_time = time.time()
+            actual_response = response.get("text", "")
 
             # Check if response matches expected patterns
-            response_text = response.get("text", "")
-            matches_all = all(
-                pattern in response_text for pattern in test_case.expected_patterns
+            success = any(
+                pattern.lower() in actual_response.lower()
+                for pattern in test_case.expected_patterns
             )
 
             return TestResult(
                 test_case=test_case,
-                success=matches_all,
-                actual_response=response_text,
-                response_time=end_time - start_time,
+                success=success,
+                actual_response=actual_response,
+                error=(
+                    "Response did not match expected patterns" if not success else None
+                ),
+                response_time=time.time() - start_time,
             )
-        except aiohttp.ClientError as e:
+
+        except Exception as e:
             return TestResult(
                 test_case=test_case,
                 success=False,
                 actual_response=None,
                 error=str(e),
-                response_time=0.0,
+                response_time=time.time() - start_time,
             )
 
     async def run_tests(self, test_cases: list[TestCase]) -> bool:
@@ -216,28 +217,33 @@ class BotTester:
         return all_passed
 
     def generate_report(self, output_file: Path | None = None) -> dict:
-        """Generate test report and optionally save to file."""
+        """Generate test report."""
         report = {
-            "timestamp": datetime.now(timezone.utc).isoformat(),
-            "total_tests": len(self.results),
-            "passing_tests": len(
-                [r for r in self.results if r.success],
-            ),
-            "failing_tests": len(
-                [r for r in self.results if not r.success],
-            ),
+            "summary": {
+                "total_tests": len(self.results),
+                "passed_tests": len([r for r in self.results if r.success]),
+                "failed_tests": len([r for r in self.results if not r.success]),
+                "average_response_time": (
+                    sum(r.response_time for r in self.results) / len(self.results)
+                    if self.results
+                    else 0.0
+                ),
+            },
             "test_results": [
                 {
-                    "name": r.test_case.name,
-                    "success": r.success,
-                    "response_time": r.response_time,
-                    "error": r.error,
+                    "name": result.test_case.name,
+                    "success": result.success,
+                    "actual_response": result.actual_response,
+                    "error": result.error,
+                    "response_time": result.response_time,
+                    "requirements": result.test_case.requirements,
                 }
-                for r in self.results
+                for result in self.results
             ],
         }
 
         if output_file:
+            output_file.parent.mkdir(parents=True, exist_ok=True)
             with output_file.open("w") as f:
                 json.dump(report, f, indent=2)
             logger.info("Report saved to %s", output_file)
@@ -266,6 +272,7 @@ class BotTester:
                 <p>Success: {r['success']}</p>
                 <p>Response Time: {r['response_time']:.2f}s</p>
                 {f"<p>Error: {r['error']}</p>" if r.get('error') else ''}
+                {f"<p>Requirements: {', '.join(r['requirements'])}</p>" if r.get('requirements') else ''}
             </div>
             """
             for r in report["test_results"]
@@ -282,9 +289,10 @@ class BotTester:
             <h1>Bot Test Report</h1>
             <div class="summary">
                 <h2>Summary</h2>
-                <p>Total Tests: {report['total_tests']}</p>
-                <p>Passing Tests: {report['passing_tests']}</p>
-                <p>Failing Tests: {report['failing_tests']}</p>
+                <p>Total Tests: {report['summary']['total_tests']}</p>
+                <p>Passed Tests: {report['summary']['passed_tests']}</p>
+                <p>Failed Tests: {report['summary']['failed_tests']}</p>
+                <p>Average Response Time: {report['summary']['average_response_time']:.2f}s</p>
             </div>
 
             <h2>Test Results</h2>

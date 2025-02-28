@@ -19,7 +19,6 @@ from pathlib import Path
 
 from rdflib import Graph, URIRef
 
-
 # Setup logging
 logger = logging.getLogger(__name__)
 

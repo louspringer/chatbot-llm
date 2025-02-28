@@ -25,82 +25,130 @@ guidance:TeamsBotGuidanceOntology rdf:type owl:Ontology ;
     dct:type dct:Dataset ;
     dct:conformsTo <http://www.w3.org/2002/07/owl> ;
     owl:imports meta:, problem:, solution:, conversation:, chatbot:ChatbotLLMOntology ;
-    :belongsToCluster chatbot:DeploymentCluster .
+    chatbot:belongsToCluster chatbot:DeploymentCluster ;
+    owl:versionInfo "1.0" .
 
 # Core Framework Classes
 guidance:Interpretation rdf:type owl:Class ;
     rdfs:label "Interpretation" ;
     rdfs:comment "Guidance on how to interpret an ontology element" ;
     rdfs:subClassOf metameta:AbstractionDimension ;
-    owl:versionInfo "0.1.0" .
+    owl:versionInfo "1.0" .
 
 guidance:Action rdf:type owl:Class ;
     rdfs:label "Action" ;
     rdfs:comment "An action that can be taken based on interpretation" ;
-    owl:versionInfo "0.1.0" .
+    owl:versionInfo "1.0" .
 
 guidance:DomainAnalogy rdf:type owl:Class ;
     rdfs:label "Domain Analogy" ;
     rdfs:comment "A domain-specific analogy for understanding concepts" ;
     rdfs:subClassOf guidance:Interpretation ;
-    owl:versionInfo "0.1.0" .
+    owl:versionInfo "1.0" .
 
 # Core Framework Properties
 guidance:hasAction rdf:type owl:ObjectProperty ;
     rdfs:label "Has Action" ;
     rdfs:comment "Links an interpretation to its recommended actions" ;
     rdfs:domain guidance:Interpretation ;
-    rdfs:range guidance:Action .
+    rdfs:range guidance:Action ;
+    owl:versionInfo "1.0" .
 
 guidance:analogySource rdf:type owl:DatatypeProperty ;
     rdfs:label "Analogy Source" ;
     rdfs:comment "The source domain of an analogy" ;
     rdfs:domain guidance:DomainAnalogy ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    owl:versionInfo "1.0" .
 
 guidance:analogyTarget rdf:type owl:DatatypeProperty ;
     rdfs:label "Analogy Target" ;
     rdfs:comment "The target domain of an analogy" ;
     rdfs:domain guidance:DomainAnalogy ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    owl:versionInfo "1.0" .
 
 guidance:complexity rdf:type owl:DatatypeProperty ;
     rdfs:label "Complexity" ;
     rdfs:comment "The complexity level of an interpretation" ;
     rdfs:domain guidance:Interpretation ;
-    rdfs:range xsd:integer .
+    rdfs:range xsd:integer ;
+    owl:versionInfo "1.0" .
 
 # Teams Bot Specific Classes
 guidance:ErrorHandlingPractice a owl:Class ;
     rdfs:label "Error Handling Practice" ;
     rdfs:comment "Best practices for error handling" ;
     rdfs:subClassOf guidance:Action ;
-    owl:versionInfo "0.1.0" .
+    owl:versionInfo "1.0" .
 
 guidance:LoggingPractice a owl:Class ;
     rdfs:label "Logging Practice" ;
     rdfs:comment "Best practices for logging" ;
     rdfs:subClassOf guidance:Action ;
-    owl:versionInfo "0.1.0" .
+    owl:versionInfo "1.0" .
 
 guidance:SecurityPractice a owl:Class ;
     rdfs:label "Security Practice" ;
     rdfs:comment "Best practices for security" ;
     rdfs:subClassOf guidance:Action ;
-    owl:versionInfo "0.1.0" .
+    owl:versionInfo "1.0" .
 
 guidance:PerformancePractice a owl:Class ;
     rdfs:label "Performance Practice" ;
     rdfs:comment "Best practices for performance" ;
     rdfs:subClassOf guidance:Action ;
-    owl:versionInfo "0.1.0" .
+    owl:versionInfo "1.0" .
 
 # Additional Properties
 guidance:hasExample rdf:type owl:DatatypeProperty ;
     rdfs:label "Has Example" ;
     rdfs:comment "Links a practice to its example code" ;
     rdfs:domain guidance:Action ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    owl:versionInfo "1.0" .
+
+guidance:hasServiceUrl rdf:type owl:DatatypeProperty ;
+    rdfs:label "Has Service URL" ;
+    rdfs:comment "The service URL for Teams activities" ;
+    rdfs:domain meta:Activity ;
+    rdfs:range xsd:anyURI ;
+    owl:versionInfo "1.0" .
+
+guidance:hasAuthHeader rdf:type owl:DatatypeProperty ;
+    rdfs:label "Has Auth Header" ;
+    rdfs:comment "The authentication header for requests" ;
+    rdfs:domain meta:Activity ;
+    rdfs:range xsd:string ;
+    owl:versionInfo "1.0" .
+
+guidance:requestsPerMinute rdf:type owl:DatatypeProperty ;
+    rdfs:label "Requests Per Minute" ;
+    rdfs:comment "Number of requests per minute" ;
+    rdfs:domain meta:Activity ;
+    rdfs:range xsd:integer ;
+    owl:versionInfo "1.0" .
+
+guidance:hasType rdf:type owl:DatatypeProperty ;
+    rdfs:label "Has Type" ;
+    rdfs:comment "The type of Teams activity" ;
+    rdfs:domain meta:Activity ;
+    rdfs:range xsd:string ;
+    owl:versionInfo "1.0" .
+
+guidance:hasText rdf:type owl:DatatypeProperty ;
+    rdfs:label "Has Text" ;
+    rdfs:comment "The text content of a message" ;
+    rdfs:domain conversation:Message ;
+    rdfs:range xsd:string ;
+    owl:versionInfo "1.0" .
+
+guidance:hasLocale rdf:type owl:DatatypeProperty ;
+    rdfs:label "Has Locale" ;
+    rdfs:comment "The locale of a message" ;
+    rdfs:domain conversation:Message ;
+    rdfs:range xsd:string ;
+    owl:versionInfo "1.0" .
 
 # Core Validation Rules
 guidance:RequestValidation a sh:NodeShape ;
@@ -249,20 +297,173 @@ guidance:ConnectionPooling a guidance:PerformancePractice ;
         )
     """ .
 
+# Additional Instances
+guidance:ErrorRetry a guidance:ErrorHandlingPractice ;
+    rdfs:label "Error Retry" ;
+    rdfs:comment "Implement retry logic for transient errors" ;
+    guidance:hasExample """
+        @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
+        async def send_message(self, turn_context: TurnContext, message: str):
+            await turn_context.send_activity(message)
+    """ .
+
+guidance:CircuitBreaker a guidance:ErrorHandlingPractice ;
+    rdfs:label "Circuit Breaker" ;
+    rdfs:comment "Implement circuit breaker pattern for external services" ;
+    guidance:hasExample """
+        @circuit(failure_threshold=5, recovery_timeout=30)
+        async def call_external_service(self, request: dict):
+            return await self.client.post("/api/endpoint", json=request)
+    """ .
+
+guidance:MetricsLogging a guidance:LoggingPractice ;
+    rdfs:label "Metrics Logging" ;
+    rdfs:comment "Log performance metrics and statistics" ;
+    guidance:hasExample """
+        logger.info("Request processed", extra={
+            "duration_ms": end_time - start_time,
+            "memory_usage": process.memory_info().rss,
+            "request_count": request_counter.value
+        })
+    """ .
+
+guidance:AuditLogging a guidance:LoggingPractice ;
+    rdfs:label "Audit Logging" ;
+    rdfs:comment "Log security-relevant events" ;
+    guidance:hasExample """
+        logger.info("Security event", extra={
+            "event_type": "authentication",
+            "user_id": user.id,
+            "action": "login",
+            "result": "success"
+        })
+    """ .
+
+guidance:RateLimiting a guidance:SecurityPractice ;
+    rdfs:label "Rate Limiting" ;
+    rdfs:comment "Implement rate limiting for API endpoints" ;
+    guidance:hasExample """
+        @rate_limit(requests=100, period=60)
+        async def process_message(self, turn_context: TurnContext):
+            await self.bot.on_turn(turn_context)
+    """ .
+
+guidance:InputValidation a guidance:SecurityPractice ;
+    rdfs:label "Input Validation" ;
+    rdfs:comment "Validate all input parameters" ;
+    guidance:hasExample """
+        def validate_message(message: dict):
+            assert "text" in message, "Message must contain text"
+            assert len(message["text"]) <= 4000, "Message too long"
+            assert message["locale"].match(r"^[a-z]{2}-[A-Z]{2}$"), "Invalid locale"
+    """ .
+
+guidance:AsyncBatching a guidance:PerformancePractice ;
+    rdfs:label "Async Batching" ;
+    rdfs:comment "Batch async operations for better performance" ;
+    guidance:hasExample """
+        async def process_messages(self, messages: List[Message]):
+            tasks = [self.process_single_message(msg) for msg in messages]
+            return await asyncio.gather(*tasks)
+    """ .
+
+guidance:CacheOptimization a guidance:PerformancePractice ;
+    rdfs:label "Cache Optimization" ;
+    rdfs:comment "Implement caching for frequently accessed data" ;
+    guidance:hasExample """
+        @cached(ttl=300)  # Cache for 5 minutes
+        async def get_user_preferences(self, user_id: str):
+            return await self.db.fetch_user_preferences(user_id)
+    """ .
+
 # Teams Bot Domain Analogies
 guidance:TeamsMessageAnalogy a guidance:DomainAnalogy ;
     rdfs:label "Teams Message Analogy" ;
-    rdfs:comment "Analogy between Teams messages and HTTP requests" ;
-    guidance:analogySource "HTTP Request/Response" ;
-    guidance:analogyTarget "Teams Message Activity" ;
-    guidance:complexity 2 .
+    rdfs:comment "Analogy for Teams message processing" ;
+    guidance:analogySource "Postal Mail System" ;
+    guidance:analogyTarget "Teams Message Flow" ;
+    guidance:complexity 2 ;
+    guidance:hasExample """
+        Like a postal system:
+        - Message = Letter
+        - Channel = Post Office
+        - Bot = Mail Sorter
+        - Authentication = Postage Stamp
+    """ .
 
-guidance:TeamsAuthAnalogy a guidance:DomainAnalogy ;
-    rdfs:label "Teams Authentication Analogy" ;
-    rdfs:comment "Analogy between Teams authentication and OAuth flows" ;
-    guidance:analogySource "OAuth 2.0 Flow" ;
-    guidance:analogyTarget "Teams Bot Authentication" ;
-    guidance:complexity 3 .
+guidance:ErrorHandlingAnalogy a guidance:DomainAnalogy ;
+    rdfs:label "Error Handling Analogy" ;
+    rdfs:comment "Analogy for error handling in Teams bot" ;
+    guidance:analogySource "Circuit Breaker System" ;
+    guidance:analogyTarget "Bot Error Handling" ;
+    guidance:complexity 3 ;
+    guidance:hasExample """
+        Like an electrical circuit breaker:
+        - Error = Power Surge
+        - Retry = Reset Switch
+        - Circuit Breaker = Automatic Shutdown
+        - Recovery = Power Restoration
+    """ .
+
+guidance:PerformanceAnalogy a guidance:DomainAnalogy ;
+    rdfs:label "Performance Analogy" ;
+    rdfs:comment "Analogy for bot performance optimization" ;
+    guidance:analogySource "Traffic Management" ;
+    guidance:analogyTarget "Bot Performance" ;
+    guidance:complexity 3 ;
+    guidance:hasExample """
+        Like traffic management:
+        - Rate Limiting = Traffic Lights
+        - Load Balancing = Multiple Lanes
+        - Caching = Express Lanes
+        - Batching = Convoy System
+    """ .
+
+# Additional Validation Rules
+guidance:PerformanceValidation a sh:NodeShape ;
+    rdfs:label "Performance Validation" ;
+    rdfs:comment "Validation rules for performance metrics" ;
+    sh:targetClass meta:Activity ;
+    sh:property [
+        sh:path meta:responseTime ;
+        sh:maxInclusive 1000 ;
+        sh:message "Response time must not exceed 1000ms."
+    ] ,
+    [
+        sh:path meta:concurrentRequests ;
+        sh:maxInclusive 50 ;
+        sh:message "Maximum 50 concurrent requests per instance."
+    ] .
+
+guidance:SecurityValidation a sh:NodeShape ;
+    rdfs:label "Security Validation" ;
+    rdfs:comment "Validation rules for security requirements" ;
+    sh:targetClass meta:Activity ;
+    sh:property [
+        sh:path meta:encryptionLevel ;
+        sh:minInclusive 128 ;
+        sh:message "Minimum encryption level must be 128-bit."
+    ] ,
+    [
+        sh:path meta:tokenExpiry ;
+        sh:maxInclusive 3600 ;
+        sh:message "Token expiry must not exceed 1 hour."
+    ] .
+
+guidance:LoggingValidation a sh:NodeShape ;
+    rdfs:label "Logging Validation" ;
+    rdfs:comment "Validation rules for logging requirements" ;
+    sh:targetClass meta:Activity ;
+    sh:property [
+        sh:path meta:logLevel ;
+        sh:in ("DEBUG" "INFO" "WARNING" "ERROR" "CRITICAL") ;
+        sh:message "Log level must be a valid severity level."
+    ] ,
+    [
+        sh:path meta:logRetention ;
+        sh:minInclusive 7 ;
+        sh:message "Log retention must be at least 7 days."
+    ] .
 
 # TODO: Add validation rules for:
 # - Response formats

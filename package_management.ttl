@@ -171,7 +171,8 @@ pkg:hasVersion a owl:DatatypeProperty ;
     rdfs:label "Has Version" ;
     rdfs:comment "Version of the package" ;
     rdfs:domain pkg:Package ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    owl:versionInfo "1.0.0" .
 
 pkg:hasVulnerability a owl:ObjectProperty ;
     rdfs:domain pkg:Package ;
@@ -314,7 +315,8 @@ pkg:Package rdfs:subClassOf [ a owl:Restriction ;
 
 pkg:PackageSource a owl:Class ;
     rdfs:label "Package Source" ;
-    rdfs:comment "Source of the package (conda, pip)" .
+    rdfs:comment "Source of a package" ;
+    owl:versionInfo "1.0.0" .
 
 pkg:aiohttp a pkg:Package ;
     rdfs:label "aiohttp" ;
@@ -327,19 +329,23 @@ pkg:aiohttp a pkg:Package ;
 
 pkg:SecurityImpact a owl:Class ;
     rdfs:label "Security Impact" ;
-    rdfs:comment "Impact level of a security vulnerability" .
+    rdfs:comment "Impact level of a security vulnerability" ;
+    owl:versionInfo "1.0.0" .
 
 pkg:SecurityLikelihood a owl:Class ;
     rdfs:label "Security Likelihood" ;
-    rdfs:comment "Likelihood of a security vulnerability being exploited" .
+    rdfs:comment "Likelihood of a security vulnerability being exploited" ;
+    owl:versionInfo "1.0.0" .
 
 pkg:DependencyType a owl:Class ;
     rdfs:label "Dependency Type" ;
-    rdfs:comment "Type of package dependency (core, development, optional)" .
+    rdfs:comment "Type of package dependency" ;
+    owl:versionInfo "1.0.0" .
 
 pkg:ValidationStep a owl:Class ;
     rdfs:label "Validation Step" ;
-    rdfs:comment "A step in the package validation process" .
+    rdfs:comment "A step in the package validation process" ;
+    owl:versionInfo "1.0.0" .
 
 pkg:DevelopmentDependency a pkg:DependencyType ;
     rdfs:label "Development Dependency" ;
@@ -347,7 +353,8 @@ pkg:DevelopmentDependency a pkg:DependencyType ;
 
 pkg:SecurityVulnerability a owl:Class ;
     rdfs:label "Security Vulnerability" ;
-    rdfs:comment "Known security vulnerability in a package" .
+    rdfs:comment "Known security vulnerability in a package" ;
+    owl:versionInfo "1.0.0" .
 
 pkg:CoreDependency a pkg:DependencyType ;
     rdfs:label "Core Dependency" ;
@@ -359,13 +366,13 @@ pkg:CondaSource a pkg:PackageSource ;
 
 pkg:Package a owl:Class ;
     rdfs:label "Package" ;
-    rdfs:comment "A Python package dependency" ;
-    owl:versionInfo "0.1.0" .
+    rdfs:comment "A software package with dependencies" ;
+    owl:versionInfo "1.0.0" .
 
 :DependencyGroup a owl:Class ;
     rdfs:label "Dependency Group" ;
     rdfs:comment "A group of related dependencies" ;
-    owl:versionInfo "0.1.0" .
+    owl:versionInfo "1.0.0" .
 
 :SecurityRequirement a owl:Class ;
     rdfs:label "Security Requirement" ;
@@ -426,3 +433,10 @@ pkg:Package a owl:Class ;
 
 :cve_free_req a :SecurityRequirement ;
     rdfs:label "CVE Free Requirement" .
+
+pkg:hasSource a owl:ObjectProperty ;
+    rdfs:label "Has Source" ;
+    rdfs:comment "Source of the package" ;
+    rdfs:domain pkg:Package ;
+    rdfs:range pkg:PackageSource ;
+    owl:versionInfo "1.0.0" .
