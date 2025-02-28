@@ -8,12 +8,22 @@
 
 repos:
 - repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v2.3.0
+  rev: v4.5.0
   hooks:
     - id: trailing-whitespace
       exclude: &exclude_pattern >
           (?x)^(
-              .*\/(\.venv)\/.*
+              .git/|
+              .venv/|
+              venv/|
+              env/|
+              node_modules/|
+              __pycache__/|
+              .pytest_cache/|
+              .ipynb_checkpoints/|
+              .*_log\.ttl|
+              tests/.*/test_.*\.py|
+              tests/.*/__init__\.py
           )$
     - id: end-of-file-fixer
       exclude: *exclude_pattern
@@ -23,11 +33,10 @@ repos:
       exclude: *exclude_pattern
 
 - repo: https://github.com/psf/black
-  rev: 24.2.0
+  rev: 23.12.1
   hooks:
     - id: black
-      language_version: python3
-      args: ["--line-length=88", "--target-version=py310", "--quiet"]
+      language_version: python3.11
       exclude: *exclude_pattern
 
 - repo: https://github.com/pycqa/isort
@@ -35,18 +44,15 @@ repos:
   hooks:
     - id: isort
       name: isort (python)
-      args: ["--profile=black", "--line-length=88", "--quiet"]
       exclude: *exclude_pattern
 
 - repo: https://github.com/pycqa/flake8
   rev: 7.0.0
   hooks:
     - id: flake8
-      additional_dependencies: [flake8-docstrings]
       args:
-        - "--max-line-length=88"  # Match Black and Ruff line length
-        # Ignore style warnings to focus on functional issues
-        - "--ignore=D,W,E226,E402,E501,W503"
+        - "--max-line-length=88"
+        - "--extend-ignore=E203"
         - "--per-file-ignores=__init__.py:F401,tests/*:F,E"
       exclude: *exclude_pattern
 
@@ -58,27 +64,31 @@ repos:
       language: python
       additional_dependencies: [pyyaml]
       types: [text]
-      exclude: ^(.git/|.venv/|venv/|env/|node_modules/|__pycache__/|.pytest_cache/|.ipynb_checkpoints/)
+      exclude: *exclude_pattern
+
     - id: check-ontology-integrity
       name: Check ontology integrity
       entry: python tools/validate_ontology.py
       language: system
       types: [text]
       files: \.(ttl|turtle)$
+      exclude: *exclude_pattern
       pass_filenames: true
+
     - id: check-absolute-paths
       name: Check for absolute paths
       entry: pytest tests/test_path_validation.py -v
       language: system
       types: [text]
       pass_filenames: false
+
     - id: check-ontology-paths
       name: Check ontology file paths
       entry: python -c "import re; import sys; exit(1 if any(re.search(r'^(?:file:///|/[A-Za-z](?:/|\\\\)|[A-Za-z]:\\\\)', line) for line in sys.stdin) else 0)"
       language: system
       types: [text]
       files: \.(ttl|turtle)$
-      exclude: ^(.git/|.venv/|venv/|env/|node_modules/|__pycache__/|.pytest_cache/|.ipynb_checkpoints/)
+      exclude: *exclude_pattern
 
 default_language_version:
     python: python3
