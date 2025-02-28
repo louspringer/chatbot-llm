@@ -1,96 +1,185 @@
-# Ontology: chatbot:SessionOntology
-# Implements: chatbot:SessionManagement
-# Requirement: REQ-SESSION-001 Session state tracking
-# Guidance: guidance:session#StateManagement
-# Description: Tracks current session state including active ontologies and tasks
+# Ontology: session:SessionState
+# Implements: session:StateManager
+# Requirement: REQ-STATE-001 Session state management
+# Guidance: guidance:StatePattern#SessionManagement
+# Description: Manages session state and tracks changes during development
 
 @prefix : <./session#> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix meta: <./meta#> .
 @prefix metameta: <./metameta#> .
 @prefix problem: <./problem#> .
 @prefix solution: <./solution#> .
 @prefix conversation: <./conversation#> .
 @prefix guidance: <./guidance#> .
-@prefix pkg: <./package_management#> .
-@prefix sec: <./security#> .
-@prefix deploy: <./deployment_config#> .
-@prefix roadmap: <./roadmap#> .
-@prefix conv: <./conversation#> .
-@prefix env: <./environment_variables#> .
-@prefix rules: <./rules#> .
+@prefix test: <./test#> .
+@prefix tools: <./tools#> .
+@prefix session: <file:///private/var/folders/hg/zvfs15m17550vl6qnf_q010w0000gn/T/pytest-of-lou/pytest-13/test_update_session_and_log0/session#> .
 
-:CurrentSession a :Session ;
-    rdfs:label "Current Session" ;
-    :hasContext :CurrentContext ;
-    :hasActiveCursorRules (
-        :ArtifactTraceabilityRule
-        :PackageManagementRule
-        :ProjectOntologyRule
-    ) ;
-    :hasActiveOntologies (
-        pkg:PackageManagementOntology
-        sec:SecurityOntology
-        deploy:DeploymentConfigOntology
-        roadmap:RoadmapOntology
-        conv:ConversationOntology
-        meta:MetaOntology
-        metameta:MetaMetaOntology
-        problem:ProblemOntology
-        solution:SolutionOntology
-        guidance:GuidanceOntology
-        env:EnvironmentVariablesOntology
-    ) ;
-    :lastUpdated "2024-03-21T15:00:00Z"^^xsd:dateTime .
+# Classes
+:Context a owl:Class ;
+    rdfs:label "Context" ;
+    rdfs:comment "A development context representing the current state" ;
+    owl:versionInfo "0.1.0" .
 
-:CurrentContext a :Context ;
-    rdfs:label "Current Context" ;
-    :hasActiveTask :OntologyIntegrityTask ;
-    :hasSecurityContext :CurrentSecurityContext ;
-    :activeCursorRules (
-        rules:artifact-traceability
-        rules:no-requirements-txt
-        rules:package-management
-        rules:project-ontology
-        rules:project-root-ontologies
-        rules:sparql-queries
-    ) ;
-    :activeOntologies (
-        meta:MetaOntology
-        metameta:MetaMetaOntology
-        problem:ProblemOntology
-        solution:SolutionOntology
-        guidance:GuidanceOntology
-        conversation:ConversationOntology
-        env:EnvironmentVariablesOntology
-    ) .
+:ContextState a owl:Class ;
+    rdfs:label "Context State" ;
+    rdfs:comment "The state of a development context including active tasks and rules" ;
+    owl:versionInfo "0.1.0" .
 
-:OntologyIntegrityTask a :Task ;
-    rdfs:label "Ontology Integrity Check" ;
-    :hasCompletedSteps (
-        "Updated meta.ttl with version info and SHACL shapes"
-        "Updated metameta.ttl with version info and SHACL shapes"
-        "Updated problem.ttl with version info and SHACL shapes"
-        "Updated solution.ttl with version info and SHACL shapes"
-        "Updated guidance.ttl with version info and SHACL shapes"
-        "Verified conversation.ttl integrity"
-        "Updated environment_variables.ttl with version info"
-        "Ran final integrity validation"
-    ) ;
-    :hasNextSteps (
-        "Add missing version info to classes and properties"
-        "Add missing SHACL shapes for classes"
-        "Add domain and range to traceability#requiresRole"
-    ) ;
-    :validationResults (
-        "Found 200+ classes and properties missing version info"
-        "Found 100+ classes missing SHACL shapes"
-        "Found 1 property missing domain/range definitions"
-    ) .
+:Task a owl:Class ;
+    rdfs:label "Task" ;
+    rdfs:comment "A development task with associated files and ontologies" ;
+    owl:versionInfo "0.1.0" .
 
-:CurrentSecurityContext a :SecurityContext ;
-    rdfs:label "Current Security Context" ;
-    :lastValidated "2024-03-21T15:00:00Z"^^xsd:dateTime .
+:SecurityContext a owl:Class ;
+    rdfs:label "Security Context" ;
+    rdfs:comment "Security settings and requirements for the session" ;
+    owl:versionInfo "0.1.0" .
+
+# Properties
+:activeCursorRules a owl:ObjectProperty ;
+    rdfs:label "Active Cursor Rules" ;
+    rdfs:comment "Rules currently active in the cursor" ;
+    rdfs:domain :ContextState ;
+    rdfs:range rdf:List ;
+    owl:versionInfo "0.1.0" .
+
+:activeOntologies a owl:ObjectProperty ;
+    rdfs:label "Active Ontologies" ;
+    rdfs:comment "Ontologies currently being used" ;
+    rdfs:domain :ContextState ;
+    rdfs:range rdf:List ;
+    owl:versionInfo "0.1.0" .
+
+:activeTask a owl:ObjectProperty ;
+    rdfs:label "Active Task" ;
+    rdfs:comment "The currently active development task" ;
+    rdfs:domain :ContextState ;
+    rdfs:range :Task ;
+    owl:versionInfo "0.1.0" .
+
+:modifiedFiles a owl:DatatypeProperty ;
+    rdfs:label "Modified Files" ;
+    rdfs:comment "Files modified during the task" ;
+    rdfs:domain :Task ;
+    rdfs:range rdf:List ;
+    owl:versionInfo "0.1.0" .
+
+:modifiedOntologies a owl:ObjectProperty ;
+    rdfs:label "Modified Ontologies" ;
+    rdfs:comment "Ontologies modified during the task" ;
+    rdfs:domain :Task ;
+    rdfs:range rdf:List ;
+    owl:versionInfo "0.1.0" .
+
+:description a owl:DatatypeProperty ;
+    rdfs:label "Description" ;
+    rdfs:comment "Description of the task" ;
+    rdfs:domain :Task ;
+    rdfs:range xsd:string ;
+    owl:versionInfo "0.1.0" .
+
+:status a owl:DatatypeProperty ;
+    rdfs:label "Status" ;
+    rdfs:comment "Current status of the task" ;
+    rdfs:domain :Task ;
+    rdfs:range xsd:string ;
+    owl:versionInfo "0.1.0" .
+
+:lastUpdated a owl:DatatypeProperty ;
+    rdfs:label "Last Updated" ;
+    rdfs:comment "Timestamp of last update" ;
+    rdfs:domain :ContextState ;
+    rdfs:range xsd:dateTime ;
+    owl:versionInfo "0.1.0" .
+
+:securityContext a owl:ObjectProperty ;
+    rdfs:label "Security Context" ;
+    rdfs:comment "Security context for the session" ;
+    rdfs:domain :ContextState ;
+    rdfs:range :SecurityContext ;
+    owl:versionInfo "0.1.0" .
+
+:requiresValidation a owl:DatatypeProperty ;
+    rdfs:label "Requires Validation" ;
+    rdfs:comment "Whether validation is required" ;
+    rdfs:domain :SecurityContext ;
+    rdfs:range xsd:boolean ;
+    owl:versionInfo "0.1.0" .
+
+:securityLevel a owl:DatatypeProperty ;
+    rdfs:label "Security Level" ;
+    rdfs:comment "Security level of the context" ;
+    rdfs:domain :SecurityContext ;
+    rdfs:range xsd:string ;
+    owl:versionInfo "0.1.0" .
+
+# SHACL Validation
+:TaskShape a sh:NodeShape ;
+    sh:targetClass :Task ;
+    sh:property [
+        sh:path :description ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        owl:versionInfo "0.1.0" ;
+    ] ;
+    sh:property [
+        sh:path :status ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        owl:versionInfo "0.1.0" ;
+    ] ;
+    owl:versionInfo "0.1.0" .
+
+# Instance data
+<file:///Users/lou/Documents/chatbot-llm/session#test_context> a :Context ;
+    owl:versionInfo "0.1.0" .
+
+:currentContext a :ContextState ;
+    :activeCursorRules <n7c3f6c32231742ca81075e72ea5aab0bb3> ;
+    :activeOntologies <n7c3f6c32231742ca81075e72ea5aab0bb1> ;
+    :activeTask :task6 ;
+    :lastUpdated "2024-03-20T18:45:00+00:00"^^xsd:dateTime ;
+    :securityContext <n7c3f6c32231742ca81075e72ea5aab0bb5> ;
+    owl:versionInfo "0.1.0" .
+
+:task6 a :Task ;
+    :modifiedFiles (
+        "tools/guidance_links.py"
+        "tests/test_path_validation.py"
+    ) ;
+    :description "Fix docstring formatting and path validation" ;
+    :status "completed" ;
+    :modifiedOntologies (
+        test:PathValidation
+        tools:GuidanceLinks
+    ) ;
+    owl:versionInfo "0.1.0" .
+
+[] rdf:first <./chatbot#ChatbotLLMOntology> ;
+    rdf:rest <n7c3f6c32231742ca81075e72ea5aab0bb2> ;
+    owl:versionInfo "0.1.0" .
+
+[] rdf:first <./cortexteams#TeamsOntology> ;
+    rdf:rest () ;
+    owl:versionInfo "0.1.0" .
+
+[] rdf:first :SPARQLQueryRule ;
+    rdf:rest <n7c3f6c32231742ca81075e72ea5aab0bb4> ;
+    owl:versionInfo "0.1.0" .
+
+[] rdf:first :BlackFormatterRule ;
+    rdf:rest () ;
+    owl:versionInfo "0.1.0" .
+
+[] a :SecurityContext ;
+    :requiresValidation true ;
+    :securityLevel "High" ;
+    owl:versionInfo "0.1.0" .
